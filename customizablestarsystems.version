@@ -1,0 +1,14 @@
+{
+	"masterVersionFile":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/customizablestarsystems.version",
+	"modName":"Customizable Star Systems",
+	"modThreadId":25821,
+	"modVersion":
+	{
+		"major":1,
+		"minor":0,
+		"patch":0
+	},
+	"starsectorVersion":"0.96a-RC10",
+	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v1.0.0/CustomizableStarSystems-v1.0.0.zip",
+	"changelogURL":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/changelog.txt"
+}

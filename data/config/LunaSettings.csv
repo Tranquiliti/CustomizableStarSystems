@@ -1,0 +1,3 @@
+fieldID,fieldName,fieldType,defaultValue,fieldDescription,minValue,maxValue
+customStarSystemHeader,Custom Star Systems Header,Header,Custom Star Systems,,,
+enableCustomStarSystems,Enable Custom Star Systems,Boolean,true,"Generates custom star systems during new game creation. [Disabling this will disable all custom star systems, including the default star system occupied by the Adversary faction.] Edit [customStarSystems.json], located in the Adversary mod folder, if you wish to disable individual custom star systems instead.",,

@@ -1,0 +1,11 @@
+#-- Note for LunaLib users --#
+# LunaLib settings will override the following settings in this settings.json:
+# "enableCustomStarSystems"
+#
+# Instead, use LunaLib's in-game UI configs to modify these.
+
+{
+	# Generates custom star systems upon starting a new game
+	# Custom star systems can be configured in customStarSystems.json
+	"enableCustomStarSystems":true,
+}
