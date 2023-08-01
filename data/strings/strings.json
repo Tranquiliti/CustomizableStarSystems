@@ -7,6 +7,8 @@
 
 {
 	"customizablestarsystems":{
+		"mod_id_customizablestarsystems":"customizablestarsystems",
+
 		# Sole entry in customStarSystems.json
 		"settings_customStarSystems":"customStarSystems",
 

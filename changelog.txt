@@ -1,4 +1,4 @@
 Version 1.0.0
 
 * Split off from Adversary mod
-* No new features
+  - Now considered a utility mod that can be safely removed from existing saves

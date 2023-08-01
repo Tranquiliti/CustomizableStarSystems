@@ -2,6 +2,7 @@
   "id":"customizablestarsystems",
   "name":"Customizable Star Systems",
   "author":"Tranquility",
+  "utility":"true",
   "version":{"major":1,"minor":0,"patch":0},
   "description":"Adds custom star systems through a JSON config file.",
   "gameVersion":"0.96a-RC10",
