@@ -8,12 +8,12 @@ import com.fs.starfarer.api.impl.campaign.AICoreAdminPluginImpl;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import lunalib.lunaSettings.LunaSettings;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "unchecked"})
 public class CSSModPlugin extends BaseModPlugin {
     private transient HashMap<MarketAPI, String> marketsToOverrideAdmin;
 
@@ -29,13 +29,20 @@ public class CSSModPlugin extends BaseModPlugin {
         else doCustomStarSystems = settings.getBoolean(enableSystemId);
 
         if (doCustomStarSystems) try {
-            JSONArray systemList = settings.getMergedJSONForMod(settings.getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems").getJSONArray(settings.getString("customizablestarsystems", "settings_customStarSystems"));
+            JSONObject systems = settings.getMergedJSONForMod(settings.getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
             CSSUtil util = new CSSUtil();
-            for (int i = 0; i < systemList.length(); i++) {
-                JSONObject systemOptions = systemList.getJSONObject(i);
+
+            // Generate each custom star system from merged customStarSystems.json
+            for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
+                String systemId = it.next();
+                JSONObject systemOptions = systems.getJSONObject(systemId);
                 if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
-                    for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--)
+                    for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                         util.generateCustomStarSystem(systemOptions);
+                        Global.getLogger(CSSModPlugin.class).info("Generated " + systemId);
+                    }
+                else
+                    Global.getLogger(CSSModPlugin.class).info("Did not generate " + systemId + " since \"isEnabled\" is set to false!");
             }
             marketsToOverrideAdmin = util.marketsToOverrideAdmin;
         } catch (Exception e) {

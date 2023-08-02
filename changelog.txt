@@ -1,4 +1,8 @@
 Version 1.0.0
 
 * Split off from Adversary mod
-  - Now considered a utility mod that can be safely removed from existing saves
+  - Now considered a utility mod that can be safely removed from existing saves (although already-generated systems will remain)
+* Changed customStarSystem.json format
+  - Each custom star system must now have a unique ID.
+* Added "SpawnCustomStarSystems" and "ListCustomStarSystems" commands
+  - Requires the Console Commands mod to run these commands

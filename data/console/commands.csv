@@ -1,0 +1,3 @@
+command,class,tags,syntax,help
+SpawnCustomStarSystems,data.console.commands.SpawnCustomStarSystems,"customizablestarsystems,campaign,cheat",spawncustomstarsystems <all|systemID1> [systemID2] [systemID3...],"Spawns the specified custom star systems in this current Sector map. If ""all"" is entered as the first argument, spawns all currently-loaded custom star systems to the Sector map, while respecting any ""isEnabled"" options. Otherwise, the specified custom star systems will spawn even if their ""isEnabled"" option is set to false."
+ListCustomStarSystems,data.console.commands.ListCustomStarSystems,"customizablestarsystems,campaign",listcustomstarsystems (no argument),Lists the IDs of all currently-loaded custom star systems from the merged customStarSystem.json.

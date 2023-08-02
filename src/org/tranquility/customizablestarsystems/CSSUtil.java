@@ -184,7 +184,7 @@ public class CSSUtil {
      * Generates a customized star systems, as per JSON specifications
      *
      * @param systemOptions Star system options
-     * @throws JSONException if systemOptions is invalide
+     * @throws JSONException if systemOptions is invalid
      */
     public void generateCustomStarSystem(JSONObject systemOptions) throws JSONException {
         // Create the star system
@@ -251,6 +251,9 @@ public class CSSUtil {
             String nebulaType = system.hasSystemwideNebula() ? StarSystemGenerator.nebulaTypes.get(system.getAge()) : StarSystemGenerator.NEBULA_NONE;
             system.setBackgroundTextureFilename(StarSystemGenerator.backgroundsByNebulaType.get(nebulaType).pick());
         }
+
+        // Set fully-surveyed status in-case generateCustomStarSystem() is called outside onNewGameAfterProcGen()
+        if (hasFactionPresence) Misc.setAllPlanetsSurveyed(system, true);
 
         generateHyperspace(system);
         addRemnantWarningBeacons(system);

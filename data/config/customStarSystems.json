@@ -9,52 +9,54 @@
 # as any changes here will apply on the next new game creation.
 # Any customStarSystems.json in the data/config folder of other mods will merge together with this one
 
-{	# List of custom star systems to generate
-	"customStarSystems":[
-		{ # An uninhabited star system with desirable planets
-			"isEnabled":true,
-			"setLocation":0, # Location set to a random constellation
-			"hasSystemwideNebula":true,
-			"addCoronalHypershunt":false,
-			"addDomainCryosleeper":false,
-			"fringeJumpPoint":{"orbitRadius":6840},
-			"starsInSystemCenter":{"stars":[{"type":"random_star_giant"}]},
-			"orbitingBodies":[
-				{	"type":"gas_giant",
-					"orbitRadius":3825,
-					"radius":325,
-					"conditions":["hot","high_gravity","volatiles_abundant"],
-					"entitiesAtStablePoints":[{"type":"comm_relay"},{"type":"stable_location"},{"type":"stable_location"}],
-				},
-				{	"type":"terran",
-					"orbitRadius":4625,
-					"radius":175,
-					"conditions":["habitable","ore_moderate","organics_common","farmland_adequate","ruins_extensive"],
-				},
-				{	"type":"toxic",
-					"orbitRadius":5850,
-					"radius":150,
-					"conditions":["toxic_atmosphere","ore_rich","rare_ore_moderate","organics_common","volatiles_diffuse"],
-				},
-				{	"type":"barren",
-					"orbitRadius":6420,
-					"radius":120,
-					"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"],
-				},
-			],
-			"systemFeatures":[
-				{"type":"jump_point","orbitRadius":3200,"name":"Inner System Jump-point"},
-				{"type":"inactive_gate","orbitRadius":5250},
-				{"type":"magnetic_field","orbitRadius":325,"focus":1,"size":200},
-				{"type":"station_research","orbitRadius":425,"focus":1},
-			],
-		},
+{
+	# An uninhabited star system with desirable planets
+	"css_default":{
+		"isEnabled":true,
+		"setLocation":0, # Location set to a random constellation
+		"hasSystemwideNebula":true,
+		"addCoronalHypershunt":false,
+		"addDomainCryosleeper":false,
+		"fringeJumpPoint":{"orbitRadius":6840},
+		"starsInSystemCenter":{"stars":[{"type":"random_star_giant"}]},
+		"orbitingBodies":[
+			{	"type":"gas_giant",
+				"orbitRadius":3825,
+				"radius":325,
+				"conditions":["hot","high_gravity","volatiles_abundant"],
+				"entitiesAtStablePoints":[{"type":"comm_relay"},{"type":"stable_location"},{"type":"stable_location"}],
+			},
+			{	"type":"terran",
+				"orbitRadius":4625,
+				"radius":175,
+				"conditions":["habitable","ore_moderate","organics_common","farmland_adequate","ruins_extensive"],
+			},
+			{	"type":"toxic",
+				"orbitRadius":5850,
+				"radius":150,
+				"conditions":["toxic_atmosphere","ore_rich","rare_ore_moderate","organics_common","volatiles_diffuse"],
+			},
+			{	"type":"barren",
+				"orbitRadius":6420,
+				"radius":120,
+				"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"],
+			},
+		],
+		"systemFeatures":[
+			{"type":"jump_point","orbitRadius":3200,"name":"Inner System Jump-point"},
+			{"type":"inactive_gate","orbitRadius":5250},
+			{"type":"magnetic_field","orbitRadius":325,"focus":1,"size":200},
+			{"type":"station_research","orbitRadius":425,"focus":1},
+		],
+	},
 
-		#--------------------------------------#
-		# Can add more star systems below here #
-		#--------------------------------------#
+	#--------------------------------------#
+	# Can add more star systems below here #
+	#--------------------------------------#
 
 
 
-	],
+
+
+
 }
