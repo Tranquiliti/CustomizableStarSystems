@@ -6,3 +6,4 @@ Version 1.0.0
   - Each custom star system must now have a unique ID.
 * Added "SpawnCustomStarSystems" and "ListCustomStarSystems" commands
   - Requires the Console Commands mod to run these commands
+  - Intended to allow for spawning custom star systems in an existing game; backing up your save beforehand is recommended
