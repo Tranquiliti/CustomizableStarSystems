@@ -1,6 +1,6 @@
 This Starsector mod adds customizable star systems, configurable via a JSON file in this mod's config folder.
 
-Includes LunaLib support!
+Includes LunaLib and Console Commands support!
 
 # Credits
 <b>Audax</b> - For the inspiration in Suitable Star Systems and for granting permission to use code from said mod<br>

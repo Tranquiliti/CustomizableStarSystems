@@ -120,10 +120,15 @@
 
 		# Console Commands messages
 		"commands_error_bad_json":"Error: Something wrong with customStarSystems.json!",
-		"commands_generated_system":"Generated \"%s\"",
+		"commands_generated_system":"Generated custom star system \"%s\"",
 		"commands_disabled_system":"Did not generate \"%s\" since \"isEnabled\" is set to 'false'!",
 		"commands_error_bad_system":"Error: Something wrong with custom star system \"%s\"!",
 		"commands_error_no_system_id":"Error: Did not find custom star system with id \"%s\"!",
+
+		# LunaSnippets
+		"snippets_spawn_system_name":"Generate custom star systems",
+		"snippets_spawn_system_desc":"Generates the toggled custom star systems. Backup your save before executing this snippet!",
+		"snippets_spawn_system_no_selected":"No custom star system selected!",
 
 		# Settings in settings.json
 		"settings_enableCustomStarSystems":"enableCustomStarSystems",

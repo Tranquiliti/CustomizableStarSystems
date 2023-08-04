@@ -1,9 +1,12 @@
 Version 1.0.0
 
 * Split off from Adversary mod
-  - Now considered a utility mod that can be safely removed from existing saves (although already-generated systems will remain)
+  - Now considered a utility mod that can be safely removed from existing saves (although already-generated systems will still remain)
 * Changed customStarSystem.json format
   - Each custom star system must now have a unique ID.
 * Added "SpawnCustomStarSystems" and "ListCustomStarSystems" commands
   - Requires the Console Commands mod to run these commands
   - Intended to allow for spawning custom star systems in an existing game; backing up your save beforehand is recommended
+* Added a LunaSnippet for spawning in custom star systems
+  - Requires the LunaLib library mod to use
+  - Basically a UI version of the above CC commands

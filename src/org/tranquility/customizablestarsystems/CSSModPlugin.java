@@ -7,6 +7,7 @@ import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.AICoreAdminPluginImpl;
 import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
+import lunalib.lunaDebug.LunaDebug;
 import lunalib.lunaSettings.LunaSettings;
 import org.json.JSONObject;
 
@@ -16,6 +17,13 @@ import java.util.Iterator;
 @SuppressWarnings({"unused", "unchecked"})
 public class CSSModPlugin extends BaseModPlugin {
     private transient HashMap<MarketAPI, String> marketsToOverrideAdmin;
+
+    // Adding LunaSnippet for spawning in custom star systems
+    @Override
+    public void onApplicationLoad() {
+        if (Global.getSettings().getModManager().isModEnabled("lunalib"))
+            LunaDebug.addSnippet(new CSSSpawnStarSystemsSnippet());
+    }
 
     // Generates mod systems after proc-gen so that planet markets can properly generate
     @Override
