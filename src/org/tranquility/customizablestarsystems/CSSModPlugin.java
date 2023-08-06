@@ -4,9 +4,6 @@ import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.SettingsAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
-import com.fs.starfarer.api.impl.campaign.AICoreAdminPluginImpl;
-import com.fs.starfarer.api.impl.campaign.ids.Commodities;
-import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import lunalib.lunaDebug.LunaDebug;
 import lunalib.lunaSettings.LunaSettings;
 import org.json.JSONObject;
@@ -47,10 +44,10 @@ public class CSSModPlugin extends BaseModPlugin {
                 if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                         util.generateCustomStarSystem(systemOptions);
-                        Global.getLogger(CSSModPlugin.class).info("Generated " + systemId);
+                        Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generated_system"), systemId));
                     }
                 else
-                    Global.getLogger(CSSModPlugin.class).info("Did not generate " + systemId + " since \"isEnabled\" is set to false!");
+                    Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_bad_system"), systemId));
             }
             marketsToOverrideAdmin = util.marketsToOverrideAdmin;
         } catch (Exception e) {
@@ -61,19 +58,7 @@ public class CSSModPlugin extends BaseModPlugin {
     @Override
     public void onNewGameAfterEconomyLoad() {
         // Gives selected markets the admins they're supposed to have (can't do it before economy load)
-        if (marketsToOverrideAdmin != null) {
-            AICoreAdminPluginImpl aiPlugin = new AICoreAdminPluginImpl();
-            for (MarketAPI market : marketsToOverrideAdmin.keySet())
-                switch (marketsToOverrideAdmin.get(market)) {
-                    case Factions.PLAYER:
-                        market.setAdmin(null);
-                        break;
-                    case Commodities.ALPHA_CORE:
-                        market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
-                }
-            // No need for the HashMap afterwards, so clear it and set it to null to minimize memory use, just in case
-            marketsToOverrideAdmin.clear();
-            marketsToOverrideAdmin = null;
-        }
+        CSSUtil.generateAdminsOnCustomStarSystems(marketsToOverrideAdmin);
+        marketsToOverrideAdmin = null;
     }
 }

@@ -79,19 +79,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
         }
 
         Console.showMessage(print);
-
-        HashMap<MarketAPI, String> marketsToOverrideAdmin = util.marketsToOverrideAdmin;
-        if (marketsToOverrideAdmin != null) {
-            AICoreAdminPluginImpl aiPlugin = new AICoreAdminPluginImpl();
-            for (MarketAPI market : marketsToOverrideAdmin.keySet()) {
-                String adminType = (String) marketsToOverrideAdmin.get(market);
-                if (adminType.equals(Factions.PLAYER)) market.setAdmin(null);
-                else if (adminType.equals(Commodities.ALPHA_CORE))
-                    market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
-            }
-            // No need for the HashMap afterwards, so clear it just in case
-            marketsToOverrideAdmin.clear();
-        }
+        CSSUtil.generateAdminsOnCustomStarSystems(util.marketsToOverrideAdmin);
 
         return CommandResult.SUCCESS;
     }

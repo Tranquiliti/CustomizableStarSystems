@@ -12,7 +12,7 @@
 {
 	# An uninhabited star system with desirable planets
 	"css_default":{
-		"isEnabled":true,
+		"isEnabled":false,
 		"setLocation":0, # Location set to a random constellation
 		"hasSystemwideNebula":true,
 		"addCoronalHypershunt":false,
@@ -55,8 +55,287 @@
 	#--------------------------------------#
 
 
+	# An uninhabited star system with desirable planets
+	"css_default_reformed":{
+		"isEnabled":true,
+		"setLocation":0, # Location set to a random constellation
+		"hasSystemwideNebula":true,
+		"addCoronalHypershunt":false,
+		"addDomainCryosleeper":false,
+		"entities":[
+			{
+				"entity":"star",
+				"type":"random_star_giant",
+			},
+			{
+				"entity":"planet",
+				"type":"gas_giant",
+				"orbitRadius":3825,
+				"radius":325,
+				"conditions":["hot","high_gravity","volatiles_abundant"],
+			},
+			{
+				"entity":"planet",
+				"type":"terran",
+				"orbitRadius":4625,
+				"radius":175,
+				"conditions":["habitable","ore_moderate","organics_common","farmland_adequate","ruins_extensive"],
+			},
+			{
+				"entity":"planet",
+				"type":"toxic",
+				"orbitRadius":5850,
+				"radius":150,
+				"conditions":["toxic_atmosphere","ore_rich","rare_ore_moderate","organics_common","volatiles_diffuse"],
+			},
+			{
+				"entity":"planet",
+				"type":"barren",
+				"orbitRadius":6420,
+				"radius":120,
+				"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"],
+			},
+			{"entity":"jump_point","orbitRadius":3200,"name":"Inner System Jump-point"},
+			{"entity":"inactive_gate","orbitRadius":5250},
+			{"entity":"jump_point","orbitRadius":6840,"name":"Fringe Jump-point"},
+			{"entity":"magnetic_field","orbitRadius":325,"focus":1,"size":200},
+			{"entity":"station_research","orbitRadius":425,"focus":1},
+			{"entity":"stable_location","focus":[1,4]},
+			{"entity":"stable_location","focus":[1,5]},
+			{"entity":"comm_relay","focus":[2,4]},
+		],
+	},
 
+	"css_minimum_system":{"entities":[{"entity":"star","name":"Barrenland"},{"entity":"planet","orbitRadius":2000}]},
 
+	"css_minimum_binary_close":{"entities":[
+		{"entity":"non_star_center","numOfCenterStars":2},
+		{"entity":"star","name":"Binaries"},
+		{"entity":"star","name":"Binaries Dos"},
+		{"entity":"planet","orbitRadius":2000}
+	]},
 
+	"css_minimum_binary_far":{"entities":[
+		{"entity":"star","name":"Binario"},
+		{"entity":"star","name":"Binario 2","orbitRadius":1000},
+		{"entity":"planet","orbitRadius":2000}
+	]},
 
+	"css_minimum_trinary_2close":{"entities":[
+		{"entity":"non_star_center","numOfCenterStars":3},
+		{"entity":"star","name":"Trinaries"},
+		{"entity":"star","name":"Trinaries Dos"},
+		{"entity":"star","name":"Trinaries Tres"},
+		{"entity":"planet","orbitRadius":2000}
+	]},
+
+	"css_minimum_trinary_1close_1far":{"entities":[
+		{"entity":"non_star_center","numOfCenterStars":2},
+		{"entity":"star","name":"Trinario 1"},
+		{"entity":"star","name":"Trinario 1 2"},
+		{"entity":"star","name":"Trinario 1 3","orbitRadius":4000},
+		{"entity":"planet","orbitRadius":2000}
+	]},
+
+	"css_minimum_trinary_2far":{"entities":[
+		{"entity":"star","name":"Trinario 2"},
+		{"entity":"star","name":"Trinario 2 2","orbitRadius":2000},
+		{"entity":"star","name":"Trinario 2 3","orbitRadius":4000},
+		{"entity":"planet","orbitRadius":2000}
+	]},
+
+	# A Penelope's Star clone/rip-off
+	"css_penelopes_mirror":{
+		"isEnabled":true,
+		"setLocation":0,
+		"systemBackground":"background4.jpg",
+		"entities":[
+			{ # Primary star
+				"entity":"star",
+				"type":"star_red_giant",
+				"name":"Penelope's Mirror",
+				"radius":1100,
+				"coronaRadius":500,
+			},
+			{ # Thrinakia, lava-filled by primary's tidal forces
+				"entity":"planet",
+				"name":"Thrinakia",
+				"type":"lava_minor",
+				"orbitAngle":30,
+				"radius":110,
+				"orbitRadius":2850,
+				"orbitDays":90,
+				"conditions":[],
+			},
+			{ # Ithaca, terraforming target A
+				"entity":"planet",
+				"name":"Ithaca",
+				"type":"desert",
+				"orbitAngle":50,
+				"radius":150,
+				"orbitRadius":4500,
+				"orbitDays":135,
+				"conditions":[],
+				"customDescriptionId":"planet_ithaca",
+			},
+			{ # Ogygia, terraforming target B, with a jump-point at its L4
+				"entity":"planet",
+				"name":"Ogygia",
+				"type":"barren-bombarded",
+				"orbitAngle":80,
+				"radius":130,
+				"orbitRadius":6800,
+				"orbitDays":225,
+				"conditions":[],
+				"specChanges":{
+					"planetColor":[230,240,255,255],
+				},
+				"customDescriptionId":"planet_ogygia",
+			},
+			{ # Calypso, orbiting Ogygia
+				"entity":"planet",
+				"name":"Calypso",
+				"focus":3,
+				"type":"barren-bombarded",
+				"orbitAngle":80,
+				"radius":60,
+				"orbitRadius":400,
+				"orbitDays":25,
+				"conditions":[],
+				"specChanges":{
+					"texture":"barren02.jpg",
+					"planetColor":[220,230,255,255],
+				},
+			},
+			{ # Aeolus, with magnetic storms and trojan asteroid fields
+				"entity":"planet",
+				"name":"Aeolus",
+				"type":"gas_giant",
+				"orbitAngle":230,
+				"radius":275,
+				"orbitRadius":9500,
+				"orbitDays":450,
+				"conditions":[],
+				"specChanges":{
+					"planetColor":[150,245,255,255],
+					"glowTexture":"clouds_banded01.png",
+					"glowColor":[250,225,55,64],
+					"useReverseLightForGlow":true,
+				},
+			},
+			{ # Dorus, orbiting Aeolus
+				"entity":"planet",
+				"name":"Dorus",
+				"focus":5,
+				"type":"barren_venuslike",
+				"orbitAngle":30,
+				"radius":50,
+				"orbitRadius":700,
+				"orbitDays":22,
+				"conditions":[],
+				"specChanges":{
+					"texture":"venuslike.jpg",
+					"planetColor":[185,245,255,255],
+				},
+			},
+			{ # Xuthus, orbiting Aeolus
+				"entity":"planet",
+				"name":"Xuthus",
+				"focus":5,
+				"type":"toxic_cold",
+				"orbitAngle":120,
+				"radius":70,
+				"orbitRadius":1000,
+				"orbitDays":45,
+				"conditions":[],
+				"specChanges":{
+					"planetColor":[190,235,255,255],
+				},
+			},
+			{ # Telepylus, with an abandoned station and a ring band around it
+				"entity":"planet",
+				"name":"Telepylus",
+				"type":"gas_giant",
+				"orbitAngle":250,
+				"radius":280,
+				"orbitRadius":12050,
+				"orbitDays":650,
+				"conditions":[],
+				"specChanges":{
+					"planetColor":[170,190,255,255],
+					"glowTexture":"clouds_banded01.png",
+					"glowColor":[250,225,155,32],
+				},
+			},
+			{ # Ismara, had mass-driven volatiles, now looted
+				"entity":"planet",
+				"name":"Ismara",
+				"type":"cryovolcanic",
+				"orbitAngle":130,
+				"radius":100,
+				"orbitRadius":14520,
+				"orbitDays":335,
+				"conditions":[],
+				"customDescriptionId":"planet_ismara",
+			},
+			{"entity":"stable_location","focus":[2,4]}, # L4 point of Ithaca
+			{"entity":"jump_point","name":"Penelope's Inner Jump-point","focus":[3,4]}, # L4 point of Ogygia
+			{"entity":"stable_location","focus":[5,3]}, # L3 point of Aeolus
+			{"entity":"asteroid_field","name":"Penelope L4 Asteroids","size":450,"focus":[5,4]}, # L4 point of Aeolus
+			{"entity":"asteroid_field","name":"Penelope L5 Asteroids","size":450,"focus":[5,5]}, # L5 point of Aeolus
+			{"entity":"stable_location","focus":[5,5]}, # L5 point of Aeolus
+			{"entity":"jump_point","name":"Penelope's Outer Jump-point","focus":[8,5]}, # L5 point of Telepylus
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":16000}, # Normally auto-generated
+			{ # Hot asteroid belt
+				"entity":"asteroid_belt",
+				"orbitRadius":2200,
+				"innerBandIndex":3,
+				"outerBandIndex":3,
+				"size":100,
+			},
+			{ # Aeolus' magnetic field
+				"entity":"magnetic_field",
+				"focus":5,
+				"orbitRadius":325, # Aeolus' radius (275) + 50
+				"size":435, # 275 + 160
+				"middleRadius":218, # Half of "size"
+				"outerRadius":525, # 275 + 50 + 200
+				"baseColor":[50,20,100,50],
+				"auroraFrequency":0.5,
+				"auroraColors":[
+					[90,180,40,255],
+					[130,145,90,255],
+					[165,110,145,255],
+					[95,55,160,255],
+					[45,0,130,255],
+					[20,0,130,255],
+					[10,0,150,255],
+				]
+			},
+			{ # Telepylus Station, a staging area for volatiles transport
+				"entity":"station",
+				"name":"Telepylus Station",
+				"type":"station_sporeship_derelict",
+				"focus":8,
+				"orbitAngle":90,
+				"orbitRadius":420,
+				"orbitDays":25,
+				"customDescriptionId":"station_telepylus",
+			},
+			{ # Telepylus' ring band
+				"entity":"ring",
+				"type":"rings_special0",
+				"focus":8,
+				"orbitRadius":600,
+			},
+			{ # The Cyclopeans Asteroid Belt
+				"entity":"asteroid_belt",
+				"name":"The Cyclopeans",
+				"orbitRadius":13750,
+				"innerBandIndex":0,
+				"outerBandIndex":0,
+				"size":200,
+			},
+		],
+	},
 }
