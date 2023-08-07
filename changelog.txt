@@ -21,4 +21,4 @@ Version 1.0.0
 * Added a LunaSnippet for spawning in custom star systems
   - Requires the LunaLib library mod to use
   - Basically a UI version of the above CC commands
-* Updated source code names and packages
+* Updated source code and package names
