@@ -41,19 +41,12 @@
 		# Defaults to false if this entry is omitted
 		"addDomainCryosleeper":false,
 
-		# Which constellation to place this system
+		# Which constellation or location to place this system
 		# 0 -> a random constellation
-		# 1 -> 1st closest constellation to Core Worlds
-		# 2 -> 2nd closest constellation to Core Worlds
-		# ...
-		# Use a very large number to set system location to furthest constellation
+		# n -> n-th closest constellation to Core Worlds (use a very large number to set to furthest constellation)
+		# [x,y] -> place system in specified coordinates (WARNING: Location may overlap with existing star systems)
 		# Defaults to 0 if this entry is omitted
 		"setLocation":0,
-
-		# The coordinate location of this system, overriding the "setLocation" entry
-		# WARNING: Location may overlap with existing Core World systems and/or proc-gen systems
-		# Defaults to "setLocation" entry if this entry is omitted
-		"setLocationOverride":[-6000, -6000],
 
 		# Which background to use in this system
 		# System backgrounds are found in the starsector-core/graphics/backgrounds folder
@@ -65,125 +58,123 @@
 		# Uses default music if this entry is omitted
 		"systemMusic":"music_campaign",
 
-		# Settings for this system's fringe jump-point
-		"fringeJumpPoint":{
-			# How far away this fringe point orbits the system center.
-			# Also determines this system's size, used to avoid overlaps with other systems when using "setLocation"
-			# Defaults to 5000 if this entry is omitted
-			"orbitRadius":5000,
+		# A list of entities to generate within this system
+		# The list *MUST START* with a center entity, which can either be a:
+		#  - a "star" entity, or
+		#  - an "empty_location" entity, followed by a specified number of "star" entities
+		#
+		# All entities after the center entity also require either:
+		#  - a specified "orbitRadius" sub-option, or
+		#  - a "focus" sub-option with a specified stable location (e.g. [2,4])
+		#
+		# If no "jump_point" entities are found here, the system will auto-generate a Fringe Jump-point
+		"entities":[
+			{ # A empty location signifying a non-star center
+				"entity":"empty_location",
 
-			# Name of the entity
-			# Uses default name if this entry is omitted
-			"name":"Test Name Fringe Jump-point",
+				# How many stars should be considered as part of system center?
+				# *REQUIRED* option if "empty_location" is 1st in "entities" list
+				"numOfCenterStars":1,
 
-			# The initial angle to place this jump-point
-			# Defaults to a random angle if this entry is omitted or is set to a negative number
-			"orbitAngle":-1,
+				# How far away the stars orbit the system center.
+				# Defaults to 2000 if this entry is omitted or set to 0
+				"orbitRadius":2000,
 
-			# How long it takes for this jump-point to complete its orbit
-			# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
-			"orbitDays":0,
-		},
-
-		# Settings for the stars in this system's center
-		# *REQUIRED* option
-		"starsInSystemCenter":{
-			# A list of stars to generate in the center of the system
-			# *REQUIRED* option, as custom star systems must have at least 1 center star to function
-			# Having at least 2 stars in this list will make stars orbit the system center like a binary or trinary system
-			"stars":[
-				{
-					# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
-					# "random_star_giant" chooses a random vanilla star giant
-					# WARNING: Nebulas are not supported
-					# Defaults to "star_red_dwarf" if this entry is omitted
-					"type":"random_star_giant",
-
-					# Name of this star
-					# If this entry is on first star, it will also change this system's name
-					# Defaults to a random proc-gen name if this entry is omitted
-					"name":"Placeholder Star",
-
-					# Size of this star
-					# Defaults to proc-gen settings if this entry is omitted or set to 0
-					"radius":0,
-
-					# Size of this star's corona
-					# Defaults to proc-gen settings if this entry is omitted or set to 0
-					"coronaRadius":0,
-
-					# Chance for solar flares to appear in this star's corona
-					# Defaults to proc-gen settings if this entry is omitted or set to a negative number
-					"flareChance":1.0,
-
-					# Changes to this star's appearance
-					# Uses default appearance if this entry is omitted
-					# All sub-options within "specChanges" can be individually omitted as well
-					"specChanges":{
-						# Texture of star's surface
-						# Texture must be preloaded into the game via "graphics" in Starsector's settings.json
-						"texture":"castiron.jpg",
-
-						# (See "specChanges" option in the 1st entry of "orbitingBodies" to see full list of sub-options)
-					},
-
-					# The ID of the custom description to use for this star
-					# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-					# Uses default description if this entry is omitted
-					"customDescriptionId":"star_blue_giant",
-				},
-			],
-
-			#----------------------------------------------------------------#
-			# Options below only take effect if "stars" has at least 2 stars #
-			#----------------------------------------------------------------#
-
-			# How far away the stars orbit the system center.
-			# Defaults to 2000 if this entry is omitted or set to 0
-			"orbitRadius":2000,
-
-			# The initial angle to place the first star
-			# Defaults to a random angle if this entry is omitted or is set to a negative number
-			"orbitAngle":0,
-
-			# How long it takes for the center stars to complete their orbits
-			# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
-			"orbitDays":0,
-		},
-
-		# A list of planets or additional stars in this system
-		"orbitingBodies":[
-			# An example planet orbiting the system center
-			{
-				# Planet IDs are found in starsector-core/data/campaign/procgen/planet_gen_data.csv
-				# Defaults to "barren" if this entry is omitted
-				"type":"barren",
-
-				# How far away this planet orbits the focus.
-				# *REQUIRED* option for each planet or star
-				"orbitRadius":1111,
-
-				# The initial angle to place this planet
+				# The initial angle to place the first star
 				# Defaults to a random angle if this entry is omitted or is set to a negative number
 				"orbitAngle":0,
 
-				# How long it takes for this planet to complete its orbit
+				# How long it takes for the center stars to complete their orbits
 				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
 				"orbitDays":0,
-				
-				# Indicates the entity this planet will orbit
-				# 0 -> this planet orbits system center
-				# 1 -> this planet orbits 1st entity in the "orbitingBodies" list
-				# 2 -> this planet orbits 2nd entity in the "orbitingBodies" list
-				# ...
-				# A planet cannot have a focus index equal or greater than its own position in the "orbitingBodies" list
-				# (E.g. 1st planet must have "focus" = 0, 2nd planet must have "focus" < 2, 3rd planet must have "focus" < 3, and so on)
-				# Defaults to 0 if this entry is omitted
-				"focus":0,
+			},
+			{ # A star, made as part of the system center
+				"entity":"star",
 
-				# Name of this planet
+				# Type of star to make
+				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
+				# "random_star_giant" chooses a random vanilla star giant
+				# WARNING: Nebulas are not supported
+				# Defaults to "star_red_dwarf" if this entry is omitted
+				"type":"random_star_giant",
+
+				# Name of this star
+				# If this entity is the first star in list, it will also change this system's name
 				# Defaults to a random proc-gen name if this entry is omitted
+				"name":"Placeholder Star",
+
+				# Size of this star
+				# Defaults to proc-gen settings if this entry is omitted or set to 0
+				"radius":0,
+
+				# Size of this star's corona
+				# Defaults to proc-gen settings if this entry is omitted or set to 0
+				"coronaRadius":0,
+
+				# Chance for solar flares to appear in this star's corona
+				# Defaults to proc-gen settings if this entry is omitted or set to a negative number
+				"flareChance":1.0,
+
+				# See entry with "planet" entity for a detailed explanation of this option
+				"specChanges":{"texture":"castiron.jpg"},
+
+				# The ID of the custom description to use for this entity
+				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
+				# Uses default description if this entry is omitted
+				"customDescriptionId":"star_blue_giant",
+			},
+			{ # A star NOT in the system center
+				"entity":"star",
+				"type":"random_star_giant",
+				"name":"Placeholder Star",
+				"radius":0,
+				"coronaRadius":0,
+				"flareChance":1.0,
+				"specChanges":{"texture":"castiron.jpg"},
+				"customDescriptionId":"star_blue_giant",
+
+				# Indicates the entity this star will orbit
+				# Number is based on index of the "entities" list, which starts at 0
+				# (e.g. 1st entry is index 0, 2nd entry is index 1, 3rd entry is index 2,...)
+				# The entity's focus index cannot be equal or greater than its own position in the "entities" list
+				# Defaults to 0 if this entry is omitted
+				#
+				# Alternatively can also take [f,l] as a parameter to
+				# set this entity's location to another entity's stable point, where:
+				#  - f = index of the "entity" and
+				#  - l = lagrange point location
+				# (e.g [1,4] would put this entity at the L4 point of the "entity" in index 1)
+				# 'l' can be anywhere from 0 (directly on top of focus) to 5 (for L5 point)
+				#
+				# Alternate "focus" parameter is *REQUIRED* if "orbitRadius" is not specified.
+				"focus":1,
+
+				# How far away this star orbits the focus.
+				# *REQUIRED* if "focus" sub-option is not specified or contains only a number
+				"orbitRadius":1111,
+
+				# The initial angle to place this star
+				# Defaults to a random angle if this entry is omitted or is set to a negative number
+				"orbitAngle":0,
+
+				# How long it takes for this star to complete its orbit
+				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
+				"orbitDays":0,
+			},
+			{ # A planet orbiting system center
+				"entity":"planet",
+
+				"orbitRadius":1111,
+				"orbitAngle":0,
+				"orbitDays":0,
+				"focus":0,
 				"name":"Placeholder Planet",
+				"customDescriptionId":"planet_jangala",
+
+				# Type of planet to make
+				# Planet IDs are found in starsector-core/data/campaign/procgen/planet_gen_data.csv
+				# Defaults to "barren" if this entry is omitted
+				"type":"barren",
 
 				# Size of this planet
 				# Defaults to proc-gen settings if this entry is omitted or is set to 0
@@ -247,19 +238,6 @@
 					"decivilized_subpop",
 				],
 
-				# Entities stationed on this planet's L3, L4, or L5 stable points
-				# (A full list of eligible entities is found on the 2nd entry in the "orbitingBodies" list)
-				# Defaults to no entities if this entry is omitted
-				"entitiesAtStablePoints":[
-					,                      # No entity on L3 point
-					{"type":"jump_point"}, # Entity on L4 point
-					[ # Multiple entities on L5 point
-						{"type":"jump_point"},
-						{"type":"jump_point"},
-						{"type":"jump_point"},
-					],
-				],
-
 				# Changes to this planet's appearance
 				# Uses default appearance if this entry is omitted
 				# All sub-options within "specChanges" can be individually omitted as well
@@ -320,11 +298,6 @@
 					# Should only be used to get modded planets that either do not spawn as proc-gen entities or spawn outside proc-gen parameters
 					"typeOverride":["barren","Barren"],
 				},
-
-				# The ID of the custom description to use for this planet
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
-				"customDescriptionId":"planet_jangala",
 
 				# Population size of this planet's market
 				# Defaults to 0, or uninhabited, if this entry is omitted
@@ -394,208 +367,86 @@
 					"cryorevival",
 				],
 			},
-
-			# An example star orbiting the 1st orbiting body
-			{
-				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
-				# "random_star_giant" chooses a random vanilla star giant
-				# Nebulas are not supported
-				# *REQUIRED* option if making an orbiting star
-				"type":"star_orange",
-
-				# How far away this star orbits the focus.
-				# *REQUIRED* option for each planet or star
-				"orbitRadius":1111,
-
-				# The initial angle to place this star
-				# Defaults to a random angle if this entry is omitted or is set to a negative number
+			{ # A jump-point in the planet's L5 point
+				"entity":"jump_point",
+				"focus":[3,5],
+				"orbitRadius":100,
+				"orbitAngle":-1,
+				"orbitDays":0,
+				"name":"Test Name Gate",
+				"customDescriptionId":"inactive_gate",
+			},
+			{ # A normal empty location
+				# NOTE: Orbits are broken for this entity; it stays still in its orbit position, completely ignoring "orbitDays"
+				"entity":"empty_location",
+				"focus":0,
+				"orbitRadius":2000,
 				"orbitAngle":0,
+				"orbitDays":0,
+			},
+			{ # A station (in this case, a populated station)
+				"entity":"station",
+				"focus":0,
+				"orbitRadius":100,
+				"orbitAngle":-1,
+				"orbitDays":0,
+				"name":"Placeholder Station",
+				"customDescriptionId":"station_chupi_orco",
 
-				# How long it takes for this star to complete its orbit
-				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
+				# Type of station graphic to use
+				# Station graphics are found in starsector-core/graphics/stations
+				# Defaults to "station_side06" if this entry is omitted
+				"type":"station_mining00",
+
+				# Faction owning this station
+				# Defaults to "neutral" if this entry is omitted
+				"factionId":"independent",
+
+				# Population size of this station's market
+				# Defaults to 0, or abandoned, if this entry is omitted
+				"marketSize":3,
+
+				#-------------------------------------------------------------#
+				# Station entries below require "marketSize" to be at least 1 #
+				#-------------------------------------------------------------#
+				"freePort":false,
+				"aiCoreAdmin":false,
+				"conditions":[],
+				"industries":["population","spaceport"],
+			},
+			{ # Remnant battlestation
+				"entity":"remnant_station",
+				"focus":0,
+				"orbitRadius":100,
+				"orbitAngle":-1,
 				"orbitDays":0,
 
-				# Indicates the entity this star will orbit
-				# 0 -> this star orbits system center
-				# 1 -> this star orbits 1st entity in the "orbitingBodies" list
-				# 2 -> this star orbits 2nd entity in the "orbitingBodies" list
-				# ...
-				# A star cannot have a focus index equal or greater than its own position in the "orbitingBodies" list
-				# (E.g. 1st star must have "focus" = 0, 2nd star must have "focus" < 2, 3rd star must have "focus" < 3, and so on)
-				# Defaults to 0 if this entry is omitted
-				"focus":1,
-
-				# Name of this star
-				# Defaults to a random proc-gen name if this entry is omitted
-				"name":"Placeholder Star",
-
-				# Size of this star
-				# Defaults to proc-gen settings if this entry is omitted or is set to 0
-				"radius":0,
-
-				# Size of this star's corona
-				# Defaults to proc-gen settings if this entry is omitted or is set to 0
-				"coronaRadius":0,
-
-				# Chance for solar flares to appear in this star's corona
-				# Defaults to proc-gen settings if this entry is omitted or set to a negative number
-				"flareChance":0.0,
-
-				# List of eligible entities that can be placed in "entitiesAtStablePoints"
-				"entitiesAtStablePoints":[
-					# Asteroid field
-					{
-						"type":"asteroid_field",
-
-						# Name of the asteroid field
-						# Uses default name if this entry is omitted
-						"name":"Test Name Field",
-
-						# Size of the asteroid field
-						# Defaults to 400 if this entry is omitted
-						"size":400,
-					},
-
-					# Remnant battlestation
-					{
-						"type":"remnant_station",
-
-						# Does this Remnant station start out damaged?
-						# Defaults to false if this entry is omitted
-						"isDamaged":false,
-					},
-
-					# Neutral entities
-					{
-						"type":"inactive_gate",
-						#"type":"stable_location",
-						#"type":"jump_point",
-
-						# Name of the entity
-						# Uses default name if this entry is omitted
-						"name":"Test Name Gate",
-
-						# The ID of the custom description to use for this entity
-						# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-						# Uses default description if this entry is omitted
-						"customDescriptionId":"inactive_gate",
-					},
-
-					# System objectives
-					{
-						"type":"comm_relay",
-						#"type":"comm_relay_makeshift",
-						#"type":"nav_buoy",
-						#"type":"nav_buoy_makeshift",
-						#"type":"sensor_array",
-						#"type":"sensor_array_makeshift",
-
-						# Name of the system objective
-						# Uses default name if this entry is omitted
-						"name":"Test Name Comm Relay",
-
-						# Faction owning the objective
-						# Defaults to "neutral", or unactivated, if this entry is omitted
-						"factionId":"neutral",
-
-						# The ID of the custom description to use for this entity
-						# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-						# Uses default description if this entry is omitted
-						"customDescriptionId":"comm_relay",
-					},
-
-					# Stations (in this case, an abandoned station)
-					# (An example of a populated station can be found in the "systemFeatures" list)
-					{
-						"type":"station",
-
-						# Name of the station
-						# Uses default name if this entry is omitted
-						"name":"Placeholder Station",
-
-						# Type of station graphic to use
-						# Station graphics are found in starsector-core/graphics/stations
-						# Defaults to "station_side06" if this entry is omitted
-						"stationType":"station_side06",
-
-						# Faction owning this station
-						# Defaults to "neutral" if this entry is omitted
-						"factionId":"neutral",
-
-						# Population size of this station's market
-						# Defaults to 0, or abandoned, if this entry is omitted
-						"marketSize":0,
-
-						# The ID of the custom description to use for this station
-						# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-						# Uses default description if this entry is omitted
-						"customDescriptionId":"station_tigra_city",
-
-						#-------------------------------------------------------------#
-						# Station entries below require "marketSize" to be at least 1 #
-						#-------------------------------------------------------------#
-						"freePort":false,
-						"aiCoreAdmin":false,
-						"conditions":[],
-						"industries":["population","spaceport"],
-					},
-
-					# A planet located in a stable point
-					# (Similar to 1st entry in "orbitingBodies", but without any orbit-related options)
-					# WARNING: This planet will count as an eligible target planet for "focus" options
-					{
-						"type":"planet",
-
-						"planetOptions":{
-							"type":"barren",
-							"name":"Planet II-L3",
-							"radius":100,
-							"conditions":["no_atmosphere"],
-							"specChanges":{"texture":"bread.png"},
-							"customDescriptionId":"planet_kazeron",
-							"marketSize":0,
-							"factionId":"persean",
-							"freePort":false,
-							"aiCoreAdmin":false,
-							"industries":["population","spaceport"],
-						},
-					},
-				],
-
-				# Changes to this star's appearance
-				# Uses default appearance if this entry is omitted
-				# All sub-options within "specChanges" can be individually omitted as well
-				"specChanges":{
-					# Texture of star's surface
-					# Texture must be preloaded into the game via "graphics" in Starsector's settings.json
-					"texture":"castiron.jpg",
-
-					# (See "specChanges" option in the 1st entry of "orbitingBodies" to see full list of sub-options)
-				},
-
-				# The ID of the custom description to use for this star
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
-				"customDescriptionId":"star_blue_giant",
+				# Does this Remnant station start out damaged?
+				# Defaults to false if this entry is omitted
+				"isDamaged":false,
 			},
+			{ # Asteroid field
+				"entity":"asteroid_field",
+				"focus":0,
+				"orbitRadius":100,
+				"orbitAngle":-1,
+				"orbitDays":0,
+				"name":"Test Name Field",
 
-			# More planets or stars can be added in the "orbitingBodies" list using the above formats
-
-		],
-
-		# A list of additional system features to generate in this system
-		"systemFeatures":[
-			# Accretion disk
-			{
-				"type":"accretion_disk",
+				# Size of the asteroid field
+				# Defaults to 400 if this entry is omitted
+				"size":400,
+			},
+			{ # Accretion disk
+				"entity":"accretion_disk",
 				"focus":0,
 			},
-
-			# Magnetic field
-			{
-				"type":"magnetic_field",
-				"orbitRadius":100, # Inner radius of visual band
+			{ # Magnetic field
+				"entity":"magnetic_field",
 				"focus":0,
+
+				# Inner radius of visual band
+				"orbitRadius":100,
 
 				# Size, or band width, of the magnetic field
 				# Defaults to 300 if this entry is omitted
@@ -631,15 +482,19 @@
 					[20,220,70,255],
 				],
 			},
+			{ # Ring bands
+				"entity":"ring",
+				"focus":0,
 
-			# Ring bands
-			{
+				# Radius of the ring band
+				"orbitRadius":100,
+
+				# Type of ring band to make
+				# Defaults to "rings_dust0" if this entry is omitted
 				"type":"rings_dust0",
 				#"type":"rings_ice0",
 				#"type":"rings_special0",
 				#"type":"rings_asteroids0",
-				"orbitRadius":100,
-				"focus":0,
 
 				# Name of the ring band
 				# Uses default name if this entry is omitted
@@ -651,15 +506,10 @@
 				# Defaults to 1 if this entry is omitted
 				"bandIndex":1,
 			},
-
-			# Asteroid belt
-			{
-				"type":"asteroid_belt",
-				"orbitRadius":100,
+			{ # Asteroid belt
+				"entity":"asteroid_belt",
 				"focus":0,
-
-				# Name of the asteroid belt
-				# Uses default name if this entry is omitted
+				"orbitRadius":100,
 				"name":"Test Name Belt",
 
 				# Index of the ring texture to use for the asteroid belt's inner ring
@@ -676,147 +526,41 @@
 				# Defaults to 256 if this entry is omitted
 				"size":256
 			},
+			{ # Custom entities (also the default option for handling unrecognized or modded entities)
+				# Custom entity IDs can be found found in starsector-core/data/config/custom_entities.json
+				"entity":"inactive_gate",
+				#"entity":"stable_location",
+				#"entity":"comm_relay",
+				#"entity":"comm_relay_makeshift",
+				#"entity":"nav_buoy",
+				#"entity":"nav_buoy_makeshift",
+				#"entity":"sensor_array",
+				#"entity":"sensor_array_makeshift",
+				#"entity":"derelict_cryosleeper",
+				#"entity":"coronal_tap",
 
-			# Asteroid field
-			{
-				"type":"asteroid_field",
+				# Salvage entities like those below are also supported
+				# Salvage entity IDs can be found in starsector-core/data/campaign/procgen/salvage_entity_gen_data.csv
+				#"entity":"orbital_habitat",
+				#"entity":"station_research",
+				#"entity":"station_mining_remnant",
+
+				"focus":0,
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
-				"focus":0,
-
-				# Name of the asteroid field
-				# Uses default name if this entry is omitted
-				"name":"Test Name Field",
-
-				# Size of the asteroid field
-				# Defaults to 400 if this entry is omitted
-				"size":400,
-			},
-
-			# Remnant battlestation
-			{
-				"type":"remnant_station",
-				"orbitRadius":100,
-				"orbitAngle":-1,
-				"orbitDays":0,
-				"focus":0,
-
-				# Does this Remnant station start out damaged?
-				# Defaults to false if this entry is omitted
-				"isDamaged":false,
-			},
-
-			# Neutral entities
-			{
-				"type":"inactive_gate",
-				#"type":"stable_location",
-				#"type":"jump_point",
-				"orbitRadius":100,
-				"orbitAngle":-1,
-				"orbitDays":0,
-				"focus":0,
-
-				# Name of the entity
-				# Uses default name if this entry is omitted
 				"name":"Test Name Gate",
-
-				# The ID of the custom description to use for this entity
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
+				"factionId":"neutral",
 				"customDescriptionId":"inactive_gate",
 			},
 
-			# System objectives
-			{
-				"type":"comm_relay",
-				#"type":"comm_relay_makeshift",
-				#"type":"nav_buoy",
-				#"type":"nav_buoy_makeshift",
-				#"type":"sensor_array",
-				#"type":"sensor_array_makeshift",
-				"orbitRadius":100,
-				"orbitAngle":-1,
-				"orbitDays":0,
-				"focus":0,
+			# -- You can add as much entities as desired in the "entities" list -- #
 
-				# Name of the system objective
-				# Uses default name if this entry is omitted
-				"name":"Test Name Comm Relay",
 
-				# Faction owning the objective
-				# Defaults to "neutral", or unactivated, if this entry is omitted
-				"factionId":"neutral",
-
-				# The ID of the custom description to use for this entity
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
-				"customDescriptionId":"comm_relay",
-			},
-
-			# Stations (in this case, a populated station)
-			{
-				"type":"station",
-				"orbitRadius":100,
-				"orbitAngle":-1,
-				"orbitDays":0,
-				"focus":0,
-
-				# Name of the station
-				# Uses default name if this entry is omitted
-				"name":"Placeholder Station",
-
-				# Type of station graphic to use
-				# Station graphics are found in starsector-core/graphics/stations
-				# Defaults to "station_side06" if this entry is omitted
-				"stationType":"station_mining00",
-
-				# Faction owning this station
-				# Defaults to "neutral" if this entry is omitted
-				"factionId":"independent",
-
-				# Population size of this station's market
-				# Defaults to 0, or abandoned, if this entry is omitted
-				"marketSize":3,
-
-				# The ID of the custom description to use for this station
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
-				"customDescriptionId":"station_chupi_orco",
-
-				#-------------------------------------------------------------#
-				# Station entries below require "marketSize" to be at least 1 #
-				#-------------------------------------------------------------#
-				"freePort":false,
-				"aiCoreAdmin":false,
-				"conditions":[],
-				"industries":["population","spaceport"],
-			},
-
-			# Salvage entities
-			# Salvage entity IDs are found in starsector-core/data/campaign/procgen/salvage_entity_gen_data.csv
-			# Is the default option for handling unrecognized or modded entities
-			{
-				"type":"orbital_habitat",
-				"orbitRadius":100,
-				"orbitAngle":-1,
-				"orbitDays":0,
-				"focus":0,
-
-				# Name of the salvage entity
-				# Uses default name if this entry is omitted
-				"name":"Test Name Orbital Habitat",
-
-				# The ID of the custom description to use for this entity
-				# Description IDs can be found in starsector-core/data/strings/descriptions.csv
-				# Uses default description if this entry is omitted
-				"customDescriptionId":"station_telepylus",
-			},
 		],
 	},
 
-	# More custom star systems can be added below, using the above format
-
+	# -- You can add more custom star systems, following the format described above, if desired --#
 
 
 }

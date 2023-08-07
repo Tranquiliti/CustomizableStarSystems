@@ -5,10 +5,7 @@
 
 {
 	# A tiny, bare-minimum star system with one default star and one default planet
-	"css_minimum_system":{
-		"starsInSystemCenter":{"stars":[{}]},
-		"orbitingBodies":[{"orbitRadius":2000}],
-	},
+	"css_minimum_system":{"entities":[{"entity":"star"},{"entity":"planet","orbitRadius":2000}]},
 
 
 	#--------------------------------------#
@@ -18,143 +15,113 @@
 	# (Less overall HA impact, larger area for Slipstream detection)
 
 	# Gas Giant -> Plasma Dynamo Volatiles
-	"css_system_set_1":{
+	"css_optimal_set1":{
 		"setLocation":1,
-		#"setLocationOverride":[-6000,-6000], # If desired, uncomment this option and set it to a desirable location
-		"fringeJumpPoint":{"orbitRadius":3500},
-		"starsInSystemCenter":{"stars":[{
-			"name":"Max Volatiles", # Rename this if desired
-			"type":"star_red_dwarf",
-			"radius":500,
-			"coronaRadius":438,
-			"flareChance":0.0,
-		}]},
-		"orbitingBodies":[{
-			"type":"gas_giant",
-			"orbitRadius":2750,
-			"radius":250,
-			"conditions":[
-				"high_gravity",
-				"volatiles_plentiful",
-			],
-			"entitiesAtStablePoints":[
-				,
-				{"type":"comm_relay"},
-				{"type":"sensor_array"}
-			],
-		}],
-		"systemFeatures":[
-			{"type":"inactive_gate","orbitRadius":1750},
-			{"type":"nav_buoy","orbitRadius":3800},
+		"entities":[
+			{
+				"entity":"star",
+				"type":"star_red_dwarf",
+				"radius":500,
+				"coronaRadius":438,
+				"flareChance":0.0,
+			},
+			{
+				"entity":"planet",
+				"type":"gas_giant",
+				"orbitRadius":2750,
+				"radius":250,
+				"conditions":["high_gravity","volatiles_plentiful"],
+			},
+			{"entity":"comm_relay","focus":[1,4]},
+			{"entity":"sensor_array","focus":[1,5]},
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":3500},
+			{"entity":"inactive_gate","orbitRadius":1750},
+			{"entity":"nav_buoy","orbitRadius":3800},
 		],
 	},
 
 	# Barren -> Synchrotron Fuel Production, Catalytic Core Refining
-	"css_system_set_2":{
-		"setLocation":2,
-		#"setLocationOverride":[-6000,-6000],
-		"fringeJumpPoint":{"orbitRadius":1500},
-		"starsInSystemCenter":{"stars":[{
-			"name":"Max Fuel and Metals", # Rename this if desired
-			"type":"star_browndwarf",
-			"radius":400,
-			"coronaRadius":350,
-			"flareChance":0.0,
-		}]},
-		"orbitingBodies":[{
-			"type":"barren",
-			"orbitRadius":1200,
-			"radius":90,
-			"conditions":[
-				"no_atmosphere",
-				"ore_ultrarich",
-				"rare_ore_moderate",
-				"volatiles_trace",
-			],
-			"entitiesAtStablePoints":[
-				,
-				{"type":"nav_buoy"}
-			]
-		}],
-		"systemFeatures":[
-			{"type":"comm_relay","orbitRadius":1650},
-			{"type":"sensor_array","orbitRadius":1300},
-			{"type":"inactive_gate","orbitRadius":900},
+	"css_optimal_set2":{
+		"setLocation":3,
+		"entities":[
+			{
+				"entity":"star",
+				"type":"star_browndwarf",
+				"radius":400,
+				"coronaRadius":350,
+				"flareChance":0.0,
+			},
+			{
+				"entity":"planet",
+				"type":"barren",
+				"orbitRadius":1200,
+				"radius":90,
+				"conditions":["no_atmosphere","ore_ultrarich","rare_ore_moderate","volatiles_trace"],
+			},
+			{"entity":"nav_buoy","focus":[1,4]},
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":1500},
+			{"entity":"comm_relay","orbitRadius":1650},
+			{"entity":"sensor_array","orbitRadius":1300},
+			{"entity":"inactive_gate","orbitRadius":900},
 		],
 	},
 
-	# Jungle -> Soil Nanites Farming, Biofactory Embryo Light Industry, Cryoarithmetic Engine High Command (with or without Orbital Fusion Lamp)
-	"css_system_set_3":{
-		"setLocation":3,
-		#"setLocationOverride":[-6000,-6000],
-		"fringeJumpPoint":{"orbitRadius":4000},
-		"starsInSystemCenter":{"stars":[{
-			"name":"Max Food and Goods", # Rename this if desired
-			"type":"star_orange",
-			"radius":650,
-			"coronaRadius":488,
-			"flareChance":0.0,
-		}]},
-		"orbitingBodies":[{
-			"type":"jungle",
-			"orbitRadius":3000,
-			"radius":130,
-			"conditions":[
-				"habitable",
-				"hot",
-				"mild_climate",
-				"ore_ultrarich",
-				"organics_plentiful",
-				"farmland_bountiful",
-				"solar_array",
-			],
-			"entitiesAtStablePoints":[
-				,
-				{"type":"comm_relay"},
-				{"type":"nav_buoy"}
-			],
-		}],
-		"systemFeatures":[
-			{"type":"inactive_gate","orbitRadius":2000},
-			{"type":"sensor_array","orbitRadius":4500},
+	# Jungle -> Soil Nanites Farming, Biofactory Embryo Light Industry, Cryoarithmetic Engine High Command
+	"css_optimal_set3":{
+		"setLocation":5,
+		"entities":[
+			{
+				"entity":"star",
+				"type":"star_orange",
+				"radius":650,
+				"coronaRadius":488,
+				"flareChance":0.0,
+			},
+			{
+				"entity":"planet",
+				"type":"jungle",
+				"orbitRadius":3000,
+				"radius":130,
+				"conditions":[
+					"habitable","hot","mild_climate","ore_ultrarich",
+					"organics_plentiful","farmland_bountiful","solar_array",
+				],
+			},
+			{"entity":"comm_relay","focus":[1,4]},
+			{"entity":"nav_buoy","focus":[1,5]},
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":4000},
+			{"entity":"inactive_gate","orbitRadius":2000},
+			{"entity":"sensor_array","orbitRadius":4500},
 		],
 	},
 
 	# Toxic -> Autonomous Mining Bore Organics Mining
-	"css_system_set_4":{
-		"setLocation":4,
-		#"setLocationOverride":[-6000,-6000],
-		"fringeJumpPoint":{"orbitRadius":4000},
-		"starsInSystemCenter":{"stars":[{
-			"name":"Max Deposits", # Rename this if desired
-			"type":"star_yellow",
-			"radius":800,
-			"coronaRadius":600,
-			"flareChance":0.0,
-		}]},
-		"orbitingBodies":[{
-			"type":"toxic",
-			"orbitRadius":3500,
-			"radius":100,
-			"conditions":[
-				#"tectonic_activity", # Required for Ultrarich Rare Ore Deposits
-				"toxic_atmosphere",
-				"ore_ultrarich",
-				"rare_ore_moderate", # Max possible without other hazard-increasing conditions
-				#"rare_ore_ultrarich", # Requires Tectonic Activity; commented out since more Rare Ore production might not outweigh the increased hazard rating
-				"volatiles_plentiful",
-				"organics_plentiful",
-			],
-			"entitiesAtStablePoints":[
-				,
-				,
-				{"type":"nav_buoy"}
-			],
-		}],
-		"systemFeatures":[
-			{"type":"sensor_array","orbitRadius":4250},
-			{"type":"comm_relay","orbitRadius":2250},
-			{"type":"inactive_gate","orbitRadius":1650},
+	"css_optimal_set4":{
+		"setLocation":7,
+		"entities":[
+			{
+				"entity":"star",
+				"type":"star_yellow",
+				"radius":800,
+				"coronaRadius":600,
+				"flareChance":0.0,
+			},
+			{
+				"entity":"planet",
+				"type":"toxic",
+				"orbitRadius":3500,
+				"radius":100,
+				"conditions":[
+					"tectonic_activity","toxic_atmosphere",
+					"ore_ultrarich","rare_ore_ultrarich",
+					"volatiles_plentiful","organics_plentiful",
+				],
+			},
+			{"entity":"nav_buoy","focus":[1,5]},
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":4000},
+			{"entity":"sensor_array","orbitRadius":4250},
+			{"entity":"comm_relay","orbitRadius":2250},
+			{"entity":"inactive_gate","orbitRadius":1650},
 		],
 	},
 
@@ -170,15 +137,16 @@
 	#   -> Tectonic Activity, Extreme Tectonic Activity, High Gravity, Extreme Heat, Irradiated
 	"css_perfect_planets_system":{
 		"isEnabled":true,
-		"starsInSystemCenter":{"stars":[{
-			"type":"star_browndwarf",
-			"radius":400,
-			"coronaRadius":350,
-		}]},
-		"fringeJumpPoint":{"orbitRadius":12800},
-		"orbitingBodies":[
-			
+		"entities":[
+			{ # A small star to hold all these planets together
+				"entity":"star",
+				"type":"star_browndwarf",
+				"radius":400,
+				"coronaRadius":350,
+			},
+
 			{ # cat_giant
+				"entity":"planet",
 				"type":"gas_giant",
 				#"type":"ice_giant",
 				"orbitRadius":1000,
@@ -191,6 +159,7 @@
 			},
 
 			{ # cat_lava
+				"entity":"planet",
 				"type":"lava",
 				"orbitRadius":1750,
 				"radius":100,
@@ -204,6 +173,7 @@
 			},
 
 			{ # lava_minor
+				"entity":"planet",
 				"type":"lava_minor",
 				"orbitRadius":2350,
 				"radius":100,
@@ -217,6 +187,7 @@
 			},
 
 			{ # cat_frozen
+				"entity":"planet",
 				"type":"frozen",
 				#"type":"frozen1",
 				#"type":"frozen2",
@@ -232,6 +203,7 @@
 			},
 
 			{ # cat_cryovolcanic
+				"entity":"planet",
 				"type":"cryovolcanic",
 				"orbitRadius":3640,
 				"radius":130,
@@ -245,6 +217,7 @@
 			},
 
 			{ # cat_barren
+				"entity":"planet",
 				"type":"barren",
 				#"type":"barren_castiron",
 				#"type":"barren2",
@@ -263,6 +236,7 @@
 			},
 
 			{ # rocky_unstable
+				"entity":"planet",
 				"type":"rocky_unstable",
 				"orbitRadius":4840,
 				"radius":90,
@@ -276,6 +250,7 @@
 			},
 
 			{ # rocky_ice
+				"entity":"planet",
 				"type":"rocky_ice",
 				"orbitRadius":5420,
 				"radius":90,
@@ -289,6 +264,7 @@
 			},
 
 			{ # irradiated
+				"entity":"planet",
 				"type":"irradiated",
 				"orbitRadius":6000,
 				"radius":90,
@@ -300,6 +276,7 @@
 			},
 
 			{ # cat_toxic
+				"entity":"planet",
 				"type":"toxic",
 				"orbitRadius":6590,
 				"radius":100,
@@ -315,6 +292,7 @@
 			},
 
 			{ # toxic_cold
+				"entity":"planet",
 				"type":"toxic_cold",
 				"orbitRadius":7190,
 				"radius":100,
@@ -324,12 +302,13 @@
 					"toxic_atmosphere",
 					"ore_ultrarich",
 					"rare_ore_moderate",
-					#"rare_ore_ultrarich", # Requires Tectonic Activity
+					#"rare_ore_ultrarich",
 					"volatiles_plentiful",
 				],
 			},
 
 			{ # cat_hab4
+				"entity":"planet",
 				"type":"terran",
 				"orbitRadius":7820,
 				"radius":130,
@@ -346,6 +325,7 @@
 			},
 
 			{ # terran-eccentric
+				"entity":"planet",
 				"type":"terran-eccentric",
 				"orbitRadius":8480,
 				"radius":130,
@@ -363,6 +343,7 @@
 			},
 
 			{ # jungle
+				"entity":"planet",
 				"type":"jungle",
 				"orbitRadius":9140,
 				"radius":130,
@@ -380,6 +361,7 @@
 			},
 
 			{ # water
+				"entity":"planet",
 				"type":"water",
 				"orbitRadius":9800,
 				"radius":130,
@@ -396,6 +378,7 @@
 			},
 
 			{ # arid
+				"entity":"planet",
 				"type":"arid",
 				"orbitRadius":10460,
 				"radius":130,
@@ -413,6 +396,7 @@
 			},
 
 			{ # tundra
+				"entity":"planet",
 				"type":"tundra",
 				"orbitRadius":11120,
 				"radius":130,
@@ -430,6 +414,7 @@
 			},
 
 			{ # cat_hab2
+				"entity":"planet",
 				"type":"desert",
 				#"type":"desert1",
 				"orbitRadius":11780,
@@ -445,6 +430,7 @@
 			},
 
 			{ # cat_hab1
+				"entity":"planet",
 				"type":"barren-desert",
 				"orbitRadius":12400,
 				"radius":90,
@@ -457,6 +443,7 @@
 				],
 			},
 
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":12800},
 		],
 	},
 
@@ -464,22 +451,21 @@
 	#--------------------------------------#
 
 
-	# A Penelope's Star clone/rip-off (compare to the real one in starsector-core/data/scripts/world/systems/Penelope.java)
+	# A Penelope's Star clone/rip-off
 	"css_penelopes_mirror":{
 		"isEnabled":true,
 		"setLocation":0,
 		"systemBackground":"background4.jpg",
-		"fringeJumpPoint":{"orbitRadius":16000}, # Normally auto-generated
-		"starsInSystemCenter":{
-			"stars":[{ # Primary star
+		"entities":[
+			{ # Primary star
+				"entity":"star",
 				"type":"star_red_giant",
 				"name":"Penelope's Mirror",
 				"radius":1100,
 				"coronaRadius":500,
-			}],
-		},
-		"orbitingBodies":[
+			},
 			{ # Thrinakia, lava-filled by primary's tidal forces
+				"entity":"planet",
 				"name":"Thrinakia",
 				"type":"lava_minor",
 				"orbitAngle":30,
@@ -489,28 +475,24 @@
 				"conditions":[],
 			},
 			{ # Ithaca, terraforming target A
+				"entity":"planet",
 				"name":"Ithaca",
 				"type":"desert",
 				"orbitAngle":50,
 				"radius":150,
 				"orbitRadius":4500,
 				"orbitDays":135,
-				"entitiesAtStablePoints":[{},
-					{"type":"stable_location"}, # L4 point
-				],
 				"conditions":[],
 				"customDescriptionId":"planet_ithaca",
 			},
 			{ # Ogygia, terraforming target B, with a jump-point at its L4
+				"entity":"planet",
 				"name":"Ogygia",
 				"type":"barren-bombarded",
 				"orbitAngle":80,
 				"radius":130,
 				"orbitRadius":6800,
 				"orbitDays":225,
-				"entitiesAtStablePoints":[{},
-					{"type":"jump_point","name":"Penelope's Inner Jump-point"},
-				],
 				"conditions":[],
 				"specChanges":{
 					"planetColor":[230,240,255,255],
@@ -518,6 +500,7 @@
 				"customDescriptionId":"planet_ogygia",
 			},
 			{ # Calypso, orbiting Ogygia
+				"entity":"planet",
 				"name":"Calypso",
 				"focus":3,
 				"type":"barren-bombarded",
@@ -532,20 +515,13 @@
 				},
 			},
 			{ # Aeolus, with magnetic storms and trojan asteroid fields
+				"entity":"planet",
 				"name":"Aeolus",
 				"type":"gas_giant",
 				"orbitAngle":230,
 				"radius":275,
 				"orbitRadius":9500,
 				"orbitDays":450,
-				"entitiesAtStablePoints":[
-					{"type":"stable_location"}, # L3 point
-					{"type":"asteroid_field","name":"Penelope L4 Asteroids","size":450},
-					[ # L5 point, with both an asteroid field and a stable location
-						{"type":"asteroid_field","name":"Penelope L5 Asteroids","size":450},
-						{"type":"stable_location"},
-					],
-				],
 				"conditions":[],
 				"specChanges":{
 					"planetColor":[150,245,255,255],
@@ -555,6 +531,7 @@
 				},
 			},
 			{ # Dorus, orbiting Aeolus
+				"entity":"planet",
 				"name":"Dorus",
 				"focus":5,
 				"type":"barren_venuslike",
@@ -569,6 +546,7 @@
 				},
 			},
 			{ # Xuthus, orbiting Aeolus
+				"entity":"planet",
 				"name":"Xuthus",
 				"focus":5,
 				"type":"toxic_cold",
@@ -582,15 +560,13 @@
 				},
 			},
 			{ # Telepylus, with an abandoned station and a ring band around it
+				"entity":"planet",
 				"name":"Telepylus",
 				"type":"gas_giant",
 				"orbitAngle":250,
 				"radius":280,
 				"orbitRadius":12050,
 				"orbitDays":650,
-				"entitiesAtStablePoints":[{},{},
-					{"type":"jump_point","name":"Penelope's Outer Jump-point"}, # L5 point
-				],
 				"conditions":[],
 				"specChanges":{
 					"planetColor":[170,190,255,255],
@@ -599,6 +575,7 @@
 				},
 			},
 			{ # Ismara, had mass-driven volatiles, now looted
+				"entity":"planet",
 				"name":"Ismara",
 				"type":"cryovolcanic",
 				"orbitAngle":130,
@@ -608,17 +585,23 @@
 				"conditions":[],
 				"customDescriptionId":"planet_ismara",
 			},
-		],
-		"systemFeatures":[
+			{"entity":"stable_location","focus":[2,4]}, # L4 point of Ithaca
+			{"entity":"jump_point","name":"Penelope's Inner Jump-point","focus":[3,4]}, # L4 point of Ogygia
+			{"entity":"stable_location","focus":[5,3]}, # L3 point of Aeolus
+			{"entity":"asteroid_field","name":"Penelope L4 Asteroids","size":450,"focus":[5,4]}, # L4 point of Aeolus
+			{"entity":"asteroid_field","name":"Penelope L5 Asteroids","size":450,"focus":[5,5]}, # L5 point of Aeolus
+			{"entity":"stable_location","focus":[5,5]}, # L5 point of Aeolus
+			{"entity":"jump_point","name":"Penelope's Outer Jump-point","focus":[8,5]}, # L5 point of Telepylus
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":16000}, # Normally auto-generated
 			{ # Hot asteroid belt
-				"type":"asteroid_belt",
+				"entity":"asteroid_belt",
 				"orbitRadius":2200,
 				"innerBandIndex":3,
 				"outerBandIndex":3,
 				"size":100,
 			},
 			{ # Aeolus' magnetic field
-				"type":"magnetic_field",
+				"entity":"magnetic_field",
 				"focus":5,
 				"orbitRadius":325, # Aeolus' radius (275) + 50
 				"size":435, # 275 + 160
@@ -637,23 +620,24 @@
 				]
 			},
 			{ # Telepylus Station, a staging area for volatiles transport
+				"entity":"station",
 				"name":"Telepylus Station",
-				"type":"station",
+				"type":"station_sporeship_derelict",
 				"focus":8,
 				"orbitAngle":90,
 				"orbitRadius":420,
 				"orbitDays":25,
-				"stationType":"station_sporeship_derelict",
 				"customDescriptionId":"station_telepylus",
 			},
 			{ # Telepylus' ring band
+				"entity":"ring",
 				"type":"rings_special0",
 				"focus":8,
 				"orbitRadius":600,
 			},
 			{ # The Cyclopeans Asteroid Belt
+				"entity":"asteroid_belt",
 				"name":"The Cyclopeans",
-				"type":"asteroid_belt",
 				"orbitRadius":13750,
 				"innerBandIndex":0,
 				"outerBandIndex":0,
@@ -674,45 +658,31 @@
 		"setLocation":0,
 		"systemBackground":"background4.jpg",
 		"systemMusic":"music_campaign_alpha_site",
-		"fringeJumpPoint":{"orbitRadius":8000},
-		"starsInSystemCenter":{
-			"stars":[{"type":"star_yellow"},{"type":"star_yellow"},{"type":"star_yellow"}],
-			"orbitRadius":2000,
-		},
-		"orbitingBodies":[
-			{
-				"type":"terran-eccentric",
-				"orbitRadius":4000,
-				"entitiesAtStablePoints":[
-					{"type":"stable_location"},
-					{"type":"stable_location"},
-					{"type":"stable_location"},
-				],
-			},
-			{
-				"type":"irradiated",
-				"orbitRadius":5000,
-				"entitiesAtStablePoints":[
-					[
-						{"type":"asteroid_field","size":300},
-						{"type":"station_research_remnant"},
-					],
-					{"type":"jump_point","name":"Outer System Jump-point"},
-					{"type":"inactive_gate"},
-				],
-			},
-			{"type":"cryovolcanic","orbitRadius":6000},
-			{"type":"barren-desert","orbitRadius":7000},
-		],
-		"systemFeatures":[
-			{"type":"remnant_station","orbitRadius":300,"orbitAngle":0,"orbitDays":18},
-			{"type":"remnant_station","orbitRadius":300,"orbitAngle":120,"orbitDays":18},
-			{"type":"remnant_station","orbitRadius":300,"orbitAngle":240,"orbitDays":18},
-			{"type":"remnant_station","orbitRadius":300,"focus":1,"isDamaged":true},
-			{"type":"remnant_station","orbitRadius":300,"focus":2,"isDamaged":true},
-			{"type":"remnant_station","orbitRadius":300,"focus":3,"isDamaged":true},
-			{"type":"remnant_station","orbitRadius":300,"focus":4,"isDamaged":true},
-			{"type":"alpha_site_weapons_cache","orbitRadius":11111},
+		"entities":[
+			{"entity":"empty_location","numOfCenterStars":3,"orbitRadius":2000},
+			{"entity":"star","type":"star_yellow"},
+			{"entity":"star","type":"star_yellow"},
+			{"entity":"star","type":"star_yellow"},
+			{"entity":"planet","type":"terran-eccentric","orbitRadius":4000},
+			{"entity":"planet","type":"irradiated","orbitRadius":5000},
+			{"entity":"planet","type":"cryovolcanic","orbitRadius":6000},
+			{"entity":"planet","type":"barren-desert","orbitRadius":7000},
+			{"entity":"stable_location","focus":[4,3]},
+			{"entity":"stable_location","focus":[4,4]},
+			{"entity":"stable_location","focus":[4,5]},
+			{"entity":"asteroid_field","size":300,"focus":[5,3]},
+			{"entity":"station_research_remnant","focus":[5,3]},
+			{"entity":"jump_point","name":"Outer System Jump-point","focus":[5,4]},
+			{"entity":"inactive_gate","focus":[5,5]},
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":8000},
+			{"entity":"remnant_station","orbitRadius":300,"orbitAngle":0,"orbitDays":18},
+			{"entity":"remnant_station","orbitRadius":300,"orbitAngle":120,"orbitDays":18},
+			{"entity":"remnant_station","orbitRadius":300,"orbitAngle":240,"orbitDays":18},
+			{"entity":"remnant_station","orbitRadius":300,"focus":4,"isDamaged":true},
+			{"entity":"remnant_station","orbitRadius":300,"focus":5,"isDamaged":true},
+			{"entity":"remnant_station","orbitRadius":300,"focus":6,"isDamaged":true},
+			{"entity":"remnant_station","orbitRadius":300,"focus":7,"isDamaged":true},
+			{"entity":"alpha_site_weapons_cache","orbitRadius":11111},
 		],
 	},
 
@@ -724,22 +694,22 @@
 	"css_battle_royale":{
 		"isEnabled":true,
 		"addCoronalHypershunt":true,
-		"setLocationOverride":[-6000,-6000],
+		"setLocation":[-6000,-6000],
 		"systemBackground":"background6.jpg",
 		"systemMusic":"music_diktat_encounter_friendly",
-		"fringeJumpPoint":{"orbitRadius":7000},
-		"starsInSystemCenter":{
-			"stars":[
-				{"type":"star_yellow","radius":800,"coronaRadius":400,"name":"Fort Nox"},
-				{"type":"star_orange","radius":650,"coronaRadius":400,"name":"Apex"},
-				{"type":"star_browndwarf","radius":400,"coronaRadius":150,"name":"Cod"},
-			],
-			"orbitRadius":1500,
-			"orbitAngle":0,
-			"orbitDays":100,
-		},
-		"orbitingBodies":[
-			{ # Hegemony planet
+		"entities":[
+			{
+				"entity":"empty_location",
+				"numOfCenterStars":3,
+				"orbitRadius":1500,
+				"orbitAngle":0,
+				"orbitDays":100,
+			},
+			{"entity":"star","type":"star_yellow","radius":800,"coronaRadius":400,"name":"Fort Nox"},
+			{"entity":"star","type":"star_orange","radius":650,"coronaRadius":400,"name":"Apex"},
+			{"entity":"star","type":"star_browndwarf","radius":400,"coronaRadius":150,"name":"Cod"},
+			{ # Hegemony planet (index 4)
+				"entity":"planet",
 				"type":"barren-desert",
 				"orbitRadius":3000,
 				"name":"Barren Dominion",
@@ -747,54 +717,6 @@
 				"conditions":["pollution","farmland_poor","hot"],
 				"marketSize":6,
 				"factionId":"hegemony",
-				"entitiesAtStablePoints":[
-					{ # Tri-Tachyon station, opposite to the Hegemony planet
-						"type":"station",
-						"name":"Battlestar Galactica",
-						"stationType":"station_hightech3",
-						"factionId":"tritachyon",
-						"marketSize":6,
-						"aiCoreAdmin":true,
-						"industries":[
-							"population",
-							"megaport",
-							"waystation",
-							"heavybatteries",
-							"highcommand",
-							"starfortress_high",
-						],
-					},
-					{ # Luddic Path station
-						"type":"station",
-						"name":"Path of Freedom",
-						"stationType":"station_mining00",
-						"factionId":"luddic_path",
-						"marketSize":6,
-						"industries":[
-							"population",
-							"megaport",
-							"waystation",
-							"heavybatteries",
-							"highcommand",
-							"starfortress",
-						],
-					},
-					{ # Pirate station
-						"type":"station",
-						"name":"Will of the Kantas",
-						"stationType":"station_side06",
-						"factionId":"pirates",
-						"marketSize":6,
-						"industries":[
-							"population",
-							"megaport",
-							"waystation",
-							"heavybatteries",
-							"highcommand",
-							"starfortress_mid",
-						],
-					},
-				],
 				"industries":[
 					"population",
 					"megaport",
@@ -804,7 +726,8 @@
 					"starfortress",
 				],
 			},
-			{ # Persean League planet
+			{ # Persean League planet (index 5)
+				"entity":"planet",
 				"type":"barren-bombarded",
 				"orbitRadius":4000,
 				"name":"League of Unity",
@@ -812,26 +735,6 @@
 				"conditions":["no_atmosphere"],
 				"marketSize":6,
 				"factionId":"persean",
-				"entitiesAtStablePoints":[
-					{ # Sindrian Diktat station, opposite to the PL planet
-						"type":"station",
-						"name":"Lionheart Station",
-						"stationType":"station_midline3",
-						"factionId":"sindrian_diktat",
-						"marketSize":6,
-						"aiCoreAdmin":true,
-						"industries":[
-							"population",
-							"megaport",
-							"waystation",
-							"heavybatteries",
-							"highcommand",
-							["starfortress_mid","alpha_core"],
-						],
-					},
-					{"type":"comm_relay","name":"Royale Broadcasting Station"},
-					{"type":"inactive_gate","name":"Baldrich's Gate"},
-				],
 				"industries":[
 					"population",
 					"megaport",
@@ -841,7 +744,8 @@
 					"starfortress_mid",
 				],
 			},
-			{ # Luddic Church planet
+			{ # Luddic Church planet (index 6)
+				"entity":"planet",
 				"type":"terran",
 				"orbitRadius":5000,
 				"name":"New Earth",
@@ -849,25 +753,6 @@
 				"conditions":["farmland_adequate","habitable","mild_climate"],
 				"marketSize":6,
 				"factionId":"luddic_church",
-				"entitiesAtStablePoints":[
-					{ # Independent station, opposite to the LC planet
-						"type":"station",
-						"name":"The United Station of the Persean Sector",
-						"stationType":"station_side04",
-						"factionId":"independent",
-						"marketSize":6,
-						"industries":[
-							"population",
-							"megaport",
-							"waystation",
-							"heavybatteries",
-							"highcommand",
-							"starfortress_high",
-						],
-					},
-					{"type":"nav_buoy","name":"Royale Coordination Buoy"},
-					{"type":"sensor_array","name":"Royale Listening Beacon"},
-				],
 				"industries":[
 					"population",
 					"megaport",
@@ -877,12 +762,101 @@
 					"starfortress",
 				],
 			},
-		],
-		"systemFeatures":[
-			{"type":"jump_point","orbitRadius":2600,"name":"Forsaken Jump-point"},
-			{"type":"remnant_station","orbitRadius":300},
-			{"type":"asteroid_belt","orbitRadius":6000},
-			{"type":"rings_special0","orbitRadius":500},
+
+			{ # Tri-Tachyon station at Hegemony's L3
+				"entity":"station",
+				"focus":[4,3],
+				"name":"Battlestar Galactica",
+				"type":"station_hightech3",
+				"factionId":"tritachyon",
+				"marketSize":6,
+				"aiCoreAdmin":true,
+				"industries":[
+					"population",
+					"megaport",
+					"waystation",
+					"heavybatteries",
+					"highcommand",
+					"starfortress_high",
+				],
+			},
+			{ # Luddic Path station at Hegemony's L4
+				"entity":"station",
+				"focus":[4,4],
+				"name":"Path of Freedom",
+				"type":"station_mining00",
+				"factionId":"luddic_path",
+				"marketSize":6,
+				"industries":[
+					"population",
+					"megaport",
+					"waystation",
+					"heavybatteries",
+					"highcommand",
+					"starfortress",
+				],
+			},
+			{ # Pirate station at Hegemony's L5
+				"entity":"station",
+				"focus":[4,5],
+				"name":"Will of the Kantas",
+				"type":"station_side06",
+				"factionId":"pirates",
+				"marketSize":6,
+				"industries":[
+					"population",
+					"megaport",
+					"waystation",
+					"heavybatteries",
+					"highcommand",
+					"starfortress_mid",
+				],
+			},
+
+			{ # Sindrian Diktat station at Persean League's L3
+				"entity":"station",
+				"focus":[5,3],
+				"name":"Lionheart Station",
+				"type":"station_midline3",
+				"factionId":"sindrian_diktat",
+				"marketSize":6,
+				"aiCoreAdmin":true,
+				"industries":[
+					"population",
+					"megaport",
+					"waystation",
+					"heavybatteries",
+					"highcommand",
+					["starfortress_mid","alpha_core"],
+				],
+			},
+			{"entity":"comm_relay","focus":[5,4],"name":"Royale Broadcasting Station"},
+			{"entity":"inactive_gate","focus":[5,5],"name":"Baldrich's Gate"},
+
+			{ # Independent station at Luddic Church's L3
+				"entity":"station",
+				"focus":[6,3],
+				"name":"The United Station of the Persean Sector",
+				"type":"station_side04",
+				"factionId":"independent",
+				"marketSize":6,
+				"industries":[
+					"population",
+					"megaport",
+					"waystation",
+					"heavybatteries",
+					"highcommand",
+					"starfortress_high",
+				],
+			},
+			{"entity":"nav_buoy","focus":[6,4],"name":"Royale Coordination Buoy"},
+			{"entity":"sensor_array","focus":[6,5],"name":"Royale Listening Beacon"},
+
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":7000},
+			{"entity":"jump_point","name":"Forsaken Jump-point","orbitRadius":2600},
+			{"entity":"remnant_station","orbitRadius":300},
+			{"entity":"asteroid_belt","orbitRadius":6000},
+			{"entity":"ring","type":"rings_special0","orbitRadius":500},
 		],
 	},
 
@@ -897,94 +871,89 @@
 		"isCoreWorldSystem":false,
 		"addCoronalHypershunt":true,
 		"addDomainCryosleeper":true,
-		"setLocation":0,
-		"setLocationOverride":[6000,6000],
+		"setLocation":[6000,6000],
 		"systemBackground":"hyperspace1.jpg",
 		"systemMusic":"music_title",
-		"fringeJumpPoint":{
-			"orbitRadius":9000,
-			"name":"Fringe Jump-point",
-			"orbitAngle":0,
-			"orbitDays":600,
-		},
-		"starsInSystemCenter":{
-			"stars":[
-				{"type":"star_orange_giant","name":"Linterna"},
-				{"type":"star_red_giant"},
-				{"type":"star_red_supergiant"},
-				{"type":"star_red_dwarf"},
-				{"type":"star_orange"},
-				{"type":"star_yellow"},
-				{"type":"star_blue_giant"},
-				{"type":"star_browndwarf"},
-				{"type":"star_white"},
-				{"type":"star_blue_supergiant"},
-				{"type":"black_hole"},
-				{"type":"star_neutron"},
-			],
-			"orbitRadius":6500,
-			"orbitAngle":0,
-			"orbitDays":325,
-		},
-		"orbitingBodies":[
+
+		"entities":[
+			{
+				"entity":"empty_location",
+				"numOfCenterStars":12,
+				"orbitRadius":6500,
+				"orbitAngle":0,
+				"orbitDays":325,
+			},
+			{"entity":"star","type":"star_orange_giant","name":"Linterna"},
+			{"entity":"star","type":"star_red_giant"},
+			{"entity":"star","type":"star_red_supergiant"},
+			{"entity":"star","type":"star_red_dwarf"},
+			{"entity":"star","type":"star_orange"},
+			{"entity":"star","type":"star_yellow"},
+			{"entity":"star","type":"star_blue_giant"},
+			{"entity":"star","type":"star_browndwarf"},
+			{"entity":"star","type":"star_white"},
+			{"entity":"star","type":"star_blue_supergiant"},
+			{"entity":"star","type":"black_hole"},
+			{"entity":"star","type":"star_neutron"},
+
 			# cat_giant
-			{"type":"gas_giant","orbitRadius":2000,"orbitAngle":0,"orbitDays":100},
-			{"type":"ice_giant","orbitRadius":2000,"orbitAngle":180,"orbitDays":100},
+			{"entity":"planet","type":"gas_giant","orbitRadius":2000,"orbitAngle":0,"orbitDays":100},
+			{"entity":"planet","type":"ice_giant","orbitRadius":2000,"orbitAngle":180,"orbitDays":100},
 
 			# cat_lava
-			{"type":"lava","orbitRadius":2000,"orbitAngle":90,"orbitDays":100},
-			{"type":"lava_minor","orbitRadius":2000,"orbitAngle":270,"orbitDays":100},
+			{"entity":"planet","type":"lava","orbitRadius":2000,"orbitAngle":90,"orbitDays":100},
+			{"entity":"planet","type":"lava_minor","orbitRadius":2000,"orbitAngle":270,"orbitDays":100},
 
 			# cat_frozen
-			{"type":"frozen","orbitRadius":1000,"orbitAngle":45,"orbitDays":50},
-			{"type":"frozen1","orbitRadius":1000,"orbitAngle":135,"orbitDays":50},
-			{"type":"frozen2","orbitRadius":1000,"orbitAngle":225,"orbitDays":50},
-			{"type":"frozen3","orbitRadius":1000,"orbitAngle":315,"orbitDays":50},
+			{"entity":"planet","type":"frozen","orbitRadius":1000,"orbitAngle":45,"orbitDays":50},
+			{"entity":"planet","type":"frozen1","orbitRadius":1000,"orbitAngle":135,"orbitDays":50},
+			{"entity":"planet","type":"frozen2","orbitRadius":1000,"orbitAngle":225,"orbitDays":50},
+			{"entity":"planet","type":"frozen3","orbitRadius":1000,"orbitAngle":315,"orbitDays":50},
 
 			# cat_cryovolcanic
-			{"type":"cryovolcanic","orbitRadius":500,"orbitAngle":0,"orbitDays":25},
+			{"entity":"planet","type":"cryovolcanic","orbitRadius":500,"orbitAngle":0,"orbitDays":25},
 
 			# cat_barren
-			{"type":"barren","orbitRadius":3000,"orbitAngle":0,"orbitDays":150},
-			{"type":"barren_castiron","orbitRadius":3000,"orbitAngle":40,"orbitDays":150},
-			{"type":"barren2","orbitRadius":3000,"orbitAngle":80,"orbitDays":150},
-			{"type":"barren3","orbitRadius":3000,"orbitAngle":120,"orbitDays":150},
-			{"type":"barren_venuslike","orbitRadius":3000,"orbitAngle":160,"orbitDays":150},
-			{"type":"rocky_metallic","orbitRadius":3000,"orbitAngle":200,"orbitDays":150},
-			{"type":"rocky_unstable","orbitRadius":3000,"orbitAngle":240,"orbitDays":150},
-			{"type":"rocky_ice","orbitRadius":3000,"orbitAngle":280,"orbitDays":150},
-			{"type":"barren-bombarded","orbitRadius":3000,"orbitAngle":320,"orbitDays":150},
+			{"entity":"planet","type":"barren","orbitRadius":3000,"orbitAngle":0,"orbitDays":150},
+			{"entity":"planet","type":"barren_castiron","orbitRadius":3000,"orbitAngle":40,"orbitDays":150},
+			{"entity":"planet","type":"barren2","orbitRadius":3000,"orbitAngle":80,"orbitDays":150},
+			{"entity":"planet","type":"barren3","orbitRadius":3000,"orbitAngle":120,"orbitDays":150},
+			{"entity":"planet","type":"barren_venuslike","orbitRadius":3000,"orbitAngle":160,"orbitDays":150},
+			{"entity":"planet","type":"rocky_metallic","orbitRadius":3000,"orbitAngle":200,"orbitDays":150},
+			{"entity":"planet","type":"rocky_unstable","orbitRadius":3000,"orbitAngle":240,"orbitDays":150},
+			{"entity":"planet","type":"rocky_ice","orbitRadius":3000,"orbitAngle":280,"orbitDays":150},
+			{"entity":"planet","type":"barren-bombarded","orbitRadius":3000,"orbitAngle":320,"orbitDays":150},
 
 			# cat_irradiated
-			{"type":"irradiated","orbitRadius":500,"orbitAngle":180,"orbitDays":25},
+			{"entity":"planet","type":"irradiated","orbitRadius":500,"orbitAngle":180,"orbitDays":25},
 
 			# cat_toxic
-			{"type":"toxic","orbitRadius":500,"orbitAngle":90,"orbitDays":25},
-			{"type":"toxic_cold","orbitRadius":500,"orbitAngle":270,"orbitDays":25},
+			{"entity":"planet","type":"toxic","orbitRadius":500,"orbitAngle":90,"orbitDays":25},
+			{"entity":"planet","type":"toxic_cold","orbitRadius":500,"orbitAngle":270,"orbitDays":25},
 
 			# cat_hab4
-			{"type":"terran","orbitRadius":4000,"orbitAngle":20,"orbitDays":200},
+			{"entity":"planet","type":"terran","orbitRadius":4000,"orbitAngle":20,"orbitDays":200},
 
 			# cat_hab3
-			{"type":"terran-eccentric","orbitRadius":4000,"orbitAngle":60,"orbitDays":200},
-			{"type":"jungle","orbitRadius":4000,"orbitAngle":100,"orbitDays":200},
-			{"type":"water","orbitRadius":4000,"orbitAngle":140,"orbitDays":200},
-			{"type":"arid","orbitRadius":4000,"orbitAngle":180,"orbitDays":200},
-			{"type":"tundra","orbitRadius":4000,"orbitAngle":220,"orbitDays":200},
+			{"entity":"planet","type":"terran-eccentric","orbitRadius":4000,"orbitAngle":60,"orbitDays":200},
+			{"entity":"planet","type":"jungle","orbitRadius":4000,"orbitAngle":100,"orbitDays":200},
+			{"entity":"planet","type":"water","orbitRadius":4000,"orbitAngle":140,"orbitDays":200},
+			{"entity":"planet","type":"arid","orbitRadius":4000,"orbitAngle":180,"orbitDays":200},
+			{"entity":"planet","type":"tundra","orbitRadius":4000,"orbitAngle":220,"orbitDays":200},
 
 			# cat_hab2
-			{"type":"desert","orbitRadius":4000,"orbitAngle":260,"orbitDays":200},
-			{"type":"desert1","orbitRadius":4000,"orbitAngle":300,"orbitDays":200},
+			{"entity":"planet","type":"desert","orbitRadius":4000,"orbitAngle":260,"orbitDays":200},
+			{"entity":"planet","type":"desert1","orbitRadius":4000,"orbitAngle":300,"orbitDays":200},
 
 			# cat_hab1
-			{"type":"barren-desert","orbitRadius":4000,"orbitAngle":340,"orbitDays":200},
+			{"entity":"planet","type":"barren-desert","orbitRadius":4000,"orbitAngle":340,"orbitDays":200},
+
+			{"entity":"jump_point","name":"Fringe Jump-point","orbitRadius":9000,"orbitAngle":0,"orbitDays":600},
+			{"entity":"jump_point","orbitRadius":250,"orbitAngle":180,"orbitDays":17,"name":"Inner System Jump-point"},
+			{"entity":"station_research_remnant","orbitRadius":250,"orbitAngle":0,"orbitDays":17,"name":"Starlight Research Station"},
+			{"entity":"inactive_gate","orbitRadius":9000,"orbitAngle":180,"orbitDays":600,"name":"Gate of Miracles"},
+			{"entity":"accretion_disk"},
 		],
-		"systemFeatures":[
-			{"type":"jump_point","orbitRadius":250,"orbitAngle":180,"orbitDays":17,"name":"Inner System Jump-point"},
-			{"type":"station_research_remnant","orbitRadius":250,"orbitAngle":0,"orbitDays":17,"name":"Starlight Research Station"},
-			{"type":"inactive_gate","orbitRadius":9000,"orbitAngle":180,"orbitDays":600,"name":"Gate of Miracles"},
-			{"type":"accretion_disk"},
-		]
 	},
 
 
