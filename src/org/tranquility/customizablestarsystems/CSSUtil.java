@@ -202,7 +202,7 @@ public class CSSUtil {
             if (systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) generateHypershunt(!hasFactionPresence);
 
             // Fallback option for systems with no orbiting bodies or jump-points
-            if (systemRadius == 0f) systemRadius = system.getStar().getRadius();
+            if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
 
             if (systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false))
                 generateCryosleeper(DEFAULT_CRYOSLEEPER_NAME, systemRadius + 4000f, !hasFactionPresence);
@@ -252,56 +252,55 @@ public class CSSUtil {
 
             for (int i = 0; i < entities.length(); i++) {
                 JSONObject entityOptions = entities.getJSONObject(i);
+                String entityType = entityOptions.getString(OPT_ENTITY);
+
+                if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
+                    throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+
                 SectorEntityToken newEntity;
-                switch (entityOptions.getString(OPT_ENTITY)) {
+                switch (entityType) {
                     case ENTITY_EMPTY_LOCATION:
                         if (i == 0) { // Make a non-star center
                             i += addCenterStars(entities);
                             continue;
-                        } else {
-                            // Note: orbits are broken for this entity, making it stay in its orbit position
+                        } else { // Note: orbits are broken for this entity, making it stay in its orbit position
                             newEntity = new BaseLocation.LocationToken(system, 0f, 0f);
-                            setOrbit(newEntity, entityOptions, i);
-                            if (newEntity.getCircularOrbitRadius() > systemRadius)
-                                systemRadius = newEntity.getCircularOrbitRadius();
+                            setEntityLocation(newEntity, entityOptions, i);
                         }
                         break;
                     case Tags.STAR:
                         newEntity = addStar(entityOptions, i, false);
                         if (i != 0) {
-                            setOrbit(newEntity, entityOptions, i);
-                            if (newEntity.getCircularOrbitRadius() > systemRadius)
-                                systemRadius = newEntity.getCircularOrbitRadius();
+                            setEntityLocation(newEntity, entityOptions, i);
+                            updateSystemRadius(newEntity);
                         }
                         break;
                     case Tags.PLANET:
                         newEntity = addPlanet(entityOptions, i);
-                        setOrbit(newEntity, entityOptions, i);
-                        if (newEntity.getCircularOrbitRadius() > systemRadius)
-                            systemRadius = newEntity.getCircularOrbitRadius();
-                        addSolarArrayIfApplicable(newEntity);
+                        setEntityLocation(newEntity, entityOptions, i);
+                        updateSystemRadius(newEntity);
+                        addSolarArrayIfApplicable((PlanetAPI) newEntity);
                         break;
                     case Tags.JUMP_POINT:
                         newEntity = addJumpPoint(entityOptions);
-                        setOrbit(newEntity, entityOptions, i);
-                        if (newEntity.getCircularOrbitRadius() > systemRadius)
-                            systemRadius = newEntity.getCircularOrbitRadius();
+                        setEntityLocation(newEntity, entityOptions, i);
+                        updateSystemRadius(newEntity);
                         hasJumpPoint = true;
                         break;
                     case Tags.STATION:
                         newEntity = addStation(entityOptions, i);
-                        setOrbit(newEntity, entityOptions, i);
+                        setEntityLocation(newEntity, entityOptions, i);
                         break;
                     case ENTITY_REMNANT_STATION:
                         newEntity = addRemnantStation(entityOptions);
-                        setOrbit(newEntity, entityOptions, i);
+                        setEntityLocation(newEntity, entityOptions, i);
                         break;
                     case Terrain.ASTEROID_FIELD:
                         newEntity = addAsteroidField(entityOptions);
-                        setOrbit(newEntity, entityOptions, i);
+                        setEntityLocation(newEntity, entityOptions, i);
                         break;
                     case Tags.ACCRETION_DISK:
-                        newEntity = addAccretionDisk(getFocus(entityOptions, i));
+                        newEntity = addAccretionDisk(getFocusEntity(entityOptions, i));
                         break;
                     case Terrain.MAGNETIC_FIELD:
                         newEntity = addMagneticField(entityOptions, i);
@@ -314,94 +313,103 @@ public class CSSUtil {
                         break;
                     default:
                         newEntity = addCustomEntity(entityOptions);
-                        setOrbit(newEntity, entityOptions, i);
+                        setEntityLocation(newEntity, entityOptions, i);
                         break;
                 }
                 systemEntities.add(newEntity);
             }
         }
 
-        private void setOrbit(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
-            if (entityOptions.optJSONArray(OPT_FOCUS) == null) {
-                SectorEntityToken focusEntity = getFocus(entityOptions, index);
+        private void setEntityLocation(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
+            if (entityOptions.optJSONArray(OPT_FOCUS) == null) setCircularOrbit(entity, entityOptions, index);
+            else setLagrangePointOrbit(entity, entityOptions);
+        }
 
-                float orbitRadius = entityOptions.getInt(OPT_ORBIT_RADIUS);
+        private void setCircularOrbit(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
+            SectorEntityToken focusEntity = getFocusEntity(entityOptions, index);
 
-                float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
-                if (angle < 0) angle = StarSystemGenerator.random.nextFloat() * 360f;
+            String type = entityOptions.getString(OPT_ENTITY);
 
-                float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
+            float orbitRadius = entityOptions.getInt(OPT_ORBIT_RADIUS);
 
-                String type = entityOptions.getString(OPT_ENTITY);
-                if (orbitDays <= 0) {
-                    float divisor;
-                    switch (type) {
-                        case Entities.INACTIVE_GATE:
-                            divisor = 10f;
-                            break;
-                        case Tags.JUMP_POINT:
-                            divisor = 15f;
-                            break;
-                        default:
-                            divisor = 20f;
-                    }
-                    orbitDays = orbitRadius / (divisor + StarSystemGenerator.random.nextFloat() * 5f);
-                }
+            float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
+            if (angle < 0) angle = StarSystemGenerator.random.nextFloat() * 360f;
 
-                // Could probably clean this up later
+            float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
+            if (orbitDays <= 0) {
+                float divisor;
                 switch (type) {
-                    case ENTITY_REMNANT_STATION:
-                        entity.setCircularOrbitWithSpin(focusEntity, angle, orbitRadius, orbitDays, 5f, 5f);
+                    case Entities.INACTIVE_GATE:
+                        divisor = 10f;
                         break;
-                    case Entities.STABLE_LOCATION:
-                    case Entities.COMM_RELAY:
-                    case Entities.COMM_RELAY_MAKESHIFT:
-                    case Entities.NAV_BUOY:
-                    case Entities.NAV_BUOY_MAKESHIFT:
-                    case Entities.SENSOR_ARRAY:
-                    case Entities.SENSOR_ARRAY_MAKESHIFT:
-                        entity.setCircularOrbitWithSpin(focusEntity, angle, orbitRadius, orbitDays, 1f, 11f);
-                        break;
-                    case Tags.STATION:
-                    case Entities.CORONAL_TAP:
-                        entity.setCircularOrbitPointingDown(focusEntity, angle, orbitRadius, orbitDays);
+                    case Tags.JUMP_POINT:
+                        divisor = 15f;
                         break;
                     default:
-                        entity.setCircularOrbit(focusEntity, angle, orbitRadius, orbitDays);
-                        break;
+                        divisor = 20f;
                 }
-            } else {
-                SectorEntityToken focusEntity = systemEntities.get(entityOptions.getJSONArray(OPT_FOCUS).getInt(0));
-                int lagrangePoint = entityOptions.getJSONArray(OPT_FOCUS).getInt(1);
-
-                float orbitAngle = focusEntity.getCircularOrbitAngle();
-                float orbitRadius = focusEntity.getCircularOrbitRadius();
-
-                switch (lagrangePoint) {
-                    case 1:
-                        orbitRadius -= focusEntity.getRadius() - 200f;
-                        break;
-                    case 2:
-                        orbitRadius += focusEntity.getRadius() + 200f;
-                        break;
-                    case 3:
-                        orbitAngle -= 180f;
-                        break;
-                    case 4:
-                        orbitAngle += 60f;
-                        break;
-                    case 5:
-                        orbitAngle -= 60f;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (entityOptions.getString(OPT_ENTITY).equals(Tags.PLANET))
-                    entity.setCircularOrbit(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
-                else
-                    entity.setCircularOrbitPointingDown(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
+                orbitDays = orbitRadius / (divisor + StarSystemGenerator.random.nextFloat() * 5f);
             }
+
+            // Could probably clean this up later
+            switch (type) {
+                case ENTITY_REMNANT_STATION:
+                    entity.setCircularOrbitWithSpin(focusEntity, angle, orbitRadius, orbitDays, 5f, 5f);
+                    break;
+                case Entities.STABLE_LOCATION:
+                case Entities.COMM_RELAY:
+                case Entities.COMM_RELAY_MAKESHIFT:
+                case Entities.NAV_BUOY:
+                case Entities.NAV_BUOY_MAKESHIFT:
+                case Entities.SENSOR_ARRAY:
+                case Entities.SENSOR_ARRAY_MAKESHIFT:
+                    entity.setCircularOrbitWithSpin(focusEntity, angle, orbitRadius, orbitDays, 1f, 11f);
+                    break;
+                case Tags.STATION:
+                case Entities.CORONAL_TAP:
+                    entity.setCircularOrbitPointingDown(focusEntity, angle, orbitRadius, orbitDays);
+                    break;
+                default:
+                    entity.setCircularOrbit(focusEntity, angle, orbitRadius, orbitDays);
+                    break;
+            }
+        }
+
+        private void setLagrangePointOrbit(SectorEntityToken entity, JSONObject entityOptions) throws JSONException {
+            SectorEntityToken focusEntity = systemEntities.get(entityOptions.getJSONArray(OPT_FOCUS).getInt(0));
+
+            float orbitAngle = focusEntity.getCircularOrbitAngle();
+            float orbitRadius = focusEntity.getCircularOrbitRadius();
+
+            int lagrangePoint = entityOptions.getJSONArray(OPT_FOCUS).getInt(1);
+            switch (lagrangePoint) {
+                case 1:
+                    orbitRadius -= focusEntity.getRadius() - 200f;
+                    break;
+                case 2:
+                    orbitRadius += focusEntity.getRadius() + 200f;
+                    break;
+                case 3:
+                    orbitAngle -= 180f;
+                    break;
+                case 4:
+                    orbitAngle += 60f;
+                    break;
+                case 5:
+                    orbitAngle -= 60f;
+                    break;
+                default:
+                    break;
+            }
+
+            if (entityOptions.getString(OPT_ENTITY).equals(Tags.PLANET))
+                entity.setCircularOrbit(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
+            else
+                entity.setCircularOrbitPointingDown(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
+        }
+
+        private void updateSystemRadius(SectorEntityToken entity) {
+            if (entity.getCircularOrbitRadius() > systemRadius) systemRadius = entity.getCircularOrbitRadius();
         }
 
         // Special case for handling multiple stars orbiting a non-star center
@@ -433,8 +441,8 @@ public class CSSUtil {
             return systemEntities.size() - 1;
         }
 
-        private PlanetAPI addStar(JSONObject starOptions, int index, boolean isClose) throws JSONException {
-            String starType = starOptions.optString(OPT_TYPE, DEFAULT_STAR_TYPE);
+        private PlanetAPI addStar(JSONObject options, int index, boolean isClose) throws JSONException {
+            String starType = options.optString(OPT_TYPE, DEFAULT_STAR_TYPE);
             if (starType.equals(TYPE_RANDOM_STAR_GIANT))
                 starType = STAR_GIANT_TYPES[StarSystemGenerator.random.nextInt(STAR_GIANT_TYPES.length)];
 
@@ -442,15 +450,15 @@ public class CSSUtil {
             if (starData == null)
                 throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType));
 
-            float radius = starOptions.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
+            float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
                 radius = starData.getMinRadius() + (starData.getMaxRadius() - starData.getMinRadius()) * StarSystemGenerator.random.nextFloat();
 
-            float coronaRadius = starOptions.optInt(OPT_CORONA_RADIUS, DEFAULT_SET_TO_PROC_GEN);
+            float coronaRadius = options.optInt(OPT_CORONA_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (coronaRadius <= 0)
                 coronaRadius = Math.max(starData.getCoronaMin(), radius * (starData.getCoronaMult() + starData.getCoronaVar() * (StarSystemGenerator.random.nextFloat() - 0.5f)));
 
-            float flareChance = (float) starOptions.optDouble(OPT_FLARE_CHANCE, DEFAULT_SET_TO_PROC_GEN);
+            float flareChance = (float) options.optDouble(OPT_FLARE_CHANCE, DEFAULT_SET_TO_PROC_GEN);
             if (flareChance < 0)
                 flareChance = starData.getMinFlare() + (starData.getMaxFlare() - starData.getMinFlare()) * StarSystemGenerator.random.nextFloat();
 
@@ -459,7 +467,7 @@ public class CSSUtil {
                 newStar = system.initStar(null, starType, radius, coronaRadius, starData.getSolarWind(), flareChance, starData.getCrLossMult());
                 newStar.setId(ID_SYSTEM + newStar.getId());
             } else {
-                String name = starOptions.optString(OPT_NAME, null);
+                String name = options.optString(OPT_NAME, null);
                 if (name == null) name = getProcGenName(Tags.STAR, system.getBaseName());
 
                 // Need to set a default orbit, else new game creation will fail when attempting to save
@@ -492,27 +500,27 @@ public class CSSUtil {
 
                 String coronaType = starType.equals(StarTypes.BLACK_HOLE) ? Terrain.EVENT_HORIZON : Terrain.PULSAR_BEAM;
                 if (coronaType.equals(Terrain.PULSAR_BEAM)) system.addCorona(newStar, 300, 3, 0, 3);
-                else addAccretionDisk(newStar);
+                else if (newStar.isSystemCenter()) addAccretionDisk(newStar);
                 system.addTerrain(coronaType, new StarCoronaTerrainPlugin.CoronaParams(newStar.getRadius() + coronaRadius, (newStar.getRadius() + coronaRadius) / 2f, newStar, starData.getSolarWind(), flareChance, starData.getCrLossMult())).setCircularOrbit(newStar, 0, 0, 100);
             }
 
-            addSpecChanges(newStar, starOptions.optJSONObject(OPT_SPEC_CHANGES));
+            addSpecChanges(newStar, options.optJSONObject(OPT_SPEC_CHANGES));
 
-            addCustomDescription(newStar, starOptions);
+            addCustomDescription(newStar, options);
 
             return newStar;
         }
 
-        private PlanetAPI addPlanet(JSONObject planetOptions, int index) throws JSONException {
-            String planetType = planetOptions.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
+        private PlanetAPI addPlanet(JSONObject options, int index) throws JSONException {
+            String planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
             PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
             if (planetData == null)
                 throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType));
 
-            String name = planetOptions.optString(OPT_NAME, null);
+            String name = options.optString(OPT_NAME, null);
             if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
 
-            float radius = planetOptions.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
+            float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
                 radius = planetData.getMinRadius() + (planetData.getMaxRadius() - planetData.getMinRadius()) * StarSystemGenerator.random.nextFloat();
 
@@ -520,15 +528,22 @@ public class CSSUtil {
             PlanetAPI newPlanet = system.addPlanet(system.getCenter().getId() + ID_PLANET + index, system.getCenter(), name, planetType, 0f, radius, 10000f, 1000f);
             newPlanet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, StarSystemGenerator.random.nextLong());
 
-            addSpecChanges(newPlanet, planetOptions.optJSONObject(OPT_SPEC_CHANGES));
+            addSpecChanges(newPlanet, options.optJSONObject(OPT_SPEC_CHANGES));
 
-            addCustomDescription(newPlanet, planetOptions);
+            addCustomDescription(newPlanet, options);
 
-            int marketSize = planetOptions.optInt(OPT_MARKET_SIZE, DEFAULT_MARKET_SIZE);
-            if (marketSize <= 0) setPlanetConditions(newPlanet, planetOptions);
-            else addMarket(newPlanet, planetOptions, marketSize);
+            int marketSize = options.optInt(OPT_MARKET_SIZE, DEFAULT_MARKET_SIZE);
+            if (marketSize <= 0) setPlanetConditions(newPlanet, options);
+            else addMarket(newPlanet, options, marketSize);
 
             return newPlanet;
+        }
+
+        private JumpPointAPI addJumpPoint(JSONObject options) {
+            JumpPointAPI jumpPoint = Global.getFactory().createJumpPoint(null, options.optString(OPT_NAME, null));
+            jumpPoint.setStandardWormholeToHyperspaceVisual();
+            system.addEntity(jumpPoint);
+            return jumpPoint;
         }
 
         private SectorEntityToken addStation(JSONObject options, int index) throws JSONException {
@@ -595,56 +610,6 @@ public class CSSUtil {
             return station;
         }
 
-        private JumpPointAPI addJumpPoint(JSONObject options) {
-            JumpPointAPI jumpPoint = Global.getFactory().createJumpPoint(null, options.optString(OPT_NAME, null));
-            jumpPoint.setStandardWormholeToHyperspaceVisual();
-            system.addEntity(jumpPoint);
-            return jumpPoint;
-        }
-
-        // (Credit to theDragn#0580 for publishing the original code on #advanced-modmaking in the Unofficial Starsector Discord.
-        // It was apparently taken from the vanilla implementation in the source API, but I couldn't find exactly where in the API)
-        private SectorEntityToken addAccretionDisk(SectorEntityToken focus) {
-            Random randomSeed = StarSystemGenerator.random;
-            float orbitRadius = Math.max(focus.getRadius(), 90f) * (10f + randomSeed.nextFloat() * 5f);
-            float bandWidth = 256f;
-            int numBands = 12 + randomSeed.nextInt(7);
-            for (int i = 0; i < numBands; i++) {
-                float radius = orbitRadius - (i * bandWidth * 0.25f) - (i * bandWidth * 0.1f);
-                RingBandAPI visual = system.addRingBand(focus, CATEGORY_MISC, ENTITY_RINGS_ICE, 256f, 0, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * randomSeed.nextFloat())));
-                visual.setSpiral(true);
-                visual.setMinSpiralRadius(0);
-                visual.setSpiralFactor(2f + randomSeed.nextFloat() * 5f);
-            }
-
-            SectorEntityToken ring = system.addTerrain(Terrain.RING, new BaseRingTerrain.RingParams(orbitRadius, orbitRadius / 2f, focus, DEFAULT_ACCRETION_DISK_NAME));
-            ring.addTag(Tags.ACCRETION_DISK);
-            ring.setCircularOrbit(focus, 0, 0, -100);
-            return ring;
-        }
-
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
-        public SectorEntityToken addAsteroidBelt(JSONObject options, int index) {
-            SectorEntityToken focusEntity = getFocus(options, index);
-
-            String name = options.optString(OPT_NAME, null);
-            float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, Math.round(focusEntity.getRadius()) + 100);
-            float width = options.optInt(OPT_SIZE, 256);
-            int innerBandIndex = options.optInt(OPT_INNER_BAND_INDEX, 0);
-            int outerBandIndex = options.optInt(OPT_OUTER_BAND_INDEX, 0);
-
-
-            if (innerBandIndex < 0 || innerBandIndex > 3) innerBandIndex = 0;
-            if (outerBandIndex < 0 || outerBandIndex > 3) outerBandIndex = 0;
-            float orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
-            int count = (int) (orbitDays * (0.25f + 0.5f * StarSystemGenerator.random.nextFloat()));
-            if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
-            if (count > 250) count = 250;
-            system.addRingBand(focusEntity, CATEGORY_MISC, ENTITY_RINGS_ASTEROIDS, 256f, innerBandIndex, Color.white, 256f, orbitRadius - width * 0.25f, orbitDays * 1.05f, null, null);
-            system.addRingBand(focusEntity, CATEGORY_MISC, ENTITY_RINGS_ASTEROIDS, 256f, outerBandIndex, Color.white, 256f, orbitRadius + width * 0.25f, orbitDays, null, null);
-            return system.addAsteroidBelt(focusEntity, count, orbitRadius, width, orbitDays * .75f, orbitDays * 1.5f, Terrain.ASTEROID_BELT, name);
-        }
-
         // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAsteroidField(JSONObject options) {
             String name = options.optString(OPT_NAME, null);
@@ -655,26 +620,33 @@ public class CSSUtil {
             return system.addTerrain(Terrain.ASTEROID_FIELD, new AsteroidFieldTerrainPlugin.AsteroidFieldParams(radius, radius + 100f, count, count, 4f, 16f, name));
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
-        private SectorEntityToken addRingBand(JSONObject options, int index) {
-            SectorEntityToken focusEntity = getFocus(options, index);
+        // Look in com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
+        private SectorEntityToken addAccretionDisk(SectorEntityToken focus) {
+            float orbitRadius = Math.max(focus.getRadius(), 90f) * (2f + StarSystemGenerator.random.nextFloat());
+            float bandWidth = 256f;
+            int numBands = 12;
+            for (int i = 0; i < numBands; i++) {
+                float radius = orbitRadius - i * bandWidth * 0.25f - i * bandWidth * 0.1f;
+                String ring = StarSystemGenerator.random.nextBoolean() ? ENTITY_RINGS_ICE : ENTITY_RINGS_DUST;
+                int ringIndex = StarSystemGenerator.random.nextInt(2);
+                RingBandAPI visual = system.addRingBand(focus, CATEGORY_MISC, ring, 256f, ringIndex, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * StarSystemGenerator.random.nextFloat())));
+                visual.setSpiral(true);
+                visual.setMinSpiralRadius(0);
+                visual.setSpiralFactor(2f + StarSystemGenerator.random.nextFloat() * 5f);
+            }
 
-            String name = options.optString(OPT_NAME, null);
-            String type = options.optString(OPT_TYPE, ENTITY_RINGS_DUST);
-
-            float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, Math.round(focusEntity.getRadius()) + 100);
-            int bandIndex = options.optInt(OPT_BAND_INDEX, 1);
-
-            if (type.equals(ENTITY_RINGS_SPECIAL) ? bandIndex != 1 : (bandIndex < 0 || bandIndex > 3)) bandIndex = 1;
-            return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat()), Terrain.RING, name);
+            SectorEntityToken ring = system.addTerrain(Terrain.RING, new BaseRingTerrain.RingParams(orbitRadius, orbitRadius / 2f, focus, DEFAULT_ACCRETION_DISK_NAME));
+            ring.addTag(Tags.ACCRETION_DISK);
+            ring.setCircularOrbit(focus, 0, 0, -100);
+            return ring;
         }
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.MagFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addMagneticField(JSONObject options, int index) throws JSONException {
-            SectorEntityToken focusEntity = getFocus(options, index);
+            SectorEntityToken focusEntity = getFocusEntity(options, index);
+            float orbitRadius = options.getInt(OPT_ORBIT_RADIUS); // Inner radius, or visual band start
 
             float width = options.optInt(OPT_SIZE, 300);
-            float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, Math.round(focusEntity.getRadius()) + 100); // Inner radius, or visual band start
             float middleRadius = options.optInt(OPT_MIDDLE_RADIUS, (int) (orbitRadius + width / 2f));
             float outerRadius = options.optInt(OPT_OUTER_RADIUS, (int) (orbitRadius + width));
 
@@ -691,6 +663,43 @@ public class CSSUtil {
             SectorEntityToken field = system.addTerrain(Terrain.MAGNETIC_FIELD, new MagneticFieldTerrainPlugin.MagneticFieldParams(width, middleRadius, focusEntity, orbitRadius, outerRadius, baseColor, auroraFrequency, auroraColors));
             field.setCircularOrbit(focusEntity, 0, 0, 100f);
             return field;
+        }
+
+        // Look in com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
+        private SectorEntityToken addRingBand(JSONObject options, int index) throws JSONException {
+            SectorEntityToken focusEntity = getFocusEntity(options, index);
+            float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
+
+            String name = options.optString(OPT_NAME, null);
+            String type = options.optString(OPT_TYPE, ENTITY_RINGS_DUST);
+
+            int bandIndex = options.optInt(OPT_BAND_INDEX, 1);
+
+            if (type.equals(ENTITY_RINGS_SPECIAL) ? bandIndex != 1 : (bandIndex < 0 || bandIndex > 3)) bandIndex = 1;
+            return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat()), Terrain.RING, name);
+        }
+
+        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
+        public SectorEntityToken addAsteroidBelt(JSONObject options, int index) throws JSONException {
+            SectorEntityToken focusEntity = getFocusEntity(options, index);
+            float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
+
+            float orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
+
+            int count = (int) (orbitDays * (0.25f + 0.5f * StarSystemGenerator.random.nextFloat()));
+            if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
+            if (count > 250) count = 250;
+
+            int innerBandIndex = options.optInt(OPT_INNER_BAND_INDEX, 0);
+            int outerBandIndex = options.optInt(OPT_OUTER_BAND_INDEX, 0);
+            if (innerBandIndex < 0 || innerBandIndex > 3) innerBandIndex = 0;
+            if (outerBandIndex < 0 || outerBandIndex > 3) outerBandIndex = 0;
+
+            String name = options.optString(OPT_NAME, null);
+            float width = options.optInt(OPT_SIZE, 256);
+            system.addRingBand(focusEntity, CATEGORY_MISC, ENTITY_RINGS_ASTEROIDS, 256f, innerBandIndex, Color.white, 256f, orbitRadius - width * 0.25f, orbitDays * 1.05f, null, null);
+            system.addRingBand(focusEntity, CATEGORY_MISC, ENTITY_RINGS_ASTEROIDS, 256f, outerBandIndex, Color.white, 256f, orbitRadius + width * 0.25f, orbitDays, null, null);
+            return system.addAsteroidBelt(focusEntity, count, orbitRadius, width, orbitDays * .75f, orbitDays * 1.5f, Terrain.ASTEROID_BELT, name);
         }
 
         private SectorEntityToken addCustomEntity(JSONObject options) throws JSONException {
@@ -777,70 +786,70 @@ public class CSSUtil {
             system.addTag(Tags.THEME_INTERESTING);
         }
 
-        private SectorEntityToken getFocus(JSONObject entityOptions, int index) {
+        private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
             int focus = entityOptions.optInt(OPT_FOCUS);
             if (focus >= systemEntities.size())
                 throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, system.getBaseName(), index));
             return systemEntities.get(focus);
         }
 
-        private void addCustomDescription(SectorEntityToken entity, JSONObject options) {
-            String id = options.optString(OPT_CUSTOM_DESCRIPTION_ID, null);
+        private void addCustomDescription(SectorEntityToken entity, JSONObject entityOptions) {
+            String id = entityOptions.optString(OPT_CUSTOM_DESCRIPTION_ID, null);
             if (id != null) entity.setCustomDescriptionId(id);
         }
 
         // Note: Textures must already be preloaded via settings.json for texture-replacing fields to work
         // Partially adapted from Tartiflette's Unknown Skies source code
-        private void addSpecChanges(PlanetAPI body, JSONObject specChanges) throws JSONException {
-            if (specChanges == null) return;
+        private void addSpecChanges(PlanetAPI body, JSONObject specOptions) throws JSONException {
+            if (specOptions == null) return;
             PlanetSpecAPI bodySpec = body.getSpec();
 
-            JSONArray atmosphereColor = specChanges.optJSONArray(OPT_ATMOSPHERE_COLOR);
+            JSONArray atmosphereColor = specOptions.optJSONArray(OPT_ATMOSPHERE_COLOR);
             if (atmosphereColor != null) bodySpec.setAtmosphereColor(getColor(atmosphereColor));
 
-            float atmosphereThickness = (float) specChanges.optDouble(OPT_ATMOSPHERE_THICKNESS);
+            float atmosphereThickness = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS);
             if (!Float.isNaN(atmosphereThickness)) bodySpec.setAtmosphereThickness(atmosphereThickness);
 
-            float atmosphereThicknessMin = (float) specChanges.optDouble(OPT_ATMOSPHERE_THICKNESS_MIN);
+            float atmosphereThicknessMin = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS_MIN);
             if (!Float.isNaN(atmosphereThicknessMin)) bodySpec.setAtmosphereThicknessMin(atmosphereThicknessMin);
 
-            JSONArray cloudColor = specChanges.optJSONArray(OPT_CLOUD_COLOR);
+            JSONArray cloudColor = specOptions.optJSONArray(OPT_CLOUD_COLOR);
             if (cloudColor != null) bodySpec.setCloudColor(getColor(cloudColor));
 
-            float cloudRotation = (float) specChanges.optDouble(OPT_CLOUD_ROTATION);
+            float cloudRotation = (float) specOptions.optDouble(OPT_CLOUD_ROTATION);
             if (!Float.isNaN(cloudRotation)) bodySpec.setCloudRotation(cloudRotation);
 
-            String cloudTexture = specChanges.optString(OPT_CLOUD_TEXTURE, null);
+            String cloudTexture = specOptions.optString(OPT_CLOUD_TEXTURE, null);
             if (cloudTexture != null) bodySpec.setCloudTexture(PATH_GRAPHICS_PLANET + cloudTexture);
 
-            JSONArray glowColor = specChanges.optJSONArray(OPT_GLOW_COLOR);
+            JSONArray glowColor = specOptions.optJSONArray(OPT_GLOW_COLOR);
             if (glowColor != null) bodySpec.setGlowColor(getColor(glowColor));
 
-            String glowTexture = specChanges.optString(OPT_GLOW_TEXTURE, null);
+            String glowTexture = specOptions.optString(OPT_GLOW_TEXTURE, null);
             if (glowTexture != null) bodySpec.setGlowTexture(PATH_GRAPHICS_PLANET + glowTexture);
 
-            JSONArray iconColor = specChanges.optJSONArray(OPT_ICON_COLOR);
+            JSONArray iconColor = specOptions.optJSONArray(OPT_ICON_COLOR);
             if (iconColor != null) bodySpec.setIconColor(getColor(iconColor));
 
-            float pitch = (float) specChanges.optDouble(OPT_PITCH);
+            float pitch = (float) specOptions.optDouble(OPT_PITCH);
             if (!Float.isNaN(pitch)) bodySpec.setPitch(pitch);
 
-            JSONArray planetColor = specChanges.optJSONArray(OPT_PLANET_COLOR);
+            JSONArray planetColor = specOptions.optJSONArray(OPT_PLANET_COLOR);
             if (planetColor != null) bodySpec.setPlanetColor(getColor(planetColor));
 
-            float rotation = (float) specChanges.optDouble(OPT_ROTATION);
+            float rotation = (float) specOptions.optDouble(OPT_ROTATION);
             if (!Float.isNaN(rotation)) bodySpec.setRotation(rotation);
 
-            String texture = specChanges.optString(OPT_TEXTURE, null);
+            String texture = specOptions.optString(OPT_TEXTURE, null);
             if (texture != null) bodySpec.setTexture(PATH_GRAPHICS_PLANET + texture);
 
-            float tilt = (float) specChanges.optDouble(OPT_TILT);
+            float tilt = (float) specOptions.optDouble(OPT_TILT);
             if (!Float.isNaN(tilt)) bodySpec.setTilt(tilt);
 
-            boolean revLightGlow = specChanges.optBoolean(OPT_USE_REVERSE_LIGHT_FOR_GLOW);
+            boolean revLightGlow = specOptions.optBoolean(OPT_USE_REVERSE_LIGHT_FOR_GLOW);
             if (revLightGlow != bodySpec.isUseReverseLightForGlow()) bodySpec.setUseReverseLightForGlow(revLightGlow);
 
-            JSONArray typeOverride = specChanges.optJSONArray(OPT_TYPE_OVERRIDE);
+            JSONArray typeOverride = specOptions.optJSONArray(OPT_TYPE_OVERRIDE);
             if (typeOverride != null) {
                 String newType = typeOverride.getString(0);
                 ((PlanetSpec) bodySpec).planetType = newType;
@@ -952,8 +961,7 @@ public class CSSUtil {
         }
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addSolarShadesAndMirrors() for vanilla implementation
-        private void addSolarArrayIfApplicable(SectorEntityToken entity) {
-            PlanetAPI planet = (PlanetAPI) entity;
+        private void addSolarArrayIfApplicable(PlanetAPI planet) {
             if (!planet.hasCondition(Conditions.SOLAR_ARRAY)) return;
 
             int numOfShades = 0;

@@ -6,15 +6,16 @@
 # The units for "orbitRadius", "size", and other similar entries are in pixels (e.g. "size":100 means something is 100 pixels wide)
 # For reference, the Barad gas giant in the Corvus system has a size of 300 pixels
 
-# When testing custom star systems, it is recommended that you either have installed the Console Commands mod or have enabled "devMode" via starsector-core's settings.json to quickly test and debug any errors.
-# Any mistakes will likely cause a crash upon creating a new game or, even worse, crash your game upon visiting the affected star system or planet.
+# It is recommended to have installed either Console Commands or LunaLib to quickly test your custom star systems.
+# If starting a new game, any mistakes in customStarSystems.json will likely crash your game either immediately or, worse, upon visiting the affected star system or planet.
+# Game crashes are less likely if spawning custom star systems in an existing save (via either Console Commands or LunaLib's LunaSnippets).
 
 # Open presetStarSystems.json for some preset custom star systems to copy or edit.
 
 { # List of custom star systems to generate
 
-	# An example star system, with ID "css_reference_star_system", explaining with comments all available options
-	# The ID must be unique and cannot be shared by another custom star system
+	# An example star system, with ID "css_reference_star_system", explaining and displaying all available options
+	# The ID must be unique and should not be shared by another custom star system
 	"css_reference_star_system":{
 		# True -> this system will spawn in the Sector
 		# Defaults to true if this entry is omitted
@@ -24,8 +25,8 @@
 		# Defaults to 1 if this entry is omitted
 		"numberOfSystems":1,
 
-		# True -> Tags this system as a Core World system,
-		# This tells the game to not spawn certain mission entities (e.g. probes or bounty targets) in this system
+		# True -> Tags this system as a Core World system, which tells the game to
+		# not spawn certain mission entities (e.g. probes or bounty targets) in this system
 		# Defaults to false if this entry is omitted
 		"isCoreWorldSystem":false,
 
@@ -64,8 +65,8 @@
 		#  - an "empty_location" entity, followed by a specified number of "star" entities
 		#
 		# All entities after the center entity also require either:
-		#  - a specified "orbitRadius" sub-option, or
-		#  - a "focus" sub-option with a specified stable location (e.g. [2,4])
+		#  - a specified "orbitRadius" option, or
+		#  - a "focus" option with a specified stable location (e.g. [2,4])
 		#
 		# If no "jump_point" entities are found here, the system will auto-generate a Fringe Jump-point
 		"entities":[
@@ -98,8 +99,8 @@
 				# Defaults to "star_red_dwarf" if this entry is omitted
 				"type":"random_star_giant",
 
-				# Name of this star
-				# If this entity is the first star in list, it will also change this system's name
+				# Name of this entity
+				# If this entity is the first star in the "entities" list, it will also change this system's name
 				# Defaults to a random proc-gen name if this entry is omitted
 				"name":"Placeholder Star",
 
@@ -115,7 +116,7 @@
 				# Defaults to proc-gen settings if this entry is omitted or set to a negative number
 				"flareChance":1.0,
 
-				# See entry with "planet" entity for a detailed explanation of this option
+				# See "specChanges" option on the "planet" entity for a detailed explanation of this option
 				"specChanges":{"texture":"castiron.jpg"},
 
 				# The ID of the custom description to use for this entity
@@ -133,7 +134,7 @@
 				"specChanges":{"texture":"castiron.jpg"},
 				"customDescriptionId":"star_blue_giant",
 
-				# Indicates the entity this star will orbit
+				# Indicates the entity this entity will orbit
 				# Number is based on index of the "entities" list, which starts at 0
 				# (e.g. 1st entry is index 0, 2nd entry is index 1, 3rd entry is index 2,...)
 				# The entity's focus index cannot be equal or greater than its own position in the "entities" list
@@ -141,33 +142,32 @@
 				#
 				# Alternatively can also take [f,l] as a parameter to
 				# set this entity's location to another entity's stable point, where:
-				#  - f = index of the "entity" and
+				#  - f = index of the "entity" to focus and
 				#  - l = lagrange point location
 				# (e.g [1,4] would put this entity at the L4 point of the "entity" in index 1)
 				# 'l' can be anywhere from 0 (directly on top of focus) to 5 (for L5 point)
 				#
-				# Alternate "focus" parameter is *REQUIRED* if "orbitRadius" is not specified.
+				# The alternate "focus" parameter causes this entity to ignore all orbit-related options, including "orbitRadius"
 				"focus":1,
 
-				# How far away this star orbits the focus.
-				# *REQUIRED* if "focus" sub-option is not specified or contains only a number
+				# How far away this entity orbits the focus.
+				# *REQUIRED* if "focus" option either is not specified or does not use the [f,l] parameter
 				"orbitRadius":1111,
 
-				# The initial angle to place this star
+				# The initial angle to place this entity
 				# Defaults to a random angle if this entry is omitted or is set to a negative number
 				"orbitAngle":0,
 
-				# How long it takes for this star to complete its orbit
+				# How long it takes for this entity to complete its orbit
 				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
 				"orbitDays":0,
 			},
 			{ # A planet orbiting system center
 				"entity":"planet",
-
+				"focus":0,
 				"orbitRadius":1111,
 				"orbitAngle":0,
 				"orbitDays":0,
-				"focus":0,
 				"name":"Placeholder Planet",
 				"customDescriptionId":"planet_jangala",
 
@@ -437,15 +437,13 @@
 				# Defaults to 400 if this entry is omitted
 				"size":400,
 			},
-			{ # Accretion disk
+			{ # Accretion disk (unlike most entities here, it has no required options, with "focus" being optional)
 				"entity":"accretion_disk",
-				"focus":0,
+				"focus":0, # Does not support [f,l]
 			},
 			{ # Magnetic field
 				"entity":"magnetic_field",
-				"focus":0,
-
-				# Inner radius of visual band
+				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 
 				# Size, or band width, of the magnetic field
@@ -462,11 +460,11 @@
 
 				# Base color of magnetic field
 				# Format is [Red, Blue, Green, Alpha]
-				# Defaults to below color if this entry is omitted
+				# Defaults to [50,20,100,40] if this entry is omitted
 				"baseColor":[50,20,100,40],
 
 				# How often a magnetic aurora appears, checked once every day when no aurora is currently active
-				# Defaults to 0.25 if this entry is omitted
+				# Defaults to a random frequency if this entry is omitted
 				"auroraFrequency":0.25,
 
 				# A list of possible aurora colors
@@ -484,10 +482,12 @@
 			},
 			{ # Ring bands
 				"entity":"ring",
-				"focus":0,
-
-				# Radius of the ring band
+				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
+
+				# Name of the ring band
+				# Uses default name if this entry is omitted
+				"name":"Test Name Band",
 
 				# Type of ring band to make
 				# Defaults to "rings_dust0" if this entry is omitted
@@ -495,10 +495,6 @@
 				#"type":"rings_ice0",
 				#"type":"rings_special0",
 				#"type":"rings_asteroids0",
-
-				# Name of the ring band
-				# Uses default name if this entry is omitted
-				"name":"Test Name Band",
 
 				# Index of the ring texture to use
 				# Valid options are 0, 1, 2, or 3 for "rings_ice0", "rings_dust0", and "rings_asteroids0"
@@ -508,7 +504,7 @@
 			},
 			{ # Asteroid belt
 				"entity":"asteroid_belt",
-				"focus":0,
+				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 				"name":"Test Name Belt",
 
@@ -527,7 +523,7 @@
 				"size":256
 			},
 			{ # Custom entities (also the default option for handling unrecognized or modded entities)
-				# Custom entity IDs can be found found in starsector-core/data/config/custom_entities.json
+				# Custom entity IDs can be found in starsector-core/data/config/custom_entities.json
 				"entity":"inactive_gate",
 				#"entity":"stable_location",
 				#"entity":"comm_relay",
@@ -545,6 +541,7 @@
 				#"entity":"station_research",
 				#"entity":"station_mining_remnant",
 
+				# These options are shared by all custom entities
 				"focus":0,
 				"orbitRadius":100,
 				"orbitAngle":-1,
