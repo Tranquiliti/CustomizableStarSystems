@@ -15,7 +15,6 @@ import java.util.Iterator;
 public class CSSModPlugin extends BaseModPlugin {
     private transient HashMap<MarketAPI, String> marketsToOverrideAdmin;
 
-    // Adding LunaSnippet for spawning in custom star systems
     @Override
     public void onApplicationLoad() {
         if (Global.getSettings().getModManager().isModEnabled("lunalib"))
@@ -58,7 +57,7 @@ public class CSSModPlugin extends BaseModPlugin {
     @Override
     public void onNewGameAfterEconomyLoad() {
         // Gives selected markets the admins they're supposed to have (can't do it before economy load)
-        CSSUtil.generateAdminsOnCustomStarSystems(marketsToOverrideAdmin);
+        CSSUtil.generateAdminsOnMarkets(marketsToOverrideAdmin);
         marketsToOverrideAdmin = null;
     }
 }
