@@ -161,7 +161,8 @@ public class CSSUtil {
 
     private final String[] STAR_GIANT_TYPES = {StarTypes.ORANGE_GIANT, StarTypes.RED_GIANT, StarTypes.RED_SUPERGIANT, StarTypes.BLUE_GIANT, StarTypes.BLUE_SUPERGIANT};
 
-    private final Vector2f CORE_WORLD_CENTER = new Vector2f(-6000, -6000);
+    // The centroid point of all vanilla THEME_CORE systems
+    private final Vector2f CORE_WORLD_CENTER = new Vector2f(-4531, -5865);
 
     // Making a utility class instantiable just so I can modify admins properly D:
     public CSSUtil() {
@@ -200,9 +201,6 @@ public class CSSUtil {
             generateEntities(systemOptions.getJSONArray(OPT_ENTITIES));
 
             if (systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) generateHypershunt(!hasFactionPresence);
-
-            // Fallback option for systems with no orbiting bodies or jump-points
-            if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
 
             if (systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false))
                 generateCryosleeper(DEFAULT_CRYOSLEEPER_NAME, systemRadius + 4000f, !hasFactionPresence);
@@ -248,6 +246,8 @@ public class CSSUtil {
         }
 
         private void generateEntities(JSONArray entities) throws JSONException {
+            if (entities.length() == 0) throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+
             systemEntities = new ArrayList<>(entities.length());
 
             for (int i = 0; i < entities.length(); i++) {
@@ -285,7 +285,6 @@ public class CSSUtil {
                         newEntity = addJumpPoint(entityOptions);
                         setEntityLocation(newEntity, entityOptions, i);
                         updateSystemRadius(newEntity);
-                        hasJumpPoint = true;
                         break;
                     case Tags.STATION:
                         newEntity = addStation(entityOptions, i);
@@ -318,6 +317,13 @@ public class CSSUtil {
                 }
                 systemEntities.add(newEntity);
             }
+
+            // Fallback option for systems with no orbiting bodies or jump-points
+            if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
+        }
+
+        private void updateSystemRadius(SectorEntityToken entity) {
+            if (entity.getCircularOrbitRadius() > systemRadius) systemRadius = entity.getCircularOrbitRadius();
         }
 
         private void setEntityLocation(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
@@ -406,10 +412,6 @@ public class CSSUtil {
                 entity.setCircularOrbit(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
             else
                 entity.setCircularOrbitPointingDown(focusEntity.getOrbitFocus(), orbitAngle, orbitRadius, focusEntity.getCircularOrbitPeriod());
-        }
-
-        private void updateSystemRadius(SectorEntityToken entity) {
-            if (entity.getCircularOrbitRadius() > systemRadius) systemRadius = entity.getCircularOrbitRadius();
         }
 
         // Special case for handling multiple stars orbiting a non-star center
@@ -543,6 +545,9 @@ public class CSSUtil {
             JumpPointAPI jumpPoint = Global.getFactory().createJumpPoint(null, options.optString(OPT_NAME, null));
             jumpPoint.setStandardWormholeToHyperspaceVisual();
             system.addEntity(jumpPoint);
+
+            hasJumpPoint = true;
+
             return jumpPoint;
         }
 
