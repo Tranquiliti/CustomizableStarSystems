@@ -1,3 +1,12 @@
+Version 1.0.1
+
+* Changed "setLocation" Core World centroid point to the actual centroid point of all vanilla Core systems.
+  - Affects custom star systems with a "setLocation" by changing which constellations are considered closest to Core.
+* Added a check to ensure that the "entities" list has at least 1 entry in it.
+* Version Checker now points to the right forum thread
+
+
+
 Version 1.0.0
 
 * Split off from Adversary mod

@@ -693,6 +693,7 @@
 	# A Battle-Royale system in Core World center, with vanilla factions vying for system control
 	"css_battle_royale":{
 		"isEnabled":true,
+		"isCoreWorldSystem":true,
 		"addCoronalHypershunt":true,
 		"setLocation":[-6000,-6000],
 		"systemBackground":"background6.jpg",
