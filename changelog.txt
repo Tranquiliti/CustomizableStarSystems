@@ -1,3 +1,17 @@
+Version 1.0.2
+
+* "marketSize" option now supports numbers greater than 10 if bigger population conditions exists due to other mods
+  - If no such conditions exist (or their IDs do not match the "population_##" string), "marketSize" will continue to cap population size at 10, as before.
+* Added "systemLightColor" option for custom star systems
+* Added "orbitRadius" support for "accretion_disk" entities
+  - Also scaled the default, randomly-generated orbit radius to fix it being smaller than typical proc-gen accretion disks
+* Custom star systems with a center black hole no longer auto-generate an accretion disk entity
+* Added "orbitDays" support for "ring" and "asteroid_belt" entities
+* Fixed an outdated error message
+* "ListCustomStarSystems" and "SpawnCustomStarSystems" commands now print the exception message when syntax errors in customStarSystems.json are found
+
+
+
 Version 1.0.1
 
 * Changed "setLocation" Core World centroid point to the actual centroid point of all vanilla Core systems.

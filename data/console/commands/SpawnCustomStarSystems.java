@@ -25,7 +25,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
         try {
             systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
         } catch (Exception e) {
-            Console.showMessage(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON"));
+            Console.showMessage(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e);
             return CommandResult.ERROR;
         }
 
@@ -40,13 +40,13 @@ public class SpawnCustomStarSystems implements BaseCommand {
                     if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                         for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                             util.generateCustomStarSystem(systemOptions);
-                            print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId)).append("\n");
+                            print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                         }
                     else
-                        print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_disabledSystem"), systemId)).append("\n");
+                        print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_disabledSystem"), systemId));
                 } catch (Exception e) {
                     print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId));
-                    Console.showMessage(print.append("\n").append(e));
+                    Console.showMessage(print.append(e));
                     return CommandResult.ERROR;
                 }
             }
@@ -63,7 +63,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                         util.generateCustomStarSystem(systemOptions);
-                        print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId)).append("\n");
+                        print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 } catch (Exception e) {
                     print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId));

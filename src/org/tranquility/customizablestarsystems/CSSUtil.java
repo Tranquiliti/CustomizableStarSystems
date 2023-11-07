@@ -36,7 +36,7 @@ import java.util.*;
  */
 public class CSSUtil {
     // Default values
-    public final int DEFAULT_SET_TO_PROC_GEN = -1; // For user's sake, exampleSettings.json uses 0 to specify proc-gen
+    public final int DEFAULT_SET_TO_PROC_GEN = -1; // For user's sake, referenceStarSystem.json uses 0 to specify proc-gen
     public final int DEFAULT_MARKET_SIZE = 0;
 
     // Main system options in customStarSystems.json
@@ -49,6 +49,7 @@ public class CSSUtil {
     public final String OPT_SET_LOCATION = Global.getSettings().getString("customizablestarsystems", "opt_setLocation");
     public final String OPT_SYSTEM_BACKGROUND = Global.getSettings().getString("customizablestarsystems", "opt_systemBackground");
     public final String OPT_SYSTEM_MUSIC = Global.getSettings().getString("customizablestarsystems", "opt_systemMusic");
+    public final String OPT_SYSTEM_LIGHT_COLOR = Global.getSettings().getString("customizablestarsystems", "opt_systemLightColor");
     public final String OPT_ENTITIES = Global.getSettings().getString("customizablestarsystems", "opt_entities");
 
     // Sub-options
@@ -231,7 +232,7 @@ public class CSSUtil {
                 system.setBackgroundTextureFilename(StarSystemGenerator.backgroundsByNebulaType.get(nebulaType).pick());
             }
 
-            setLightColor();
+            setLightColor(systemOptions);
             generateHyperspace();
             addRemnantWarningBeacons();
         }
@@ -299,7 +300,7 @@ public class CSSUtil {
                         setEntityLocation(newEntity, entityOptions, i);
                         break;
                     case Tags.ACCRETION_DISK:
-                        newEntity = addAccretionDisk(getFocusEntity(entityOptions, i));
+                        newEntity = addAccretionDisk(entityOptions, i);
                         break;
                     case Terrain.MAGNETIC_FIELD:
                         newEntity = addMagneticField(entityOptions, i);
@@ -502,7 +503,6 @@ public class CSSUtil {
 
                 String coronaType = starType.equals(StarTypes.BLACK_HOLE) ? Terrain.EVENT_HORIZON : Terrain.PULSAR_BEAM;
                 if (coronaType.equals(Terrain.PULSAR_BEAM)) system.addCorona(newStar, 300, 3, 0, 3);
-                else if (newStar.isSystemCenter()) addAccretionDisk(newStar);
                 system.addTerrain(coronaType, new StarCoronaTerrainPlugin.CoronaParams(newStar.getRadius() + coronaRadius, (newStar.getRadius() + coronaRadius) / 2f, newStar, starData.getSolarWind(), flareChance, starData.getCrLossMult())).setCircularOrbit(newStar, 0, 0, 100);
             }
 
@@ -626,23 +626,27 @@ public class CSSUtil {
         }
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
-        private SectorEntityToken addAccretionDisk(SectorEntityToken focus) {
-            float orbitRadius = Math.max(focus.getRadius(), 90f) * (2f + StarSystemGenerator.random.nextFloat());
+        private SectorEntityToken addAccretionDisk(JSONObject options, int index) {
+            SectorEntityToken focusEntity = getFocusEntity(options, index);
+            float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
+            if (orbitRadius <= 0)
+                orbitRadius = Math.max(focusEntity.getRadius() * 5f, 90f) * (2f + StarSystemGenerator.random.nextFloat());
+
             float bandWidth = 256f;
             int numBands = 12;
             for (int i = 0; i < numBands; i++) {
                 float radius = orbitRadius - i * bandWidth * 0.25f - i * bandWidth * 0.1f;
                 String ring = StarSystemGenerator.random.nextBoolean() ? ENTITY_RINGS_ICE : ENTITY_RINGS_DUST;
                 int ringIndex = StarSystemGenerator.random.nextInt(2);
-                RingBandAPI visual = system.addRingBand(focus, CATEGORY_MISC, ring, 256f, ringIndex, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * StarSystemGenerator.random.nextFloat())));
+                RingBandAPI visual = system.addRingBand(focusEntity, CATEGORY_MISC, ring, 256f, ringIndex, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * StarSystemGenerator.random.nextFloat())));
                 visual.setSpiral(true);
                 visual.setMinSpiralRadius(0);
                 visual.setSpiralFactor(2f + StarSystemGenerator.random.nextFloat() * 5f);
             }
 
-            SectorEntityToken ring = system.addTerrain(Terrain.RING, new BaseRingTerrain.RingParams(orbitRadius, orbitRadius / 2f, focus, DEFAULT_ACCRETION_DISK_NAME));
+            SectorEntityToken ring = system.addTerrain(Terrain.RING, new BaseRingTerrain.RingParams(orbitRadius, orbitRadius / 2f, focusEntity, DEFAULT_ACCRETION_DISK_NAME));
             ring.addTag(Tags.ACCRETION_DISK);
-            ring.setCircularOrbit(focus, 0, 0, -100);
+            ring.setCircularOrbit(focusEntity, 0, 0, -100);
             return ring;
         }
 
@@ -675,13 +679,16 @@ public class CSSUtil {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
 
+            float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
+            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
+
             String name = options.optString(OPT_NAME, null);
             String type = options.optString(OPT_TYPE, ENTITY_RINGS_DUST);
 
             int bandIndex = options.optInt(OPT_BAND_INDEX, 1);
 
             if (type.equals(ENTITY_RINGS_SPECIAL) ? bandIndex != 1 : (bandIndex < 0 || bandIndex > 3)) bandIndex = 1;
-            return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat()), Terrain.RING, name);
+            return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitDays, Terrain.RING, name);
         }
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
@@ -689,7 +696,8 @@ public class CSSUtil {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
 
-            float orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
+            float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
+            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
 
             int count = (int) (orbitDays * (0.25f + 0.5f * StarSystemGenerator.random.nextFloat()));
             if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
@@ -888,12 +896,14 @@ public class CSSUtil {
                 try {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), Math.round(planet.getCircularOrbitRadius())));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId()));
                 }
         }
 
         private void addMarket(SectorEntityToken entity, JSONObject marketOptions, int size) throws JSONException {
-            if (size > 10) size = 10;
+            // Default to population 10 if no mods adding bigger population sizes exist
+            if (size > 10 && Global.getSettings().getMarketConditionSpec(CONDITION_POPULATION + size) == null)
+                size = 10;
 
             String factionId = marketOptions.getString(OPT_FACTION_ID);
             MarketAPI planetMarket = Global.getFactory().createMarket(entity.getId() + ID_MARKET, entity.getName(), size);
@@ -909,7 +919,6 @@ public class CSSUtil {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
                     throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId));
-
                 }
 
             JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
@@ -1041,14 +1050,16 @@ public class CSSUtil {
             return name;
         }
 
-        private void setLightColor() {
-            Color result = Color.WHITE;
-            List<PlanetAPI> planetList = system.getPlanets();
-            for (int i = 0; i < planetList.size(); i++)
-                if (planetList.get(i).isStar())
-                    if (i != 0) result = Misc.interpolateColor(result, pickLightColorForStar(planetList.get(i)), 0.5f);
+        private void setLightColor(JSONObject systemOptions) throws JSONException {
+            Color result = getColor(systemOptions.optJSONArray(OPT_SYSTEM_LIGHT_COLOR));
+            if (result == null) {
+                result = Color.WHITE;
+                List<PlanetAPI> planetList = system.getPlanets();
+                for (int i = 0; i < planetList.size(); i++)
+                    if (planetList.get(i).isStar()) if (i != 0)
+                        result = Misc.interpolateColor(result, pickLightColorForStar(planetList.get(i)), 0.5f);
                     else result = pickLightColorForStar(planetList.get(i));
-
+            }
             system.setLightColor(result);
         }
 
