@@ -1,4 +1,5 @@
 Version 1.0.2
+
 * "marketSize" option now supports numbers greater than 10 if bigger population conditions exists due to other mods
   - If no such conditions exist (or their IDs do not match the "population_##" string), "marketSize" will continue to cap population size at 10, as before.
 * Added "systemLightColor" option for custom star systems
