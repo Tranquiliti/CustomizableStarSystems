@@ -17,7 +17,8 @@
 	# An example star system, with ID "css_reference_star_system", explaining and displaying all available options
 	# The ID must be unique and should not be shared by another custom star system
 	"css_reference_star_system":{
-		# True -> this system will spawn in the Sector
+		# If false, this system will not spawn during new game generation
+		# System can still be forcibly spawned in-game using Console Commands or LunaSnippets
 		# Defaults to true if this entry is omitted
 		"isEnabled":true,
 
@@ -25,39 +26,44 @@
 		# Defaults to 1 if this entry is omitted
 		"numberOfSystems":1,
 
-		# True -> Tags this system as a Core World system, which tells the game to
-		# not spawn certain mission entities (e.g. probes or bounty targets) in this system
+		# If true, tags this system as a Core World system, which tells the game to
+		# not spawn certain mission entities (like probes or bounty targets) in this system
 		# Defaults to false if this entry is omitted
 		"isCoreWorldSystem":false,
 
-		# True -> adds nebula clouds in this system, based on the system's constellation age
+		# If true, adds nebula clouds in this system, based on the system's constellation age
 		# Defaults to false if this entry is omitted
 		"hasSystemwideNebula":false,
 
-		# True -> Adds an unactivated coronal hypershunt in the center of the system
+		# If true,adds an unactivated coronal hypershunt in the center of the system
 		# Defaults to false if this entry is omitted
 		"addCoronalHypershunt":false,
 
-		# True -> Adds an undisturbed cryosleeper in the outer reaches of the system
+		# If true, adds an undisturbed cryosleeper in the outer reaches of the system
 		# Defaults to false if this entry is omitted
 		"addDomainCryosleeper":false,
 
-		# Which constellation or location to place this system
+		# The constellation or location to place this system
 		# 0 -> a random constellation
 		# n -> n-th closest constellation to Core Worlds (use a very large number to set to furthest constellation)
 		# [x,y] -> place system in specified coordinates (WARNING: Location may overlap with existing star systems)
 		# Defaults to 0 if this entry is omitted
 		"setLocation":0,
 
-		# Which background to use in this system
+		# The background to use in this system
 		# System backgrounds are found in the starsector-core/graphics/backgrounds folder
 		# Uses a default system background, dependent on "hasSystemwideNebula", if this entry is omitted
 		"systemBackground":"background6.jpg",
 
-		# What music to play while in this star system
+		# The music to play while visiting this system
 		# A list of eligible music IDs is found in starsector-core/data/config/sounds.json
 		# Uses default music if this entry is omitted
 		"systemMusic":"music_campaign",
+
+		# The light color of this system
+		# Affects the color of all entities inside the system
+		# Defaults to proc-gen settings if this entry is omitted
+		"systemLightColor":[255,255,255,255],
 
 		# A list of entities to generate within this system
 		# The list *MUST START* with a center entity, which can either be a:
@@ -312,11 +318,11 @@
 				# *REQUIRED* option if "marketSize" is at least 1
 				"factionId":"player",
 
-				# True -> market has free port enabled
+				# If true, enables Free Port on this market
 				# Defaults to false if this entry is omitted
 				"freePort":false,
 
-				# True -> market is governed by an Alpha Core AI admin
+				# If true, adds an Alpha Core admin to govern this market
 				# Defaults to false if this entry is omitted
 				"aiCoreAdmin":true,
 
@@ -437,9 +443,10 @@
 				# Defaults to 400 if this entry is omitted
 				"size":400,
 			},
-			{ # Accretion disk (unlike most entities here, it has no required options, with "focus" being optional)
+			{ # Accretion disk
 				"entity":"accretion_disk",
 				"focus":0, # Does not support [f,l]
+				"orbitRadius":0, # Optional
 			},
 			{ # Magnetic field
 				"entity":"magnetic_field",
@@ -484,6 +491,7 @@
 				"entity":"ring",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
+				"orbitDays":0,
 
 				# Name of the ring band
 				# Uses default name if this entry is omitted
@@ -506,6 +514,7 @@
 				"entity":"asteroid_belt",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
+				"orbitDays":0,
 				"name":"Test Name Belt",
 
 				# Index of the ring texture to use for the asteroid belt's inner ring

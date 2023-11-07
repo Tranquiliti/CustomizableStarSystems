@@ -85,10 +85,10 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                     util.generateCustomStarSystem(systemOptions);
-                    print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId)).append("\n");
+                    print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                 }
             } catch (Exception e) {
-                print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId)).append("\n").append(e);
+                print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId)).append(e);
                 output.addPara(print.toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
             }
