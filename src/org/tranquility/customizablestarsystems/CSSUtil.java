@@ -136,7 +136,7 @@ public class CSSUtil {
     public final String ERROR_INVALID_CONDITION_UNINHABITED = Global.getSettings().getString("customizablestarsystems", "error_invalidConditionUninhabited");
     public final String ERROR_INVALID_CONDITION_INHABITED = Global.getSettings().getString("customizablestarsystems", "error_invalidConditionInhabited");
     public final String ERROR_INVALID_INDUSTRY = Global.getSettings().getString("customizablestarsystems", "error_invalidIndustry");
-    public final String ERROR_INVALID_ENTITY_ID = Global.getSettings().getString("customizablestarsystems", "error_invalidEntityId");
+    public final String ERROR_INVALID_ENTITY_ID = Global.getSettings().getString("customizablestarsystems", "error_invalidEntityID");
 
     // Entities, usually used in switch cases
     public final String ENTITY_EMPTY_LOCATION = "empty_location";
@@ -154,26 +154,32 @@ public class CSSUtil {
     public final String ID_MARKET = "_market";
     public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
 
-    // Updated in CustomStarSystem.addMarket()
-    public transient HashMap<MarketAPI, String> marketsToOverrideAdmin;
-
-    // Filled in during the first setLocation() call
-    private transient ArrayList<Constellation> procGenConstellations;
-
-    private final String[] STAR_GIANT_TYPES = {StarTypes.ORANGE_GIANT, StarTypes.RED_GIANT, StarTypes.RED_SUPERGIANT, StarTypes.BLUE_GIANT, StarTypes.BLUE_SUPERGIANT};
-
-    // The centroid point of all vanilla THEME_CORE systems
-    private final Vector2f CORE_WORLD_CENTER = new Vector2f(-4531, -5865);
+    // Other
+    public transient HashMap<MarketAPI, String> marketsToOverrideAdmin; // Updated in CustomStarSystem.addMarket()
+    private transient ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
+    private final String[] RANDOM_STAR_GIANT_TYPES = {StarTypes.ORANGE_GIANT, StarTypes.RED_GIANT, StarTypes.RED_SUPERGIANT, StarTypes.BLUE_GIANT, StarTypes.BLUE_SUPERGIANT};
+    private final Vector2f CORE_WORLD_CENTER = new Vector2f(-4531, -5865); // The centroid point of all vanilla THEME_CORE systems
+    private final Random randomSeed = StarSystemGenerator.random; // Sector seed
 
     // Making a utility class instantiable just so I can modify admins properly D:
     public CSSUtil() {
         marketsToOverrideAdmin = new HashMap<>();
     }
 
+    /**
+     * Creates a custom star system based on pre-defined options
+     *
+     * @param systemOptions A JSON object detailing how to create the star system
+     */
     public void generateCustomStarSystem(JSONObject systemOptions) throws JSONException {
         new CustomStarSystem(systemOptions);
     }
 
+    /**
+     * Sets admins accordingly on given markets; the HashMap is cleared afterwards
+     *
+     * @param marketMap A map of market IDs to the admins to place
+     */
     public static void generateAdminsOnMarkets(HashMap<MarketAPI, String> marketMap) {
         if (marketMap != null) {
             AICoreAdminPluginImpl aiPlugin = new AICoreAdminPluginImpl();
@@ -314,7 +320,6 @@ public class CSSUtil {
                     default:
                         newEntity = addCustomEntity(entityOptions);
                         setEntityLocation(newEntity, entityOptions, i);
-                        break;
                 }
                 systemEntities.add(newEntity);
             }
@@ -340,7 +345,7 @@ public class CSSUtil {
             float orbitRadius = entityOptions.getInt(OPT_ORBIT_RADIUS);
 
             float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
-            if (angle < 0) angle = StarSystemGenerator.random.nextFloat() * 360f;
+            if (angle < 0) angle = randomSeed.nextFloat() * 360f;
 
             float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
             if (orbitDays <= 0) {
@@ -355,7 +360,7 @@ public class CSSUtil {
                     default:
                         divisor = 20f;
                 }
-                orbitDays = orbitRadius / (divisor + StarSystemGenerator.random.nextFloat() * 5f);
+                orbitDays = orbitRadius / (divisor + randomSeed.nextFloat() * 5f);
             }
 
             // Could probably clean this up later
@@ -378,7 +383,6 @@ public class CSSUtil {
                     break;
                 default:
                     entity.setCircularOrbit(focusEntity, angle, orbitRadius, orbitDays);
-                    break;
             }
         }
 
@@ -405,8 +409,6 @@ public class CSSUtil {
                 case 5:
                     orbitAngle -= 60f;
                     break;
-                default:
-                    break;
             }
 
             if (entityOptions.getString(OPT_ENTITY).equals(Tags.PLANET))
@@ -426,10 +428,10 @@ public class CSSUtil {
             float orbitRadius = entityOptions.optInt(OPT_ORBIT_RADIUS, 2000);
 
             float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
-            if (angle < 0) angle = StarSystemGenerator.random.nextFloat() * 360f;
+            if (angle < 0) angle = randomSeed.nextFloat() * 360f;
 
             float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
-            if (orbitDays <= 0) orbitDays = orbitRadius / (20f + StarSystemGenerator.random.nextFloat() * 5f);
+            if (orbitDays <= 0) orbitDays = orbitRadius / (20f + randomSeed.nextFloat() * 5f);
 
             float angleDifference = 360f / numOfCenterStars;
             for (int i = 1; i <= numOfCenterStars; i++) {
@@ -447,7 +449,7 @@ public class CSSUtil {
         private PlanetAPI addStar(JSONObject options, int index, boolean isClose) throws JSONException {
             String starType = options.optString(OPT_TYPE, DEFAULT_STAR_TYPE);
             if (starType.equals(TYPE_RANDOM_STAR_GIANT))
-                starType = STAR_GIANT_TYPES[StarSystemGenerator.random.nextInt(STAR_GIANT_TYPES.length)];
+                starType = RANDOM_STAR_GIANT_TYPES[randomSeed.nextInt(RANDOM_STAR_GIANT_TYPES.length)];
 
             StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
             if (starData == null)
@@ -455,15 +457,15 @@ public class CSSUtil {
 
             float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
-                radius = starData.getMinRadius() + (starData.getMaxRadius() - starData.getMinRadius()) * StarSystemGenerator.random.nextFloat();
+                radius = starData.getMinRadius() + (starData.getMaxRadius() - starData.getMinRadius()) * randomSeed.nextFloat();
 
             float coronaRadius = options.optInt(OPT_CORONA_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (coronaRadius <= 0)
-                coronaRadius = Math.max(starData.getCoronaMin(), radius * (starData.getCoronaMult() + starData.getCoronaVar() * (StarSystemGenerator.random.nextFloat() - 0.5f)));
+                coronaRadius = Math.max(starData.getCoronaMin(), radius * (starData.getCoronaMult() + starData.getCoronaVar() * (randomSeed.nextFloat() - 0.5f)));
 
             float flareChance = (float) options.optDouble(OPT_FLARE_CHANCE, DEFAULT_SET_TO_PROC_GEN);
             if (flareChance < 0)
-                flareChance = starData.getMinFlare() + (starData.getMaxFlare() - starData.getMinFlare()) * StarSystemGenerator.random.nextFloat();
+                flareChance = starData.getMinFlare() + (starData.getMaxFlare() - starData.getMinFlare()) * randomSeed.nextFloat();
 
             PlanetAPI newStar;
             if (system.getCenter() == null) {
@@ -524,11 +526,11 @@ public class CSSUtil {
 
             float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
-                radius = planetData.getMinRadius() + (planetData.getMaxRadius() - planetData.getMinRadius()) * StarSystemGenerator.random.nextFloat();
+                radius = planetData.getMinRadius() + (planetData.getMaxRadius() - planetData.getMinRadius()) * randomSeed.nextFloat();
 
             // Need to set a default orbit, else new game creation will fail when attempting to save
             PlanetAPI newPlanet = system.addPlanet(system.getCenter().getId() + ID_PLANET + index, system.getCenter(), name, planetType, 0f, radius, 10000f, 1000f);
-            newPlanet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, StarSystemGenerator.random.nextLong());
+            newPlanet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
 
             addSpecChanges(newPlanet, options.optJSONObject(OPT_SPEC_CHANGES));
 
@@ -587,7 +589,7 @@ public class CSSUtil {
 
             station.setAI(null);
 
-            PersonAPI commander = Misc.getAICoreOfficerPlugin(Commodities.ALPHA_CORE).createPerson(Commodities.ALPHA_CORE, Factions.REMNANTS, StarSystemGenerator.random);
+            PersonAPI commander = Misc.getAICoreOfficerPlugin(Commodities.ALPHA_CORE).createPerson(Commodities.ALPHA_CORE, Factions.REMNANTS, randomSeed);
 
             station.setCommander(commander);
             station.getFlagship().setCaptain(commander);
@@ -600,13 +602,13 @@ public class CSSUtil {
                 station.getMemoryWithoutUpdate().set("$damagedStation", true);
                 station.setName(station.getName() + " (Damaged)");
 
-                system.addScript(new RemnantStationFleetManager(station, 1f, 0, 2 + StarSystemGenerator.random.nextInt(3), 25f, 6, 12));
+                system.addScript(new RemnantStationFleetManager(station, 1f, 0, 2 + randomSeed.nextInt(3), 25f, 6, 12));
                 system.addTag(Tags.THEME_REMNANT_SUPPRESSED);
             } else {
                 RemnantOfficerGeneratorPlugin.integrateAndAdaptCoreForAIFleet(station.getFlagship());
-                RemnantOfficerGeneratorPlugin.addCommanderSkills(commander, station, null, 3, StarSystemGenerator.random);
+                RemnantOfficerGeneratorPlugin.addCommanderSkills(commander, station, null, 3, randomSeed);
 
-                system.addScript(new RemnantStationFleetManager(station, 1f, 0, 8 + StarSystemGenerator.random.nextInt(5), 15f, 8, 24));
+                system.addScript(new RemnantStationFleetManager(station, 1f, 0, 8 + randomSeed.nextInt(5), 15f, 8, 24));
                 system.addTag(Tags.THEME_REMNANT_RESURGENT);
             }
 
@@ -630,18 +632,18 @@ public class CSSUtil {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (orbitRadius <= 0)
-                orbitRadius = Math.max(focusEntity.getRadius() * 5f, 90f) * (2f + StarSystemGenerator.random.nextFloat());
+                orbitRadius = Math.max(focusEntity.getRadius() * 5f, 90f) * (2f + randomSeed.nextFloat());
 
             float bandWidth = 256f;
             int numBands = 12;
             for (int i = 0; i < numBands; i++) {
                 float radius = orbitRadius - i * bandWidth * 0.25f - i * bandWidth * 0.1f;
-                String ring = StarSystemGenerator.random.nextBoolean() ? ENTITY_RINGS_ICE : ENTITY_RINGS_DUST;
-                int ringIndex = StarSystemGenerator.random.nextInt(2);
-                RingBandAPI visual = system.addRingBand(focusEntity, CATEGORY_MISC, ring, 256f, ringIndex, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * StarSystemGenerator.random.nextFloat())));
+                String ring = randomSeed.nextBoolean() ? ENTITY_RINGS_ICE : ENTITY_RINGS_DUST;
+                int ringIndex = randomSeed.nextInt(2);
+                RingBandAPI visual = system.addRingBand(focusEntity, CATEGORY_MISC, ring, 256f, ringIndex, new Color(46, 35, 173), bandWidth, radius + bandWidth / 2f, -(radius / (30f + 10f * randomSeed.nextFloat())));
                 visual.setSpiral(true);
                 visual.setMinSpiralRadius(0);
-                visual.setSpiralFactor(2f + StarSystemGenerator.random.nextFloat() * 5f);
+                visual.setSpiralFactor(2f + randomSeed.nextFloat() * 5f);
             }
 
             SectorEntityToken ring = system.addTerrain(Terrain.RING, new BaseRingTerrain.RingParams(orbitRadius, orbitRadius / 2f, focusEntity, DEFAULT_ACCRETION_DISK_NAME));
@@ -663,7 +665,7 @@ public class CSSUtil {
             if (baseColor == null) baseColor = new Color(50, 20, 100, 40);
 
             float auroraFrequency = (float) options.optDouble(OPT_AURORA_FREQUENCY, DEFAULT_SET_TO_PROC_GEN);
-            if (auroraFrequency < 0) auroraFrequency = 0.25f + 0.75f * StarSystemGenerator.random.nextFloat();
+            if (auroraFrequency < 0) auroraFrequency = 0.25f + 0.75f * randomSeed.nextFloat();
 
             Color[] auroraColors = getColors(options.optJSONArray(OPT_AURORA_COLOR));
             if (auroraColors == null)
@@ -680,7 +682,7 @@ public class CSSUtil {
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
 
             float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
-            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
+            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * randomSeed.nextFloat());
 
             String name = options.optString(OPT_NAME, null);
             String type = options.optString(OPT_TYPE, ENTITY_RINGS_DUST);
@@ -692,14 +694,14 @@ public class CSSUtil {
         }
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
-        public SectorEntityToken addAsteroidBelt(JSONObject options, int index) throws JSONException {
+        private SectorEntityToken addAsteroidBelt(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
 
             float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
-            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * StarSystemGenerator.random.nextFloat());
+            if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * randomSeed.nextFloat());
 
-            int count = (int) (orbitDays * (0.25f + 0.5f * StarSystemGenerator.random.nextFloat()));
+            int count = (int) (orbitDays * (0.25f + 0.5f * randomSeed.nextFloat()));
             if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
             if (count > 250) count = 250;
 
@@ -735,6 +737,7 @@ public class CSSUtil {
                 case Entities.SENSOR_ARRAY_MAKESHIFT:
                     if (factionId == null || factionId.equals(Factions.NEUTRAL))
                         entity.getMemoryWithoutUpdate().set(MemFlags.OBJECTIVE_NON_FUNCTIONAL, true);
+                    break;
                 case Entities.CORONAL_TAP:
                     system.addTag(Tags.HAS_CORONAL_TAP);
                     system.addTag(Tags.THEME_INTERESTING);
@@ -743,11 +746,12 @@ public class CSSUtil {
                     entity.setFaction(Factions.DERELICT);
                     system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
                     system.addTag(Tags.THEME_INTERESTING);
+                    break;
             }
 
             SalvageEntityGenDataSpec salvageData = (SalvageEntityGenDataSpec) Global.getSettings().getSpec(SalvageEntityGenDataSpec.class, type, true);
             if (salvageData != null) {
-                entity.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, StarSystemGenerator.random.nextLong());
+                entity.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
                 entity.setSensorProfile(1f);
                 entity.setDiscoverable(true);
                 entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, salvageData.getDetectionRange());
@@ -760,7 +764,6 @@ public class CSSUtil {
 
         // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
         private void generateCryosleeper(String name, float orbitRadius, boolean discoverable) {
-            Random randomSeed = StarSystemGenerator.random;
             SectorEntityToken cryosleeper = system.addCustomEntity(null, name, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
             cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
             cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
@@ -781,7 +784,7 @@ public class CSSUtil {
             SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
             if (systemCenter.isStar()) { // Orbit the sole star
                 float orbitRadius = systemCenter.getRadius() + hypershunt.getRadius() + 100f;
-                hypershunt.setCircularOrbitPointingDown(systemCenter, StarSystemGenerator.random.nextFloat() * 360f, orbitRadius, orbitRadius / 20f);
+                hypershunt.setCircularOrbitPointingDown(systemCenter, randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / 20f);
             } else { // Stay in the center, facing towards the primary star
                 PlanetAPI primaryStar = system.getStar();
                 hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
@@ -984,10 +987,10 @@ public class CSSUtil {
             StarSystemAPI system = planet.getStarSystem();
             String starType = system.getStar().getTypeId();
             if (planet.hasCondition(Conditions.HOT) || planetType.equals(Planets.DESERT) || planetType.equals(Planets.DESERT1) || planetType.equals(Planets.ARID) || starType.equals(StarTypes.BLUE_GIANT) || starType.equals(StarTypes.BLUE_SUPERGIANT))
-                numOfShades = (StarSystemGenerator.random.nextBoolean() ? 3 : 1);
+                numOfShades = (randomSeed.nextBoolean() ? 3 : 1);
 
             if (planet.hasCondition(Conditions.POOR_LIGHT) || planetType.equals(Planets.PLANET_TERRAN_ECCENTRIC) || starType.equals(StarTypes.RED_DWARF) || starType.equals(StarTypes.BROWN_DWARF))
-                numOfMirrors = (StarSystemGenerator.random.nextBoolean() ? 5 : 3);
+                numOfMirrors = (randomSeed.nextBoolean() ? 5 : 3);
 
             // Force a solar array if none of the above conditions are met
             if (numOfShades == 0 && numOfMirrors == 0) {
@@ -1065,7 +1068,7 @@ public class CSSUtil {
 
         private Color pickLightColorForStar(PlanetAPI star) {
             StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, star.getSpec().getPlanetType(), true);
-            return Misc.interpolateColor(starData.getLightColorMin(), starData.getLightColorMax(), StarSystemGenerator.random.nextFloat());
+            return Misc.interpolateColor(starData.getLightColorMin(), starData.getLightColorMax(), randomSeed.nextFloat());
         }
 
         private void generateHyperspace() {
@@ -1120,7 +1123,7 @@ public class CSSUtil {
 
             Constellation selectedConstellation;
             if (index <= 0) // Set location to a random constellation
-                selectedConstellation = procGenConstellations.get(StarSystemGenerator.random.nextInt(procGenConstellations.size()));
+                selectedConstellation = procGenConstellations.get(randomSeed.nextInt(procGenConstellations.size()));
             else // Set location to a specified constellation
                 selectedConstellation = procGenConstellations.get(Math.min(index, procGenConstellations.size()) - 1);
 
@@ -1136,8 +1139,8 @@ public class CSSUtil {
             centroidY /= nearestSystems.size();
 
             // Nudge the centroid point to a nearby random location at most 2000 units away
-            centroidX += StarSystemGenerator.random.nextFloat() * 4000f - 2000f;
-            centroidY += StarSystemGenerator.random.nextFloat() * 4000f - 2000f;
+            centroidX += randomSeed.nextFloat() * 4000f - 2000f;
+            centroidY += randomSeed.nextFloat() * 4000f - 2000f;
 
             // Find an empty spot in the constellation, starting at the centroid point and
             // then searching for locations around it in a square pattern
@@ -1192,6 +1195,7 @@ public class CSSUtil {
                             curY = squareSize;
                             move = 0;
                         }
+                        break;
                 }
             }
 

@@ -54,7 +54,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
             // Verify first that arguments only contain valid ids before creating any star systems
             for (String systemId : tmp)
                 if (!systems.has(systemId)) {
-                    Console.showMessage(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_noSystemId"), systemId));
+                    Console.showMessage(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_noSystemID"), systemId));
                     return CommandResult.ERROR;
                 }
 
@@ -67,7 +67,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
                     }
                 } catch (Exception e) {
                     print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId));
-                    Console.showMessage(print);
+                    Console.showMessage(print.append(e));
                     return CommandResult.ERROR;
                 }
         }

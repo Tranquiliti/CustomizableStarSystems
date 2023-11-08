@@ -110,14 +110,14 @@
 		"error_invalidConditionUninhabited":"Error attempting to add condition \"%s\" for \"%s\" planet!",
 		"error_invalidConditionInhabited":"Error attempting to add condition \"%s\" for Size %d \"%s\" market!",
 		"error_invalidIndustry":"Error attempting to add industry \"%s\" for Size %d \"%s\" market!",
-		"error_invalidEntityId":"Invalid custom entity id \"%s\"!",
+		"error_invalidEntityID":"Invalid custom entity ID \"%s\"!",
 
 		# Console Commands messages
 		"commands_generatedSystem":"Generated custom star system \"%s\"\n",
 		"commands_disabledSystem":"Did not generate custom star system \"%s\" since \"isEnabled\" is set to 'false'!\n",
 		"commands_error_badJSON":"Error: Something wrong with customStarSystems.json!\n",
 		"commands_error_badSystem":"Error: Something went wrong with custom star system \"%s\"! Load a previous save to prevent a possible crash!\n",
-		"commands_error_noSystemId":"Error: Did not find custom star system with id \"%s\"!\n",
+		"commands_error_noSystemID":"Error: Did not find custom star system with ID \"%s\"!\n",
 
 		# LunaSnippets
 		"snippets_spawnSystemName":"Generate custom star systems",
