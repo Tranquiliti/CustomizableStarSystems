@@ -43,10 +43,10 @@ public class CSSModPlugin extends BaseModPlugin {
                 if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
                         util.generateCustomStarSystem(systemOptions);
-                        Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generated_system"), systemId));
+                        Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 else
-                    Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_bad_system"), systemId));
+                    Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_disabledSystem"), systemId));
             }
             marketsToOverrideAdmin = util.marketsToOverrideAdmin;
         } catch (Exception e) {

@@ -1,3 +1,13 @@
+Version 1.0.3
+
+* Fixed a bug where custom star systems with comm relays or similar entities were erroneously marked as though they contained a Coronal Hypershunt
+  - This also fixes "isCoreWorldSystem" tags being overridden due to this same bug
+* Fixed logging for generating custom star systems during new game creation
+* "SpawnCustomStarSystems" command and the related LunaSnippet now print the exception messages for generation and syntax errors, respectively
+* Minor code refactors
+
+
+
 Version 1.0.2
 
 * "marketSize" option now supports numbers greater than 10 if bigger population conditions exists due to other mods

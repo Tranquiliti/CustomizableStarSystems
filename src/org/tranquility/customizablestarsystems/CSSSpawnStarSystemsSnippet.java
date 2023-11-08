@@ -54,12 +54,12 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
 
     @Override
     public void execute(Map<String, Object> parameters, TooltipMakerAPI output) {
-        List<String> enabled = new ArrayList<>();
+        List<String> enabledParams = new ArrayList<>();
 
         for (String param : parameters.keySet())
-            if ((Boolean) parameters.get(param)) enabled.add(param);
+            if ((Boolean) parameters.get(param)) enabledParams.add(param);
 
-        if (enabled.isEmpty()) {
+        if (enabledParams.isEmpty()) {
             output.addPara(Global.getSettings().getString("customizablestarsystems", "snippets_spawnSystemNoSelected"), 0f, Misc.getPositiveHighlightColor(), Misc.getHighlightColor());
             return;
         }
@@ -68,11 +68,11 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
         try {
             systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
         } catch (Exception e) { // Re-using Console Commands message here; it's economical!
-            output.addPara(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON"), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+            output.addPara(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e, 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
             return;
         }
 
-        for (String systemId : enabled)
+        for (String systemId : enabledParams)
             if (!systems.has(systemId)) {
                 output.addPara(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_noSystemId"), systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
@@ -80,7 +80,7 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
 
         CSSUtil util = new CSSUtil();
         StringBuilder print = new StringBuilder();
-        for (String systemId : enabled)
+        for (String systemId : enabledParams)
             try {
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
@@ -88,8 +88,8 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
                     print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                 }
             } catch (Exception e) {
-                print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId)).append(e);
-                output.addPara(print.toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+                print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_badSystem"), systemId));
+                output.addPara(print.append(e).toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
             }
 
