@@ -1,3 +1,15 @@
+Version 1.0.4
+
+* Added experimental Kepler Orbit support for "orbitRadius" option (requested by Liral)
+  - Requires LazyLib library mod to use
+  - Set "orbitRadius" to [o1, o2] to give an entity a Kepler orbit whose axes are set to o1 and o2
+* Added "orbitClockwise" option for most entities
+  - If set to false, the entity will orbit counter-clockwise instead
+* Added more info for error messages
+* "isCoreWorldSystem" option now forcibly applies the THEME_CORE tags, instead of relying on those tags being automatically applied by the game
+
+
+
 Version 1.0.3
 
 * Fixed a bug where custom star systems with comm relays or similar entities were erroneously marked as though they contained a Coronal Hypershunt

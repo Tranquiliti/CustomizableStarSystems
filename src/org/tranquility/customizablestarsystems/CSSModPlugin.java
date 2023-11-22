@@ -42,7 +42,7 @@ public class CSSModPlugin extends BaseModPlugin {
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                        util.generateCustomStarSystem(systemOptions);
+                        util.generateCustomStarSystem(systemOptions, systemId);
                         Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 else

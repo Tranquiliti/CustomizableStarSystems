@@ -39,7 +39,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                         for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                            util.generateCustomStarSystem(systemOptions);
+                            util.generateCustomStarSystem(systemOptions, systemId);
                             print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                         }
                     else
@@ -62,7 +62,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
                 try {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                        util.generateCustomStarSystem(systemOptions);
+                        util.generateCustomStarSystem(systemOptions, systemId);
                         print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 } catch (Exception e) {

@@ -25,6 +25,7 @@ import com.fs.starfarer.loading.specs.PlanetSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.lazywizard.lazylib.campaign.orbits.KeplerOrbit;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
@@ -59,6 +60,7 @@ public class CSSUtil {
     public final String OPT_NAME = Global.getSettings().getString("customizablestarsystems", "opt_name");
     public final String OPT_ORBIT_ANGLE = Global.getSettings().getString("customizablestarsystems", "opt_orbitAngle");
     public final String OPT_ORBIT_DAYS = Global.getSettings().getString("customizablestarsystems", "opt_orbitDays");
+    public final String OPT_ORBIT_CLOCKWISE = Global.getSettings().getString("customizablestarsystems", "opt_orbitClockwise");
     public final String OPT_TYPE = Global.getSettings().getString("customizablestarsystems", "opt_type");
     public final String OPT_RADIUS = Global.getSettings().getString("customizablestarsystems", "opt_radius");
     public final String OPT_CORONA_RADIUS = Global.getSettings().getString("customizablestarsystems", "opt_coronaRadius");
@@ -137,6 +139,7 @@ public class CSSUtil {
     public final String ERROR_INVALID_CONDITION_INHABITED = Global.getSettings().getString("customizablestarsystems", "error_invalidConditionInhabited");
     public final String ERROR_INVALID_INDUSTRY = Global.getSettings().getString("customizablestarsystems", "error_invalidIndustry");
     public final String ERROR_INVALID_ENTITY_ID = Global.getSettings().getString("customizablestarsystems", "error_invalidEntityID");
+    public final String ERROR_LAZYLIB_REQUIRED = Global.getSettings().getString("customizablestarsystems", "error_lazyLibRequired");
 
     // Entities, usually used in switch cases
     public final String ENTITY_EMPTY_LOCATION = "empty_location";
@@ -153,6 +156,7 @@ public class CSSUtil {
     public final String ID_STATION = ":station_";
     public final String ID_MARKET = "_market";
     public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
+    public final String MOD_ID_LAZYLIB = "lw_lazylib";
 
     // Other
     public transient HashMap<MarketAPI, String> marketsToOverrideAdmin; // Updated in CustomStarSystem.addMarket()
@@ -170,9 +174,10 @@ public class CSSUtil {
      * Creates a custom star system based on pre-defined options
      *
      * @param systemOptions A JSON object detailing how to create the star system
+     * @param systemId      The JSON ID of the star system
      */
-    public void generateCustomStarSystem(JSONObject systemOptions) throws JSONException {
-        new CustomStarSystem(systemOptions);
+    public void generateCustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+        new CustomStarSystem(systemOptions, systemId);
     }
 
     /**
@@ -198,11 +203,14 @@ public class CSSUtil {
     private class CustomStarSystem {
         private transient StarSystemAPI system = null;
         private transient List<SectorEntityToken> systemEntities = null;
+        private final String systemId;
         private boolean hasFactionPresence = false;
         private boolean hasJumpPoint = false;
         private float systemRadius = 0f;
 
-        private CustomStarSystem(JSONObject systemOptions) throws JSONException {
+        private CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+            this.systemId = systemId;
+
             createStarSystem(systemOptions);
 
             generateEntities(systemOptions.getJSONArray(OPT_ENTITIES));
@@ -218,6 +226,9 @@ public class CSSUtil {
                 system.removeTag(Tags.THEME_CORE);
                 system.addTag(Tags.THEME_MISC);
                 system.addTag(Tags.THEME_INTERESTING_MINOR);
+            } else {
+                system.addTag(Tags.THEME_CORE);
+                system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
             }
 
             if (!systemOptions.isNull(OPT_SYSTEM_MUSIC))
@@ -253,7 +264,8 @@ public class CSSUtil {
         }
 
         private void generateEntities(JSONArray entities) throws JSONException {
-            if (entities.length() == 0) throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+            if (entities.length() == 0)
+                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
 
             systemEntities = new ArrayList<>(entities.length());
 
@@ -262,7 +274,7 @@ public class CSSUtil {
                 String entityType = entityOptions.getString(OPT_ENTITY);
 
                 if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
-                    throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+                    throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
 
                 SectorEntityToken newEntity;
                 switch (entityType) {
@@ -340,6 +352,12 @@ public class CSSUtil {
         private void setCircularOrbit(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(entityOptions, index);
 
+            if (entityOptions.optJSONArray(OPT_ORBIT_RADIUS) != null)
+                if (Global.getSettings().getModManager().isModEnabled(MOD_ID_LAZYLIB)) {
+                    setKeplerOrbit(entity, entityOptions, focusEntity);
+                    return;
+                } else throw new IllegalArgumentException(String.format(ERROR_LAZYLIB_REQUIRED, systemId, index));
+
             String type = entityOptions.getString(OPT_ENTITY);
 
             float orbitRadius = entityOptions.getInt(OPT_ORBIT_RADIUS);
@@ -363,6 +381,8 @@ public class CSSUtil {
                 orbitDays = orbitRadius / (divisor + randomSeed.nextFloat() * 5f);
             }
 
+            if (!entityOptions.optBoolean(OPT_ORBIT_CLOCKWISE, true)) orbitDays *= -1f;
+
             // Could probably clean this up later
             switch (type) {
                 case ENTITY_REMNANT_STATION:
@@ -384,6 +404,30 @@ public class CSSUtil {
                 default:
                     entity.setCircularOrbit(focusEntity, angle, orbitRadius, orbitDays);
             }
+
+        }
+
+        // Known issues: seems incapable of correctly orbiting any focus besides the first entity
+        private void setKeplerOrbit(SectorEntityToken entity, JSONObject entityOptions, SectorEntityToken focusEntity) throws JSONException {
+            JSONArray orbitAxis = entityOptions.getJSONArray(OPT_ORBIT_RADIUS);
+            float semiMajorAxis = orbitAxis.getInt(0);
+            float semiMinorAxis = orbitAxis.getInt(1);
+
+            // For some Ludd-forsaken reason, setting an orbit angle manually does not work in-game
+            // (seems to always be set back to 0 degrees), yet, somehow, the default, random-seed option works?!
+            // (Maybe something to do with floating-point precision and/or type?)
+            float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
+            if (angle < 0) angle = randomSeed.nextFloat() * 360f;
+
+            float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
+
+            if (orbitDays <= 0)
+                orbitDays = ((semiMajorAxis + semiMinorAxis) * 0.5f) / (20f + randomSeed.nextFloat() * 5f);
+
+            // On observation, the KeplerOrbit clockwise parameter seems to do the opposite (compared to vanilla orbits)
+            boolean clockwise = !entityOptions.optBoolean(OPT_ORBIT_CLOCKWISE, true);
+
+            entity.setOrbit(new KeplerOrbit(focusEntity, semiMajorAxis, semiMinorAxis, angle, orbitDays, clockwise));
         }
 
         private void setLagrangePointOrbit(SectorEntityToken entity, JSONObject entityOptions) throws JSONException {
@@ -437,7 +481,7 @@ public class CSSUtil {
             for (int i = 1; i <= numOfCenterStars; i++) {
                 JSONObject starOptions = entities.getJSONObject(i);
                 if (!starOptions.getString(OPT_ENTITY).equals(Tags.STAR))
-                    throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+                    throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
                 systemEntities.add(addStar(starOptions, i, true));
                 systemEntities.get(i).setCircularOrbit(system.getCenter(), angle, orbitRadius + i - 1, orbitDays);
                 angle = (angle + angleDifference) % 360f;
@@ -453,7 +497,7 @@ public class CSSUtil {
 
             StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
             if (starData == null)
-                throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType));
+                throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, systemId, index));
 
             float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
@@ -519,7 +563,7 @@ public class CSSUtil {
             String planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
             PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
             if (planetData == null)
-                throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType));
+                throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, systemId, index));
 
             String name = options.optString(OPT_NAME, null);
             if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
@@ -725,7 +769,7 @@ public class CSSUtil {
             try {
                 entity = system.addCustomEntity(null, name, type, factionId);
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type)));
+                throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, systemId)));
             }
 
             switch (type) {
@@ -805,7 +849,7 @@ public class CSSUtil {
         private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
             int focus = entityOptions.optInt(OPT_FOCUS);
             if (focus >= systemEntities.size())
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, system.getBaseName(), index));
+                throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, systemId, index));
             return systemEntities.get(focus);
         }
 
@@ -899,7 +943,7 @@ public class CSSUtil {
                 try {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId()));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), systemId));
                 }
         }
 
@@ -921,7 +965,7 @@ public class CSSUtil {
                 try {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, systemId));
                 }
 
             JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
@@ -934,7 +978,7 @@ public class CSSUtil {
                 try {
                     planetMarket.addIndustry(industryId);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, systemId));
                 }
 
                 if (specials != null && specials.length() > 1) {
