@@ -158,14 +158,7 @@
 
 				# How far away this entity orbits the focus.
 				# *REQUIRED* if "focus" option either is omitted or is a number (i.e. is not using the [f,l] parameter)
-				#
-				# If LazyLib is installed, Kepler orbits are also supported, if "orbitRadius" uses the [o1,o2] parameter,
-				# where the larger number is the semi-major axis and the smaller number is the semi-minor axis
-				# Known issues with Keplar orbits:
-				#  - "orbitAngle" is not set correctly; any positive number will set the initial orbit angle to 0. Consider keeping "orbitAngle" omitted.
-				#  - "focus" is not set correctly; it will always orbit the 1st entity, regardless of the set "focus"
 				"orbitRadius":1111,
-				#"orbitRadius":[1111,2222], # Only available with LazyLib enabled
 
 				# The initial angle to place this entity
 				# Defaults to a random angle if this entry is omitted or is set to a negative number

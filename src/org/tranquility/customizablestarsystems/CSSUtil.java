@@ -25,7 +25,6 @@ import com.fs.starfarer.loading.specs.PlanetSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.lazywizard.lazylib.campaign.orbits.KeplerOrbit;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
@@ -139,7 +138,6 @@ public class CSSUtil {
     public final String ERROR_INVALID_CONDITION_INHABITED = Global.getSettings().getString("customizablestarsystems", "error_invalidConditionInhabited");
     public final String ERROR_INVALID_INDUSTRY = Global.getSettings().getString("customizablestarsystems", "error_invalidIndustry");
     public final String ERROR_INVALID_ENTITY_ID = Global.getSettings().getString("customizablestarsystems", "error_invalidEntityID");
-    public final String ERROR_LAZYLIB_REQUIRED = Global.getSettings().getString("customizablestarsystems", "error_lazyLibRequired");
 
     // Entities, usually used in switch cases
     public final String ENTITY_EMPTY_LOCATION = "empty_location";
@@ -156,7 +154,12 @@ public class CSSUtil {
     public final String ID_STATION = ":station_";
     public final String ID_MARKET = "_market";
     public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
-    public final String MOD_ID_LAZYLIB = "lw_lazylib";
+
+    // addRemnantStation() strings
+    public final String ID_REMNANT_STATION_DAMAGED = "remnant_station2_Damaged";
+    public final String ID_REMNANT_STATION_STANDARD = "remnant_station2_Standard";
+    public final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
+    public final String NAME_DAMAGED_STATION = " (Damaged)";
 
     // Other
     public transient HashMap<MarketAPI, String> marketsToOverrideAdmin; // Updated in CustomStarSystem.addMarket()
@@ -188,25 +191,27 @@ public class CSSUtil {
     public static void generateAdminsOnMarkets(HashMap<MarketAPI, String> marketMap) {
         if (marketMap != null) {
             AICoreAdminPluginImpl aiPlugin = new AICoreAdminPluginImpl();
-            for (MarketAPI market : marketMap.keySet()) {
-                String adminType = marketMap.get(market);
-                if (adminType.equals(Factions.PLAYER)) market.setAdmin(null);
-                else if (adminType.equals(Commodities.ALPHA_CORE))
-                    market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
-            }
-            // No need for the HashMap afterwards, so clear it just in case
-            marketMap.clear();
+            for (MarketAPI market : marketMap.keySet())
+                switch (marketMap.get(market)) {
+                    case Factions.PLAYER:
+                        market.setAdmin(null);
+                        break;
+                    case Commodities.ALPHA_CORE:
+                        market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
+                        break;
+                }
+            marketMap.clear(); // No need for the HashMap afterwards, so clear it just in case
         }
     }
 
     // Inner private class to handle creation of custom star systems
     private class CustomStarSystem {
-        private transient StarSystemAPI system = null;
-        private transient List<SectorEntityToken> systemEntities = null;
+        private transient StarSystemAPI system;
+        private transient List<SectorEntityToken> systemEntities;
         private final String systemId;
+        private float systemRadius = 0f;
         private boolean hasFactionPresence = false;
         private boolean hasJumpPoint = false;
-        private float systemRadius = 0f;
 
         private CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
             this.systemId = systemId;
@@ -256,6 +261,9 @@ public class CSSUtil {
 
         private void createStarSystem(JSONObject systemOptions) throws JSONException {
             JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
+
+            // Create a star system based on the 1st star's name
+            // Looping through "entities" list since 1st entity may be an "empty_location" and not a star
             for (int i = 0; system == null && i < entities.length(); i++) {
                 JSONObject entity = entities.getJSONObject(i);
                 if (entity.getString(OPT_ENTITY).equals(Tags.STAR))
@@ -352,12 +360,6 @@ public class CSSUtil {
         private void setCircularOrbit(SectorEntityToken entity, JSONObject entityOptions, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(entityOptions, index);
 
-            if (entityOptions.optJSONArray(OPT_ORBIT_RADIUS) != null)
-                if (Global.getSettings().getModManager().isModEnabled(MOD_ID_LAZYLIB)) {
-                    setKeplerOrbit(entity, entityOptions, focusEntity);
-                    return;
-                } else throw new IllegalArgumentException(String.format(ERROR_LAZYLIB_REQUIRED, systemId, index));
-
             String type = entityOptions.getString(OPT_ENTITY);
 
             float orbitRadius = entityOptions.getInt(OPT_ORBIT_RADIUS);
@@ -404,30 +406,6 @@ public class CSSUtil {
                 default:
                     entity.setCircularOrbit(focusEntity, angle, orbitRadius, orbitDays);
             }
-
-        }
-
-        // Known issues: seems incapable of correctly orbiting any focus besides the first entity
-        private void setKeplerOrbit(SectorEntityToken entity, JSONObject entityOptions, SectorEntityToken focusEntity) throws JSONException {
-            JSONArray orbitAxis = entityOptions.getJSONArray(OPT_ORBIT_RADIUS);
-            float semiMajorAxis = orbitAxis.getInt(0);
-            float semiMinorAxis = orbitAxis.getInt(1);
-
-            // For some Ludd-forsaken reason, setting an orbit angle manually does not work in-game
-            // (seems to always be set back to 0 degrees), yet, somehow, the default, random-seed option works?!
-            // (Maybe something to do with floating-point precision and/or type?)
-            float angle = entityOptions.optInt(OPT_ORBIT_ANGLE, DEFAULT_SET_TO_PROC_GEN);
-            if (angle < 0) angle = randomSeed.nextFloat() * 360f;
-
-            float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
-
-            if (orbitDays <= 0)
-                orbitDays = ((semiMajorAxis + semiMinorAxis) * 0.5f) / (20f + randomSeed.nextFloat() * 5f);
-
-            // On observation, the KeplerOrbit clockwise parameter seems to do the opposite (compared to vanilla orbits)
-            boolean clockwise = !entityOptions.optBoolean(OPT_ORBIT_CLOCKWISE, true);
-
-            entity.setOrbit(new KeplerOrbit(focusEntity, semiMajorAxis, semiMinorAxis, angle, orbitDays, clockwise));
         }
 
         private void setLagrangePointOrbit(SectorEntityToken entity, JSONObject entityOptions) throws JSONException {
@@ -614,7 +592,7 @@ public class CSSUtil {
 
             CampaignFleetAPI station = FleetFactoryV3.createEmptyFleet(Factions.REMNANTS, FleetTypes.BATTLESTATION, null);
 
-            FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, isDamaged ? "remnant_station2_Damaged" : "remnant_station2_Standard");
+            FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, isDamaged ? ID_REMNANT_STATION_DAMAGED : ID_REMNANT_STATION_STANDARD);
             station.getFleetData().addFleetMember(member);
 
             station.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
@@ -643,8 +621,8 @@ public class CSSUtil {
             system.addTag(Tags.THEME_REMNANT_SECONDARY);
             system.addTag(Tags.THEME_UNSAFE);
             if (isDamaged) {
-                station.getMemoryWithoutUpdate().set("$damagedStation", true);
-                station.setName(station.getName() + " (Damaged)");
+                station.getMemoryWithoutUpdate().set(MEMFLAGS_DAMAGED_STATION, true);
+                station.setName(station.getName() + NAME_DAMAGED_STATION);
 
                 system.addScript(new RemnantStationFleetManager(station, 1f, 0, 2 + randomSeed.nextInt(3), 25f, 6, 12));
                 system.addTag(Tags.THEME_REMNANT_SUPPRESSED);
@@ -796,9 +774,7 @@ public class CSSUtil {
             SalvageEntityGenDataSpec salvageData = (SalvageEntityGenDataSpec) Global.getSettings().getSpec(SalvageEntityGenDataSpec.class, type, true);
             if (salvageData != null) {
                 entity.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
-                entity.setSensorProfile(1f);
-                entity.setDiscoverable(true);
-                entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, salvageData.getDetectionRange());
+                makeDiscoverable(entity, salvageData.getDetectionRange());
             }
 
             addCustomDescription(entity, options);
@@ -812,11 +788,7 @@ public class CSSUtil {
             cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
             cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
 
-            if (discoverable) {
-                cryosleeper.setSensorProfile(1f);
-                cryosleeper.setDiscoverable(true);
-                cryosleeper.getDetectedRangeMod().modifyFlat(SOURCE_GEN, 3500f);
-            }
+            if (discoverable) makeDiscoverable(cryosleeper, 3500f);
 
             system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
             system.addTag(Tags.THEME_INTERESTING);
@@ -834,16 +806,18 @@ public class CSSUtil {
                 hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
             }
 
-            if (discoverable) {
-                hypershunt.setSensorProfile(1f);
-                hypershunt.setDiscoverable(true);
-                hypershunt.getDetectedRangeMod().modifyFlat(SOURCE_GEN, 3500f);
-            }
+            if (discoverable) makeDiscoverable(hypershunt, 3500f);
 
             system.addScript(new CoronalTapParticleScript(hypershunt));
 
             system.addTag(Tags.HAS_CORONAL_TAP);
             system.addTag(Tags.THEME_INTERESTING);
+        }
+
+        private void makeDiscoverable(SectorEntityToken entity, float detectedRange) {
+            entity.setSensorProfile(1f);
+            entity.setDiscoverable(true);
+            entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, detectedRange);
         }
 
         private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
@@ -1152,6 +1126,7 @@ public class CSSUtil {
                         return Float.compare(Misc.getDistance(CORE_WORLD_CENTER, c1.getLocation()), Misc.getDistance(CORE_WORLD_CENTER, c2.getLocation()));
                     }
                 });
+
                 for (StarSystemAPI sys : Global.getSector().getStarSystems())
                     if (sys.isProcgen() && sys.isInConstellation()) sortedSet.add(sys.getConstellation());
 

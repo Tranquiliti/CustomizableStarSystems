@@ -112,7 +112,6 @@
 		"error_invalidConditionInhabited":"Error attempting to add condition \"%s\" for Size %d \"%s\" market in \"%s\"!",
 		"error_invalidIndustry":"Error attempting to add industry \"%s\" for Size %d \"%s\" market in \"%s\"!",
 		"error_invalidEntityID":"Invalid custom entity ID \"%s\", found in \"%s\"!",
-		"error_lazyLibRequired":"LazyLib library mod required to use Kepler Orbit \"orbitRadius\" for \"%s\"'s \"entities\" entry %d!",
 
 		# Console Commands messages
 		"commands_generatedSystem":"Generated custom star system \"%s\"\n",
