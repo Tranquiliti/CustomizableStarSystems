@@ -943,31 +943,35 @@ public class CSSUtil {
                 }
 
             JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
-            if (industries != null) for (int i = 0; i < industries.length(); i++) {
-                JSONArray specials = industries.optJSONArray(i);
-                String industryId;
-                if (specials != null) industryId = specials.getString(0);
-                else industryId = industries.optString(i, null);
+            if (industries != null) {
+                for (int i = 0; i < industries.length(); i++) {
+                    JSONArray specials = industries.optJSONArray(i);
+                    String industryId;
+                    if (specials != null) industryId = specials.getString(0);
+                    else industryId = industries.optString(i, null);
 
-                try {
-                    planetMarket.addIndustry(industryId);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, systemId));
+                    try {
+                        planetMarket.addIndustry(industryId);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, systemId));
+                    }
+
+                    if (specials != null && specials.length() > 1) {
+                        Industry newIndustry = planetMarket.getIndustry(industryId);
+
+                        String aiCoreId = specials.optString(1, null);
+                        if (aiCoreId != null) newIndustry.setAICoreId(aiCoreId);
+
+                        String specialItem = specials.optString(2, null);
+                        if (specialItem != null) newIndustry.setSpecialItem(new SpecialItemData(specialItem, null));
+
+                        if (specials.length() > 3) newIndustry.setImproved(specials.optBoolean(3, false));
+                    }
                 }
 
-                if (specials != null && specials.length() > 1) {
-                    Industry newIndustry = planetMarket.getIndustry(industryId);
-
-                    String aiCoreId = specials.optString(1, null);
-                    if (aiCoreId != null) newIndustry.setAICoreId(aiCoreId);
-
-                    String specialItem = specials.optString(2, null);
-                    if (specialItem != null) newIndustry.setSpecialItem(new SpecialItemData(specialItem, null));
-
-                    if (specials.length() > 3) newIndustry.setImproved(specials.optBoolean(3, false));
-                }
-            }
-            else { // Just give market the bare minimum colony
+                // "Population & Infrastructure" industry must exist for colonies to work properly
+                if (!planetMarket.hasIndustry(Industries.POPULATION)) planetMarket.addIndustry(Industries.POPULATION);
+            } else { // Just give market the bare minimum colony
                 planetMarket.addIndustry(Industries.POPULATION);
                 planetMarket.addIndustry(Industries.SPACEPORT);
             }
@@ -1005,10 +1009,10 @@ public class CSSUtil {
             StarSystemAPI system = planet.getStarSystem();
             String starType = system.getStar().getTypeId();
             if (planet.hasCondition(Conditions.HOT) || planetType.equals(Planets.DESERT) || planetType.equals(Planets.DESERT1) || planetType.equals(Planets.ARID) || starType.equals(StarTypes.BLUE_GIANT) || starType.equals(StarTypes.BLUE_SUPERGIANT))
-                numOfShades = (randomSeed.nextBoolean() ? 3 : 1);
+                numOfShades = randomSeed.nextBoolean() ? 3 : 1;
 
             if (planet.hasCondition(Conditions.POOR_LIGHT) || planetType.equals(Planets.PLANET_TERRAN_ECCENTRIC) || starType.equals(StarTypes.RED_DWARF) || starType.equals(StarTypes.BROWN_DWARF))
-                numOfMirrors = (randomSeed.nextBoolean() ? 5 : 3);
+                numOfMirrors = randomSeed.nextBoolean() ? 5 : 3;
 
             // Force a solar array if none of the above conditions are met
             if (numOfShades == 0 && numOfMirrors == 0) {

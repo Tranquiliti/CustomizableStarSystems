@@ -4,6 +4,8 @@ Version 1.0.4
   - If set to false, the entity will orbit counter-clockwise instead
 * Added more info for error messages
 * "isCoreWorldSystem" option now forcibly applies the THEME_CORE tags, instead of relying on those tags being automatically applied by the game
+* All custom colonies now always have the "population" (Population & Infrastructure) industry, even if it's not explicitly specified in an "industries" list
+    - This avoids situations where removing or not having this industry causes colonies to not work properly
 * Minor code refactors
 
 

@@ -45,8 +45,8 @@
 
 		# The constellation or location to place this system
 		# 0 -> a random constellation
-		# n -> n-th closest constellation to Core Worlds (use a very large number to set to furthest constellation)
-		# [x,y] -> place system in specified coordinates (WARNING: Location may overlap with existing star systems)
+		# Any positive whole number n -> n-th closest constellation to Core Worlds, where n is any number greater than 0
+		# [x,y] -> place system in specified coordinates, where x and y can be any whole number (WARNING: Location may overlap with existing star systems)
 		# Defaults to 0 if this entry is omitted
 		"setLocation":0,
 
