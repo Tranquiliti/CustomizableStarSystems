@@ -32,6 +32,7 @@
 		"opt_name":"name",
 		"opt_orbitAngle":"orbitAngle",
 		"opt_orbitDays":"orbitDays",
+		"opt_orbitClockwise":"orbitClockwise",
 		"opt_type":"type",
 		"opt_radius":"radius",
 		"opt_coronaRadius":"coronaRadius",
@@ -103,14 +104,14 @@
 		"category_misc":"misc",
 
 		# Error messages for customStarSystems.json
-		"error_badCenterStar":"Invalid \"entities\" list! A system's \"entities\" list must start with either a \"star\" entity or an \"empty_location\" entity followed by the correct number of \"star\" entities!",
-		"error_starTypeNotFound":"Star type %s not found!",
-		"error_planetTypeNotFound":"Planet type %s not found!",
-		"error_invalidFocus":"Invalid \"focus\" index in %s's \"entities\" entry #%d!",
-		"error_invalidConditionUninhabited":"Error attempting to add condition \"%s\" for \"%s\" planet!",
-		"error_invalidConditionInhabited":"Error attempting to add condition \"%s\" for Size %d \"%s\" market!",
-		"error_invalidIndustry":"Error attempting to add industry \"%s\" for Size %d \"%s\" market!",
-		"error_invalidEntityID":"Invalid custom entity ID \"%s\"!",
+		"error_badCenterStar":"Invalid \"entities\" list in \"%s\"! A system's \"entities\" list must start with either a \"star\" entity or an \"empty_location\" entity followed by the correct number of \"star\" entities!",
+		"error_starTypeNotFound":"Star type %s not found in \"%s\"'s \"entities\" entry %d!",
+		"error_planetTypeNotFound":"Planet type %s not found in \"%s\"'s \"entities\" entry %d!",
+		"error_invalidFocus":"Invalid \"focus\" index in \"%s\"'s \"entities\" entry %d!",
+		"error_invalidConditionUninhabited":"Error attempting to add condition \"%s\" for \"%s\" planet in \"%s\"!",
+		"error_invalidConditionInhabited":"Error attempting to add condition \"%s\" for Size %d \"%s\" market in \"%s\"!",
+		"error_invalidIndustry":"Error attempting to add industry \"%s\" for Size %d \"%s\" market in \"%s\"!",
+		"error_invalidEntityID":"Invalid custom entity ID \"%s\", found in \"%s\"!",
 
 		# Console Commands messages
 		"commands_generatedSystem":"Generated custom star system \"%s\"\n",

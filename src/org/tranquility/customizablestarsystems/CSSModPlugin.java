@@ -4,8 +4,6 @@ import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.SettingsAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
-import lunalib.lunaDebug.LunaDebug;
-import lunalib.lunaSettings.LunaSettings;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -17,8 +15,7 @@ public class CSSModPlugin extends BaseModPlugin {
 
     @Override
     public void onApplicationLoad() {
-        if (Global.getSettings().getModManager().isModEnabled("lunalib"))
-            LunaDebug.addSnippet(new CSSSpawnStarSystemsSnippet());
+        if (Global.getSettings().getModManager().isModEnabled("lunalib")) CSSLunaUtil.addSnippet();
     }
 
     // Generates mod systems after proc-gen so that planet markets can properly generate
@@ -29,7 +26,7 @@ public class CSSModPlugin extends BaseModPlugin {
         boolean doCustomStarSystems;
         String enableSystemId = settings.getString("customizablestarsystems", "settings_enableCustomStarSystems");
         if (settings.getModManager().isModEnabled("lunalib"))
-            doCustomStarSystems = Boolean.TRUE.equals(LunaSettings.getBoolean(settings.getString("customizablestarsystems", "mod_id_customizablestarsystems"), enableSystemId));
+            doCustomStarSystems = Boolean.TRUE.equals(CSSLunaUtil.getBoolean(settings.getString("customizablestarsystems", "mod_id_customizablestarsystems"), enableSystemId));
         else doCustomStarSystems = settings.getBoolean(enableSystemId);
 
         if (doCustomStarSystems) try {
@@ -42,7 +39,7 @@ public class CSSModPlugin extends BaseModPlugin {
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                        util.generateCustomStarSystem(systemOptions);
+                        util.generateCustomStarSystem(systemOptions, systemId);
                         Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 else

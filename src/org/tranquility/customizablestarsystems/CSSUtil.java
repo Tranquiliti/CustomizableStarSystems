@@ -59,6 +59,7 @@ public class CSSUtil {
     public final String OPT_NAME = Global.getSettings().getString("customizablestarsystems", "opt_name");
     public final String OPT_ORBIT_ANGLE = Global.getSettings().getString("customizablestarsystems", "opt_orbitAngle");
     public final String OPT_ORBIT_DAYS = Global.getSettings().getString("customizablestarsystems", "opt_orbitDays");
+    public final String OPT_ORBIT_CLOCKWISE = Global.getSettings().getString("customizablestarsystems", "opt_orbitClockwise");
     public final String OPT_TYPE = Global.getSettings().getString("customizablestarsystems", "opt_type");
     public final String OPT_RADIUS = Global.getSettings().getString("customizablestarsystems", "opt_radius");
     public final String OPT_CORONA_RADIUS = Global.getSettings().getString("customizablestarsystems", "opt_coronaRadius");
@@ -154,6 +155,12 @@ public class CSSUtil {
     public final String ID_MARKET = "_market";
     public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
 
+    // addRemnantStation() strings
+    public final String ID_REMNANT_STATION_DAMAGED = "remnant_station2_Damaged";
+    public final String ID_REMNANT_STATION_STANDARD = "remnant_station2_Standard";
+    public final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
+    public final String NAME_DAMAGED_STATION = " (Damaged)";
+
     // Other
     public transient HashMap<MarketAPI, String> marketsToOverrideAdmin; // Updated in CustomStarSystem.addMarket()
     private transient ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
@@ -170,9 +177,10 @@ public class CSSUtil {
      * Creates a custom star system based on pre-defined options
      *
      * @param systemOptions A JSON object detailing how to create the star system
+     * @param systemId      The JSON ID of the star system
      */
-    public void generateCustomStarSystem(JSONObject systemOptions) throws JSONException {
-        new CustomStarSystem(systemOptions);
+    public void generateCustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+        new CustomStarSystem(systemOptions, systemId);
     }
 
     /**
@@ -183,26 +191,31 @@ public class CSSUtil {
     public static void generateAdminsOnMarkets(HashMap<MarketAPI, String> marketMap) {
         if (marketMap != null) {
             AICoreAdminPluginImpl aiPlugin = new AICoreAdminPluginImpl();
-            for (MarketAPI market : marketMap.keySet()) {
-                String adminType = marketMap.get(market);
-                if (adminType.equals(Factions.PLAYER)) market.setAdmin(null);
-                else if (adminType.equals(Commodities.ALPHA_CORE))
-                    market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
-            }
-            // No need for the HashMap afterwards, so clear it just in case
-            marketMap.clear();
+            for (MarketAPI market : marketMap.keySet())
+                switch (marketMap.get(market)) {
+                    case Factions.PLAYER:
+                        market.setAdmin(null);
+                        break;
+                    case Commodities.ALPHA_CORE:
+                        market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
+                        break;
+                }
+            marketMap.clear(); // No need for the HashMap afterwards, so clear it just in case
         }
     }
 
     // Inner private class to handle creation of custom star systems
     private class CustomStarSystem {
-        private transient StarSystemAPI system = null;
-        private transient List<SectorEntityToken> systemEntities = null;
+        private transient StarSystemAPI system;
+        private transient List<SectorEntityToken> systemEntities;
+        private final String systemId;
+        private float systemRadius = 0f;
         private boolean hasFactionPresence = false;
         private boolean hasJumpPoint = false;
-        private float systemRadius = 0f;
 
-        private CustomStarSystem(JSONObject systemOptions) throws JSONException {
+        private CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+            this.systemId = systemId;
+
             createStarSystem(systemOptions);
 
             generateEntities(systemOptions.getJSONArray(OPT_ENTITIES));
@@ -218,6 +231,9 @@ public class CSSUtil {
                 system.removeTag(Tags.THEME_CORE);
                 system.addTag(Tags.THEME_MISC);
                 system.addTag(Tags.THEME_INTERESTING_MINOR);
+            } else {
+                system.addTag(Tags.THEME_CORE);
+                system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
             }
 
             if (!systemOptions.isNull(OPT_SYSTEM_MUSIC))
@@ -245,6 +261,9 @@ public class CSSUtil {
 
         private void createStarSystem(JSONObject systemOptions) throws JSONException {
             JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
+
+            // Create a star system based on the 1st star's name
+            // Looping through "entities" list since 1st entity may be an "empty_location" and not a star
             for (int i = 0; system == null && i < entities.length(); i++) {
                 JSONObject entity = entities.getJSONObject(i);
                 if (entity.getString(OPT_ENTITY).equals(Tags.STAR))
@@ -253,7 +272,8 @@ public class CSSUtil {
         }
 
         private void generateEntities(JSONArray entities) throws JSONException {
-            if (entities.length() == 0) throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+            if (entities.length() == 0)
+                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
 
             systemEntities = new ArrayList<>(entities.length());
 
@@ -262,7 +282,7 @@ public class CSSUtil {
                 String entityType = entityOptions.getString(OPT_ENTITY);
 
                 if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
-                    throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+                    throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
 
                 SectorEntityToken newEntity;
                 switch (entityType) {
@@ -363,6 +383,8 @@ public class CSSUtil {
                 orbitDays = orbitRadius / (divisor + randomSeed.nextFloat() * 5f);
             }
 
+            if (!entityOptions.optBoolean(OPT_ORBIT_CLOCKWISE, true)) orbitDays *= -1f;
+
             // Could probably clean this up later
             switch (type) {
                 case ENTITY_REMNANT_STATION:
@@ -437,7 +459,7 @@ public class CSSUtil {
             for (int i = 1; i <= numOfCenterStars; i++) {
                 JSONObject starOptions = entities.getJSONObject(i);
                 if (!starOptions.getString(OPT_ENTITY).equals(Tags.STAR))
-                    throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR);
+                    throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
                 systemEntities.add(addStar(starOptions, i, true));
                 systemEntities.get(i).setCircularOrbit(system.getCenter(), angle, orbitRadius + i - 1, orbitDays);
                 angle = (angle + angleDifference) % 360f;
@@ -453,7 +475,7 @@ public class CSSUtil {
 
             StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
             if (starData == null)
-                throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType));
+                throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, systemId, index));
 
             float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
             if (radius <= 0)
@@ -519,7 +541,7 @@ public class CSSUtil {
             String planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
             PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
             if (planetData == null)
-                throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType));
+                throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, systemId, index));
 
             String name = options.optString(OPT_NAME, null);
             if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
@@ -564,13 +586,13 @@ public class CSSUtil {
             return station;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator's addBattlestations() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator's addBattlestations() for vanilla implementation
         private CampaignFleetAPI addRemnantStation(JSONObject options) {
             boolean isDamaged = options.optBoolean(OPT_IS_DAMAGED, false);
 
             CampaignFleetAPI station = FleetFactoryV3.createEmptyFleet(Factions.REMNANTS, FleetTypes.BATTLESTATION, null);
 
-            FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, isDamaged ? "remnant_station2_Damaged" : "remnant_station2_Standard");
+            FleetMemberAPI member = Global.getFactory().createFleetMember(FleetMemberType.SHIP, isDamaged ? ID_REMNANT_STATION_DAMAGED : ID_REMNANT_STATION_STANDARD);
             station.getFleetData().addFleetMember(member);
 
             station.getMemoryWithoutUpdate().set(MemFlags.MEMORY_KEY_MAKE_AGGRESSIVE, true);
@@ -599,8 +621,8 @@ public class CSSUtil {
             system.addTag(Tags.THEME_REMNANT_SECONDARY);
             system.addTag(Tags.THEME_UNSAFE);
             if (isDamaged) {
-                station.getMemoryWithoutUpdate().set("$damagedStation", true);
-                station.setName(station.getName() + " (Damaged)");
+                station.getMemoryWithoutUpdate().set(MEMFLAGS_DAMAGED_STATION, true);
+                station.setName(station.getName() + NAME_DAMAGED_STATION);
 
                 system.addScript(new RemnantStationFleetManager(station, 1f, 0, 2 + randomSeed.nextInt(3), 25f, 6, 12));
                 system.addTag(Tags.THEME_REMNANT_SUPPRESSED);
@@ -617,7 +639,7 @@ public class CSSUtil {
             return station;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidFieldGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AsteroidFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAsteroidField(JSONObject options) {
             String name = options.optString(OPT_NAME, null);
             float radius = options.optInt(OPT_SIZE, 400);
@@ -627,7 +649,7 @@ public class CSSUtil {
             return system.addTerrain(Terrain.ASTEROID_FIELD, new AsteroidFieldTerrainPlugin.AsteroidFieldParams(radius, radius + 100f, count, count, 4f, 16f, name));
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAccretionDisk(JSONObject options, int index) {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
@@ -652,7 +674,7 @@ public class CSSUtil {
             return ring;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.MagFieldGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.MagFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addMagneticField(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS); // Inner radius, or visual band start
@@ -676,7 +698,7 @@ public class CSSUtil {
             return field;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addRingBand(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
@@ -693,7 +715,7 @@ public class CSSUtil {
             return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitDays, Terrain.RING, name);
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAsteroidBelt(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
@@ -725,7 +747,7 @@ public class CSSUtil {
             try {
                 entity = system.addCustomEntity(null, name, type, factionId);
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type)));
+                throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, systemId)));
             }
 
             switch (type) {
@@ -752,9 +774,7 @@ public class CSSUtil {
             SalvageEntityGenDataSpec salvageData = (SalvageEntityGenDataSpec) Global.getSettings().getSpec(SalvageEntityGenDataSpec.class, type, true);
             if (salvageData != null) {
                 entity.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
-                entity.setSensorProfile(1f);
-                entity.setDiscoverable(true);
-                entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, salvageData.getDetectionRange());
+                makeDiscoverable(entity, salvageData.getDetectionRange());
             }
 
             addCustomDescription(entity, options);
@@ -762,23 +782,19 @@ public class CSSUtil {
             return entity;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
         private void generateCryosleeper(String name, float orbitRadius, boolean discoverable) {
             SectorEntityToken cryosleeper = system.addCustomEntity(null, name, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
             cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
             cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
 
-            if (discoverable) {
-                cryosleeper.setSensorProfile(1f);
-                cryosleeper.setDiscoverable(true);
-                cryosleeper.getDetectedRangeMod().modifyFlat(SOURCE_GEN, 3500f);
-            }
+            if (discoverable) makeDiscoverable(cryosleeper, 3500f);
 
             system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
             system.addTag(Tags.THEME_INTERESTING);
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
         private void generateHypershunt(boolean discoverable) {
             SectorEntityToken systemCenter = system.getCenter();
             SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
@@ -790,11 +806,7 @@ public class CSSUtil {
                 hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
             }
 
-            if (discoverable) {
-                hypershunt.setSensorProfile(1f);
-                hypershunt.setDiscoverable(true);
-                hypershunt.getDetectedRangeMod().modifyFlat(SOURCE_GEN, 3500f);
-            }
+            if (discoverable) makeDiscoverable(hypershunt, 3500f);
 
             system.addScript(new CoronalTapParticleScript(hypershunt));
 
@@ -802,10 +814,16 @@ public class CSSUtil {
             system.addTag(Tags.THEME_INTERESTING);
         }
 
+        private void makeDiscoverable(SectorEntityToken entity, float detectedRange) {
+            entity.setSensorProfile(1f);
+            entity.setDiscoverable(true);
+            entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, detectedRange);
+        }
+
         private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
             int focus = entityOptions.optInt(OPT_FOCUS);
             if (focus >= systemEntities.size())
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, system.getBaseName(), index));
+                throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, systemId, index));
             return systemEntities.get(focus);
         }
 
@@ -899,7 +917,7 @@ public class CSSUtil {
                 try {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId()));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), systemId));
                 }
         }
 
@@ -921,35 +939,39 @@ public class CSSUtil {
                 try {
                     planetMarket.addCondition(conditions.getString(i));
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, systemId));
                 }
 
             JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
-            if (industries != null) for (int i = 0; i < industries.length(); i++) {
-                JSONArray specials = industries.optJSONArray(i);
-                String industryId;
-                if (specials != null) industryId = specials.getString(0);
-                else industryId = industries.optString(i, null);
+            if (industries != null) {
+                for (int i = 0; i < industries.length(); i++) {
+                    JSONArray specials = industries.optJSONArray(i);
+                    String industryId;
+                    if (specials != null) industryId = specials.getString(0);
+                    else industryId = industries.optString(i, null);
 
-                try {
-                    planetMarket.addIndustry(industryId);
-                } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId));
+                    try {
+                        planetMarket.addIndustry(industryId);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, systemId));
+                    }
+
+                    if (specials != null && specials.length() > 1) {
+                        Industry newIndustry = planetMarket.getIndustry(industryId);
+
+                        String aiCoreId = specials.optString(1, null);
+                        if (aiCoreId != null) newIndustry.setAICoreId(aiCoreId);
+
+                        String specialItem = specials.optString(2, null);
+                        if (specialItem != null) newIndustry.setSpecialItem(new SpecialItemData(specialItem, null));
+
+                        if (specials.length() > 3) newIndustry.setImproved(specials.optBoolean(3, false));
+                    }
                 }
 
-                if (specials != null && specials.length() > 1) {
-                    Industry newIndustry = planetMarket.getIndustry(industryId);
-
-                    String aiCoreId = specials.optString(1, null);
-                    if (aiCoreId != null) newIndustry.setAICoreId(aiCoreId);
-
-                    String specialItem = specials.optString(2, null);
-                    if (specialItem != null) newIndustry.setSpecialItem(new SpecialItemData(specialItem, null));
-
-                    if (specials.length() > 3) newIndustry.setImproved(specials.optBoolean(3, false));
-                }
-            }
-            else { // Just give market the bare minimum colony
+                // "Population & Infrastructure" industry must exist for colonies to work properly
+                if (!planetMarket.hasIndustry(Industries.POPULATION)) planetMarket.addIndustry(Industries.POPULATION);
+            } else { // Just give market the bare minimum colony
                 planetMarket.addIndustry(Industries.POPULATION);
                 planetMarket.addIndustry(Industries.SPACEPORT);
             }
@@ -977,7 +999,7 @@ public class CSSUtil {
             hasFactionPresence = true;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addSolarShadesAndMirrors() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addSolarShadesAndMirrors() for vanilla implementation
         private void addSolarArrayIfApplicable(PlanetAPI planet) {
             if (!planet.hasCondition(Conditions.SOLAR_ARRAY)) return;
 
@@ -987,10 +1009,10 @@ public class CSSUtil {
             StarSystemAPI system = planet.getStarSystem();
             String starType = system.getStar().getTypeId();
             if (planet.hasCondition(Conditions.HOT) || planetType.equals(Planets.DESERT) || planetType.equals(Planets.DESERT1) || planetType.equals(Planets.ARID) || starType.equals(StarTypes.BLUE_GIANT) || starType.equals(StarTypes.BLUE_SUPERGIANT))
-                numOfShades = (randomSeed.nextBoolean() ? 3 : 1);
+                numOfShades = randomSeed.nextBoolean() ? 3 : 1;
 
             if (planet.hasCondition(Conditions.POOR_LIGHT) || planetType.equals(Planets.PLANET_TERRAN_ECCENTRIC) || starType.equals(StarTypes.RED_DWARF) || starType.equals(StarTypes.BROWN_DWARF))
-                numOfMirrors = (randomSeed.nextBoolean() ? 5 : 3);
+                numOfMirrors = randomSeed.nextBoolean() ? 5 : 3;
 
             // Force a solar array if none of the above conditions are met
             if (numOfShades == 0 && numOfMirrors == 0) {
@@ -1108,6 +1130,7 @@ public class CSSUtil {
                         return Float.compare(Misc.getDistance(CORE_WORLD_CENTER, c1.getLocation()), Misc.getDistance(CORE_WORLD_CENTER, c2.getLocation()));
                     }
                 });
+
                 for (StarSystemAPI sys : Global.getSector().getStarSystems())
                     if (sys.isProcgen() && sys.isInConstellation()) sortedSet.add(sys.getConstellation());
 

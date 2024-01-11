@@ -35,7 +35,7 @@
 		# Defaults to false if this entry is omitted
 		"hasSystemwideNebula":false,
 
-		# If true,adds an unactivated coronal hypershunt in the center of the system
+		# If true, adds an unactivated coronal hypershunt in the center of the system
 		# Defaults to false if this entry is omitted
 		"addCoronalHypershunt":false,
 
@@ -45,8 +45,8 @@
 
 		# The constellation or location to place this system
 		# 0 -> a random constellation
-		# n -> n-th closest constellation to Core Worlds (use a very large number to set to furthest constellation)
-		# [x,y] -> place system in specified coordinates (WARNING: Location may overlap with existing star systems)
+		# Any positive whole number n -> n-th closest constellation to Core Worlds, where n is any number greater than 0
+		# [x,y] -> place system in specified coordinates, where x and y can be any whole number (WARNING: Location may overlap with existing star systems)
 		# Defaults to 0 if this entry is omitted
 		"setLocation":0,
 
@@ -157,7 +157,7 @@
 				"focus":1,
 
 				# How far away this entity orbits the focus.
-				# *REQUIRED* if "focus" option either is not specified or does not use the [f,l] parameter
+				# *REQUIRED* if "focus" option either is omitted or is a number (i.e. is not using the [f,l] parameter)
 				"orbitRadius":1111,
 
 				# The initial angle to place this entity
@@ -167,6 +167,10 @@
 				# How long it takes for this entity to complete its orbit
 				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
 				"orbitDays":0,
+
+				# If true, this entity will orbit clockwise. Else, it will orbit counter-clockwise
+				# Defaults to true if this entry is omitted
+				"orbitClockwise":true,
 			},
 			{ # A planet orbiting system center
 				"entity":"planet",
@@ -174,6 +178,7 @@
 				"orbitRadius":1111,
 				"orbitAngle":0,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Placeholder Planet",
 				"customDescriptionId":"planet_jangala",
 
@@ -379,16 +384,18 @@
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Test Name Gate",
 				"customDescriptionId":"inactive_gate",
 			},
 			{ # A normal empty location
-				# NOTE: Orbits are broken for this entity; it stays still in its orbit position, completely ignoring "orbitDays"
+				# Known issue: orbits are broken for this entity; it will remain in a still position, completely ignoring "orbitDays"
 				"entity":"empty_location",
 				"focus":0,
 				"orbitRadius":2000,
 				"orbitAngle":0,
 				"orbitDays":0,
+				"orbitClockwise":true,
 			},
 			{ # A station (in this case, a populated station)
 				"entity":"station",
@@ -396,6 +403,7 @@
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Placeholder Station",
 				"customDescriptionId":"station_chupi_orco",
 
@@ -426,6 +434,7 @@
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
+				"orbitClockwise":true,
 
 				# Does this Remnant station start out damaged?
 				# Defaults to false if this entry is omitted
@@ -437,6 +446,7 @@
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Test Name Field",
 
 				# Size of the asteroid field
@@ -555,6 +565,7 @@
 				"orbitRadius":100,
 				"orbitAngle":-1,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Test Name Gate",
 				"factionId":"neutral",
 				"customDescriptionId":"inactive_gate",
