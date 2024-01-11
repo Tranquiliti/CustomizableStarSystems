@@ -1,5 +1,7 @@
 Version 1.0.4
 
+* Fixed the LunaLib soft dependency
+    - This means this mod no longer requires either LunaLib or Java 8 to run
 * Added "orbitClockwise" option for most entities
   - If set to false, the entity will orbit counter-clockwise instead
 * Added more info for error messages

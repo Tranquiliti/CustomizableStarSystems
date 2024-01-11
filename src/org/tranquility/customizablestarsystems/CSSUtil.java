@@ -586,7 +586,7 @@ public class CSSUtil {
             return station;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator's addBattlestations() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator's addBattlestations() for vanilla implementation
         private CampaignFleetAPI addRemnantStation(JSONObject options) {
             boolean isDamaged = options.optBoolean(OPT_IS_DAMAGED, false);
 
@@ -639,7 +639,7 @@ public class CSSUtil {
             return station;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidFieldGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AsteroidFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAsteroidField(JSONObject options) {
             String name = options.optString(OPT_NAME, null);
             float radius = options.optInt(OPT_SIZE, 400);
@@ -649,7 +649,7 @@ public class CSSUtil {
             return system.addTerrain(Terrain.ASTEROID_FIELD, new AsteroidFieldTerrainPlugin.AsteroidFieldParams(radius, radius + 100f, count, count, 4f, 16f, name));
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAccretionDisk(JSONObject options, int index) {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.optInt(OPT_ORBIT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
@@ -674,7 +674,7 @@ public class CSSUtil {
             return ring;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.MagFieldGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.MagFieldGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addMagneticField(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS); // Inner radius, or visual band start
@@ -698,7 +698,7 @@ public class CSSUtil {
             return field;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.RingGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addRingBand(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
@@ -715,7 +715,7 @@ public class CSSUtil {
             return system.addRingBand(focusEntity, CATEGORY_MISC, type, 256f, bandIndex, Color.white, 256f, orbitRadius, orbitDays, Terrain.RING, name);
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.AsteroidBeltGenPlugin's generate() for vanilla implementation
         private SectorEntityToken addAsteroidBelt(JSONObject options, int index) throws JSONException {
             SectorEntityToken focusEntity = getFocusEntity(options, index);
             float orbitRadius = options.getInt(OPT_ORBIT_RADIUS);
@@ -782,7 +782,7 @@ public class CSSUtil {
             return entity;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
         private void generateCryosleeper(String name, float orbitRadius, boolean discoverable) {
             SectorEntityToken cryosleeper = system.addCustomEntity(null, name, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
             cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
@@ -794,7 +794,7 @@ public class CSSUtil {
             system.addTag(Tags.THEME_INTERESTING);
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
         private void generateHypershunt(boolean discoverable) {
             SectorEntityToken systemCenter = system.getCenter();
             SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
@@ -999,7 +999,7 @@ public class CSSUtil {
             hasFactionPresence = true;
         }
 
-        // Look in com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addSolarShadesAndMirrors() for vanilla implementation
+        // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addSolarShadesAndMirrors() for vanilla implementation
         private void addSolarArrayIfApplicable(PlanetAPI planet) {
             if (!planet.hasCondition(Conditions.SOLAR_ARRAY)) return;
 
