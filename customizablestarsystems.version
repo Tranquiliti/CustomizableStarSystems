@@ -4,11 +4,11 @@
 	"modThreadId":27785,
 	"modVersion":
 	{
-		"major":1,
+		"major":2,
 		"minor":0,
-		"patch":4
+		"patch":0
 	},
 	"starsectorVersion":"0.96a-RC10",
-	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v1.0.4/CustomizableStarSystems-v1.0.4.zip",
+	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v2.0.0/CustomizableStarSystems-v2.0.0.zip",
 	"changelogURL":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/changelog.txt"
 }
