@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.CommonStrings;
 import org.lazywizard.console.Console;
+import org.tranquility.customizablestarsystems.CSSUtil;
 
 import java.util.Iterator;
 
@@ -18,7 +19,7 @@ public class ListCustomStarSystems implements BaseCommand {
 
         JSONObject systems;
         try {
-            systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+            systems = CSSUtil.getMergedSystemJSON();
         } catch (Exception e) {
             Console.showMessage(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e);
             return CommandResult.ERROR;

@@ -23,6 +23,7 @@
 		"opt_systemBackground":"systemBackground",
 		"opt_systemMusic":"systemMusic",
 		"opt_systemLightColor":"systemLightColor",
+		"opt_teleportUponGeneration":"teleportUponGeneration",
 		"opt_entities":"entities",
 
 		# Sub-options for various options

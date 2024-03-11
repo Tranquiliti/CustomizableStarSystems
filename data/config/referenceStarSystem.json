@@ -65,6 +65,11 @@
 		# Defaults to proc-gen settings if this entry is omitted
 		"systemLightColor":[255,255,255,255],
 
+		# If true, the player will be teleported to this system whenever it generates
+		# If multiple custom star systems have this option enabled, the player will be teleported to the last system generated
+		# Defaults to false if this entry is omitted
+		"teleportUponGeneration":false,
+
 		# A list of entities to generate within this system
 		# The list *MUST START* with a center entity, which can either be a:
 		#  - a "star" entity, or

@@ -1,6 +1,7 @@
 package org.tranquility.customizablestarsystems;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import lunalib.lunaDebug.LunaSnippet;
@@ -41,7 +42,7 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
     public void addParameters(SnippetBuilder builder) {
         JSONObject systems;
         try {
-            systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+            systems = CSSUtil.getMergedSystemJSON();
         } catch (Exception e) {
             return;
         }
@@ -66,25 +67,28 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
 
         JSONObject systems;
         try {
-            systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+            systems = CSSUtil.getMergedSystemJSON();
         } catch (Exception e) { // Re-using Console Commands message here; it's economical!
             output.addPara(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e, 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
             return;
         }
 
+        // Validate all enabled system IDs, as the file may have changed a system's ID
         for (String systemId : enabledParams)
             if (!systems.has(systemId)) {
                 output.addPara(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_noSystemId"), systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
             }
 
-        CSSUtil util = new CSSUtil();
+        StarSystemAPI teleportSystem = null;
         StringBuilder print = new StringBuilder();
+        CSSUtil util = new CSSUtil();
         for (String systemId : enabledParams)
-            try {
+            try { // Generate all selected custom star systems
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                    util.generateCustomStarSystem(systemOptions, systemId);
+                    StarSystemAPI newSystem = util.generateCustomStarSystem(systemOptions, systemId);
+                    if (systemOptions.optBoolean(util.OPT_TELEPORT_UPON_GENERATION, false)) teleportSystem = newSystem;
                     print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                 }
             } catch (Exception e) {
@@ -93,8 +97,9 @@ public class CSSSpawnStarSystemsSnippet extends LunaSnippet {
                 return;
             }
 
-        output.addPara(print.toString(), 0f, Misc.getPositiveHighlightColor(), Misc.getHighlightColor());
-
+        if (teleportSystem != null) CSSUtil.teleportPlayerToSystem(teleportSystem);
         CSSUtil.generateAdminsOnMarkets(util.marketsToOverrideAdmin);
+
+        output.addPara(print.toString(), 0f, Misc.getPositiveHighlightColor(), Misc.getHighlightColor());
     }
 }

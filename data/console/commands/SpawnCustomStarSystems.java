@@ -1,6 +1,7 @@
 package data.console.commands;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.campaign.StarSystemAPI;
 import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.CommonStrings;
@@ -18,28 +19,30 @@ public class SpawnCustomStarSystems implements BaseCommand {
         }
 
         if (args.isEmpty()) return CommandResult.BAD_SYNTAX;
-        String[] tmp = args.split(" ");
-        if (tmp.length < 1) return CommandResult.BAD_SYNTAX;
+        String[] params = args.split(" ");
+        if (params.length < 1) return CommandResult.BAD_SYNTAX;
 
         JSONObject systems;
         try {
-            systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+            systems = CSSUtil.getMergedSystemJSON();
         } catch (Exception e) {
             Console.showMessage(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e);
             return CommandResult.ERROR;
         }
 
-        CSSUtil util = new CSSUtil();
+        StarSystemAPI teleportSystem = null;
         StringBuilder print = new StringBuilder();
-        if (tmp[0].equals("all")) {
-            // Generate each custom star system from merged customStarSystems.json
+        CSSUtil util = new CSSUtil();
+        if (params[0].equals("all")) {
             for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
                 String systemId = (String) it.next();
-                try {
+                try { // Generate all enabled custom star systems
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
                         for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                            util.generateCustomStarSystem(systemOptions, systemId);
+                            StarSystemAPI newSystem = util.generateCustomStarSystem(systemOptions, systemId);
+                            if (systemOptions.optBoolean(util.OPT_TELEPORT_UPON_GENERATION, false))
+                                teleportSystem = newSystem;
                             print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                         }
                     else
@@ -52,17 +55,19 @@ public class SpawnCustomStarSystems implements BaseCommand {
             }
         } else {
             // Verify first that arguments only contain valid ids before creating any star systems
-            for (String systemId : tmp)
+            for (String systemId : params)
                 if (!systems.has(systemId)) {
                     Console.showMessage(String.format(Global.getSettings().getString("customizablestarsystems", "commands_error_noSystemID"), systemId));
                     return CommandResult.ERROR;
                 }
 
-            for (String systemId : tmp)
-                try {
+            for (String systemId : params)
+                try { // Generate selected custom star systems
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                        util.generateCustomStarSystem(systemOptions, systemId);
+                        StarSystemAPI newSystem = util.generateCustomStarSystem(systemOptions, systemId);
+                        if (systemOptions.optBoolean(util.OPT_TELEPORT_UPON_GENERATION, false))
+                            teleportSystem = newSystem;
                         print.append(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
                     }
                 } catch (Exception e) {
@@ -72,9 +77,10 @@ public class SpawnCustomStarSystems implements BaseCommand {
                 }
         }
 
-        Console.showMessage(print);
+        if (teleportSystem != null) CSSUtil.teleportPlayerToSystem(teleportSystem);
         CSSUtil.generateAdminsOnMarkets(util.marketsToOverrideAdmin);
 
+        Console.showMessage(print);
         return CommandResult.SUCCESS;
     }
 }

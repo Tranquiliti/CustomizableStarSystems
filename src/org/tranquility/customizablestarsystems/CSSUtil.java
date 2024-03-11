@@ -1,6 +1,7 @@
 package org.tranquility.customizablestarsystems;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.SettingsAPI;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -28,6 +29,7 @@ import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.List;
 import java.util.*;
 
@@ -50,6 +52,7 @@ public class CSSUtil {
     public final String OPT_SYSTEM_BACKGROUND = Global.getSettings().getString("customizablestarsystems", "opt_systemBackground");
     public final String OPT_SYSTEM_MUSIC = Global.getSettings().getString("customizablestarsystems", "opt_systemMusic");
     public final String OPT_SYSTEM_LIGHT_COLOR = Global.getSettings().getString("customizablestarsystems", "opt_systemLightColor");
+    public final String OPT_TELEPORT_UPON_GENERATION = Global.getSettings().getString("customizablestarsystems", "opt_teleportUponGeneration");
     public final String OPT_ENTITIES = Global.getSettings().getString("customizablestarsystems", "opt_entities");
 
     // Sub-options
@@ -174,13 +177,24 @@ public class CSSUtil {
     }
 
     /**
+     * Get the merged JSON for the custom star systems file
+     *
+     * @return A JSONObject representing the custom star systems file
+     */
+    public static JSONObject getMergedSystemJSON() throws JSONException, IOException {
+        SettingsAPI settings = Global.getSettings();
+        return settings.getMergedJSONForMod(settings.getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+    }
+
+    /**
      * Creates a custom star system based on pre-defined options
      *
      * @param systemOptions A JSON object detailing how to create the star system
      * @param systemId      The JSON ID of the star system
+     * @return The newly-created custom star system
      */
-    public void generateCustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
-        new CustomStarSystem(systemOptions, systemId);
+    public StarSystemAPI generateCustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+        return new CustomStarSystem(systemOptions, systemId).system;
     }
 
     /**
@@ -204,6 +218,21 @@ public class CSSUtil {
         }
     }
 
+    /**
+     * Teleports the player to a given star system
+     *
+     * @param system The system to which the player gets teleported
+     */
+    public static void teleportPlayerToSystem(StarSystemAPI system) {
+        CampaignFleetAPI player = Global.getSector().getPlayerFleet();
+        PlanetAPI star = system.getStar();
+        player.getContainingLocation().removeEntity(player);
+        star.getContainingLocation().addEntity(player);
+        Global.getSector().setCurrentLocation(star.getContainingLocation());
+        player.setNoEngaging(2f);
+        player.clearAssignments();
+    }
+
     // Inner private class to handle creation of custom star systems
     private class CustomStarSystem {
         private transient StarSystemAPI system;
@@ -223,10 +252,11 @@ public class CSSUtil {
             if (systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) generateHypershunt(!hasFactionPresence);
 
             if (systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false))
-                generateCryosleeper(DEFAULT_CRYOSLEEPER_NAME, systemRadius + 4000f, !hasFactionPresence);
+                generateCryosleeper(DEFAULT_CRYOSLEEPER_NAME, systemRadius + 1000f, !hasFactionPresence);
 
             if (hasFactionPresence) Misc.setAllPlanetsSurveyed(system, true);
 
+            // TODO: rework the Tag system so any Tags can be placed into a custom star system
             if (!systemOptions.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
                 system.removeTag(Tags.THEME_CORE);
                 system.addTag(Tags.THEME_MISC);
@@ -341,11 +371,27 @@ public class CSSUtil {
                         newEntity = addCustomEntity(entityOptions);
                         setEntityLocation(newEntity, entityOptions, i);
                 }
+
+                // TODO: add MemKey support for all entities (clarify that this is for advanced users only!)
+                addMemoryKeys(newEntity, entityOptions);
+
                 systemEntities.add(newEntity);
             }
 
             // Fallback option for systems with no orbiting bodies or jump-points
             if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
+        }
+
+        // TODO: test this
+        private void addMemoryKeys(SectorEntityToken entity, JSONObject entityOptions) {
+            JSONObject memoryKeys = entityOptions.optJSONObject("memoryKeys");
+            if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); )
+                try {
+                    String memKey = it.next();
+                    entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Illegal memory key or value!");
+                }
         }
 
         private void updateSystemRadius(SectorEntityToken entity) {
