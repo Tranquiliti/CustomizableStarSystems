@@ -9,8 +9,8 @@
 	"customizablestarsystems":{
 		"mod_id_customizablestarsystems":"customizablestarsystems",
 
-		# Sole entry in customStarSystems.json
-		"settings_customStarSystems":"customStarSystems",
+		# Settings in settings.json
+		"settings_enableCustomStarSystems":"enableCustomStarSystems",
 
 		# Main system options in customStarSystems.json
 		"opt_isEnabled":"isEnabled",
@@ -87,8 +87,8 @@
 		"default_station_type":"station_side06",
 		"path_graphics_planet":"graphics/planets/",
 		"path_graphics_background":"graphics/backgrounds/",
-		"type_random_star_giant":"random_star_giant",
 		"path_merged_json_customStarSystems":"data/config/customStarSystems.json",
+		"type_random_star_giant":"random_star_giant",
 
 		# Names used in Solar Array generation
 		"name_mirror1":"Stellar Mirror Alpha",
@@ -124,9 +124,6 @@
 		# LunaSnippets
 		"snippets_spawnSystemName":"Generate custom star systems",
 		"snippets_spawnSystemDesc":"Generates the toggled custom star systems. Backup your save before executing this snippet!",
-		"snippets_spawnSystemNoSelected":"No custom star system selected!",
-
-		# Settings in settings.json
-		"settings_enableCustomStarSystems":"enableCustomStarSystems",
-	},
+		"snippets_spawnSystemNoSelected":"No custom star system selected!"
+	}
 }

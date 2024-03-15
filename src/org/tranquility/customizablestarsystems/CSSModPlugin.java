@@ -2,24 +2,28 @@ package org.tranquility.customizablestarsystems;
 
 import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.Global;
-import com.fs.starfarer.api.SettingsAPI;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
+import static org.tranquility.customizablestarsystems.CSSStrings.*;
+import static org.tranquility.customizablestarsystems.CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS;
+import static org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil.LUNA_ENABLED;
 
 @SuppressWarnings({"unused", "unchecked"})
 public class CSSModPlugin extends BaseModPlugin {
-    private transient HashMap<MarketAPI, String> marketsToOverrideAdmin;
+    private transient Map<MarketAPI, String> marketsToOverrideAdmin;
     private transient StarSystemAPI teleportSystem;
 
     @Override
     public void onApplicationLoad() {
-        if (Global.getSettings().getModManager().isModEnabled("lunalib")) CSSLunaUtil.addSnippet();
+        if (LUNA_ENABLED) CSSLunaUtil.addSnippet();
     }
 
     // If a teleport system exists, teleport the player there on new game (doing this before game load crashes the game)
@@ -34,16 +38,14 @@ public class CSSModPlugin extends BaseModPlugin {
     // Generates mod systems after proc-gen so that planet markets can properly generate
     @Override
     public void onNewGameAfterProcGen() {
-        SettingsAPI settings = Global.getSettings();
-
         boolean doCustomStarSystems;
-        String enableSystemId = settings.getString("customizablestarsystems", "settings_enableCustomStarSystems");
-        if (settings.getModManager().isModEnabled("lunalib"))
-            doCustomStarSystems = Boolean.TRUE.equals(CSSLunaUtil.getBoolean(settings.getString("customizablestarsystems", "mod_id_customizablestarsystems"), enableSystemId));
-        else doCustomStarSystems = settings.getBoolean(enableSystemId);
+        String enableSystemId = SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS;
+        if (LUNA_ENABLED)
+            doCustomStarSystems = Boolean.TRUE.equals(CSSLunaUtil.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, enableSystemId));
+        else doCustomStarSystems = Global.getSettings().getBoolean(enableSystemId);
 
         if (doCustomStarSystems) try {
-            generateSystems();
+            generateCustomStarSystems();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -56,21 +58,23 @@ public class CSSModPlugin extends BaseModPlugin {
         marketsToOverrideAdmin = null;
     }
 
-    private void generateSystems() throws JSONException, IOException {
+    private void generateCustomStarSystems() throws JSONException, IOException {
         JSONObject systems = CSSUtil.getMergedSystemJSON();
-        CSSUtil util = new CSSUtil();
         for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
             String systemId = it.next();
             JSONObject systemOptions = systems.getJSONObject(systemId);
-            if (systemOptions.optBoolean(util.OPT_IS_ENABLED, true))
-                for (int numOfSystems = systemOptions.optInt(util.OPT_NUMBER_OF_SYSTEMS, 1); numOfSystems > 0; numOfSystems--) {
-                    StarSystemAPI newSystem = util.generateCustomStarSystem(systemOptions, systemId);
-                    if (systemOptions.optBoolean(util.OPT_TELEPORT_UPON_GENERATION, false)) teleportSystem = newSystem;
-                    Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_generatedSystem"), systemId));
+            if (systemOptions.optBoolean(OPT_IS_ENABLED, true))
+                for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
+                    CustomStarSystem newSystem = CSSUtil.generateCustomStarSystem(systemOptions, systemId);
+                    if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
+                        teleportSystem = newSystem.getSystem();
+
+                    if (marketsToOverrideAdmin == null) marketsToOverrideAdmin = newSystem.getMarketsToOverrideAdmin();
+                    else marketsToOverrideAdmin.putAll(newSystem.getMarketsToOverrideAdmin());
+
+                    Global.getLogger(CSSModPlugin.class).info(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
                 }
-            else
-                Global.getLogger(CSSModPlugin.class).info(String.format(Global.getSettings().getString("customizablestarsystems", "commands_disabledSystem"), systemId));
+            else Global.getLogger(CSSModPlugin.class).info(String.format(COMMANDS_DISABLED_SYSTEM, systemId));
         }
-        marketsToOverrideAdmin = util.marketsToOverrideAdmin;
     }
 }
