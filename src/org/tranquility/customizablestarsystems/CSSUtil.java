@@ -31,18 +31,7 @@ public final class CSSUtil {
     }
 
     /**
-     * Creates a custom star system based on pre-defined options
-     *
-     * @param systemOptions A JSON object detailing how to create the star system
-     * @param systemId      The JSON ID of the star system
-     * @return The newly-created custom star system
-     */
-    public static CustomStarSystem generateCustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
-        return new CustomStarSystem(systemOptions, systemId);
-    }
-
-    /**
-     * Sets admins accordingly on given markets; the HashMap is cleared afterwards
+     * Sets admins accordingly on given markets; the Map is cleared afterwards
      *
      * @param marketMap A map of market IDs to the admins to place
      */
@@ -63,7 +52,7 @@ public final class CSSUtil {
     }
 
     /**
-     * Teleports the player to a given star system
+     * Teleports the player to a given star system; should only be run if the player fleet is loaded in the game
      *
      * @param system The system to which the player gets teleported
      */

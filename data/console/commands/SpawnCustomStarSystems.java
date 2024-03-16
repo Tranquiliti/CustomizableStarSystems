@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
-import static org.tranquility.customizablestarsystems.CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS;
 
 public class SpawnCustomStarSystems implements BaseCommand {
     @Override
@@ -37,8 +36,8 @@ public class SpawnCustomStarSystems implements BaseCommand {
             return CommandResult.ERROR;
         }
 
-        StarSystemAPI teleportSystem = null;
         StringBuilder print = new StringBuilder();
+        StarSystemAPI teleportSystem = null;
         Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<MarketAPI, String>(0);
         if (params[0].equals("all")) {
             // Generate all enabled custom star systems
@@ -47,7 +46,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
                 try {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     if (systemOptions.optBoolean(OPT_IS_ENABLED, true))
-                        teleportSystem = generateSystem(systemOptions, systemId, print, marketsToOverrideAdmin);
+                        teleportSystem = generateSystem(systemOptions, systemId, print, teleportSystem, marketsToOverrideAdmin);
                     else print.append(String.format(COMMANDS_DISABLED_SYSTEM, systemId));
                 } catch (Exception e) {
                     return showBadSystemError(systemId, print, e);
@@ -65,7 +64,7 @@ public class SpawnCustomStarSystems implements BaseCommand {
             for (String systemId : params)
                 try {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
-                    teleportSystem = generateSystem(systemOptions, systemId, print, marketsToOverrideAdmin);
+                    teleportSystem = generateSystem(systemOptions, systemId, print, teleportSystem, marketsToOverrideAdmin);
                 } catch (Exception e) {
                     return showBadSystemError(systemId, print, e);
                 }
@@ -78,10 +77,9 @@ public class SpawnCustomStarSystems implements BaseCommand {
         return CommandResult.SUCCESS;
     }
 
-    private StarSystemAPI generateSystem(JSONObject systemOptions, String systemId, StringBuilder print, Map<MarketAPI, String> marketsToOverrideAdmin) throws JSONException {
-        StarSystemAPI teleportSystem = null;
-        for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
-            CustomStarSystem newSystem = CSSUtil.generateCustomStarSystem(systemOptions, systemId);
+    private StarSystemAPI generateSystem(JSONObject systemOptions, String systemId, StringBuilder print, StarSystemAPI teleportSystem, Map<MarketAPI, String> marketsToOverrideAdmin) throws JSONException {
+        for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
+            CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId);
             if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false)) teleportSystem = newSystem.getSystem();
 
             marketsToOverrideAdmin.putAll(newSystem.getMarketsToOverrideAdmin());

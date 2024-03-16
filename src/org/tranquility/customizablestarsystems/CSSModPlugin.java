@@ -13,13 +13,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
-import static org.tranquility.customizablestarsystems.CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS;
-import static org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil.LUNALIB_ENABLED;
 
 @SuppressWarnings({"unused", "unchecked"})
 public class CSSModPlugin extends BaseModPlugin {
-    private transient Map<MarketAPI, String> marketsToOverrideAdmin;
+    private transient final boolean LUNALIB_ENABLED = Global.getSettings().getModManager().isModEnabled("lunalib");
     private transient StarSystemAPI teleportSystem;
+    private transient Map<MarketAPI, String> marketsToOverrideAdmin;
 
     @Override
     public void onApplicationLoad() {
@@ -59,8 +58,8 @@ public class CSSModPlugin extends BaseModPlugin {
             String systemId = it.next();
             JSONObject systemOptions = systems.getJSONObject(systemId);
             if (systemOptions.optBoolean(OPT_IS_ENABLED, true))
-                for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
-                    CustomStarSystem newSystem = CSSUtil.generateCustomStarSystem(systemOptions, systemId);
+                for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
+                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId);
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
 

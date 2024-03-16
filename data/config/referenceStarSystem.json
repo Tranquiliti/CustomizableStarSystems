@@ -14,7 +14,7 @@
 
 { # List of custom star systems to generate
 
-	# An example star system, with ID "css_reference_star_system", explaining and displaying all available options
+	# An example star system, with spawning ID "css_reference_star_system", explaining and displaying all available options
 	# The ID must be unique and should not be shared by another custom star system
 	"css_reference_star_system":{
 		# If false, this system will not spawn during new game generation
@@ -136,7 +136,7 @@
 
 				# For ADVANCED users only!
 				# A map of memory keys and values added to this entity's memory
-				# Only boolean values are currently supported for each memory key
+				# Only Boolean values are currently supported for each memory key
 				# Defaults to not applying any additional memory keys if this entry is ommitted
 				"memoryKeys":{
 					"$example_mem_key":true,

@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
-import static org.tranquility.customizablestarsystems.CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS;
 
 @SuppressWarnings("unchecked")
 public class SpawnStarSystemsSnippet extends LunaSnippet {
@@ -95,8 +94,8 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
         for (String systemId : enabledParams)
             try { // Generate all selected custom star systems
                 JSONObject systemOptions = systems.getJSONObject(systemId);
-                for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
-                    CustomStarSystem newSystem = CSSUtil.generateCustomStarSystem(systemOptions, systemId);
+                for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
+                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId);
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
 

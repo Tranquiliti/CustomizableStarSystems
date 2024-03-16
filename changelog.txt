@@ -3,7 +3,7 @@ Version 2.1.0
 * Added "teleportUponGeneration" option for custom star systems
   - Generating a custom star system with this option enabled will also teleport the player to the newly-created star system
 * Added "systemTags" option for custom star systems
-  - Option allows additional tags - which influences how a system is treated by the game - to be applied to custom star systems
+  - Option allows additional tags - which can influence how a system is treated by the game - to be applied to custom star systems
 * Added "memoryKeys" option for all entity types in the "entities" list
   - Meant for advanced users, this allows custom memory keys to be added to an entity's memory
   - Only supports Boolean values for now
