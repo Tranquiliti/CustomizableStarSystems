@@ -12,7 +12,7 @@
 
 
 	# A set of systems, optimized for Colony Crises/Hyperspace Topology events
-	# (Less overall impact from Colony Crises attacks, larger area for Slipstream detection)
+	# (Less overall impact from Colony Crises attacks, and a larger area for Slipstream detection)
 
 	# Gas Giant -> Plasma Dynamo Volatiles
 	"css_optimal_set1":{
@@ -137,6 +137,7 @@
 	#   -> Tectonic Activity, Extreme Tectonic Activity, High Gravity, Extreme Heat, Irradiated
 	"css_perfect_planets_system":{
 		"isEnabled":true,
+		"teleportUponGeneration":false,
 		"entities":[
 			{ # A small star to hold all these planets together
 				"entity":"star",
