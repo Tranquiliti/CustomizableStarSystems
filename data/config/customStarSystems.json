@@ -13,42 +13,43 @@
 	# An uninhabited star system with desirable planets
 	"css_default":{
 		"isEnabled":true,
-		"setLocation":0, # Location set to a random constellation
+		"setLocation":0,
 		"hasSystemwideNebula":true,
 		"addCoronalHypershunt":false,
 		"addDomainCryosleeper":false,
+		"teleportUponGeneration":false,
 		"entities":[
 			{
 				"entity":"star",
-				"type":"random_star_giant",
+				"type":"random_star_giant"
 			},
 			{
 				"entity":"planet",
 				"type":"gas_giant",
 				"orbitRadius":3825,
 				"radius":325,
-				"conditions":["hot","high_gravity","volatiles_abundant"],
+				"conditions":["hot","high_gravity","volatiles_abundant"]
 			},
 			{
 				"entity":"planet",
 				"type":"terran",
 				"orbitRadius":4625,
 				"radius":175,
-				"conditions":["habitable","ore_moderate","organics_common","farmland_adequate","ruins_extensive"],
+				"conditions":["habitable","ore_moderate","organics_common","farmland_adequate","ruins_extensive"]
 			},
 			{
 				"entity":"planet",
 				"type":"toxic",
 				"orbitRadius":5850,
 				"radius":150,
-				"conditions":["toxic_atmosphere","ore_rich","rare_ore_moderate","organics_common","volatiles_diffuse"],
+				"conditions":["toxic_atmosphere","ore_rich","rare_ore_moderate","organics_common","volatiles_diffuse"]
 			},
 			{
 				"entity":"planet",
 				"type":"barren",
 				"orbitRadius":6420,
 				"radius":120,
-				"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"],
+				"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"]
 			},
 			{"entity":"jump_point","orbitRadius":3200,"name":"Inner System Jump-point"},
 			{"entity":"inactive_gate","orbitRadius":5250},
@@ -57,8 +58,8 @@
 			{"entity":"station_research","orbitRadius":425,"focus":1},
 			{"entity":"stable_location","focus":[1,4]},
 			{"entity":"stable_location","focus":[1,5]},
-			{"entity":"comm_relay","focus":[2,4]},
-		],
+			{"entity":"comm_relay","focus":[2,4]}
+		]
 	},
 
 
@@ -68,4 +69,4 @@
 
 
 
-}
+} # Keep this closing bracket at the end of this JSON file!

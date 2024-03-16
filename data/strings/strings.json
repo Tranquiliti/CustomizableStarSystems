@@ -9,8 +9,8 @@
 	"customizablestarsystems":{
 		"mod_id_customizablestarsystems":"customizablestarsystems",
 
-		# Sole entry in customStarSystems.json
-		"settings_customStarSystems":"customStarSystems",
+		# Settings in settings.json
+		"settings_enableCustomStarSystems":"enableCustomStarSystems",
 
 		# Main system options in customStarSystems.json
 		"opt_isEnabled":"isEnabled",
@@ -23,6 +23,8 @@
 		"opt_systemBackground":"systemBackground",
 		"opt_systemMusic":"systemMusic",
 		"opt_systemLightColor":"systemLightColor",
+		"opt_teleportUponGeneration":"teleportUponGeneration",
+		"opt_system_tags":"systemTags",
 		"opt_entities":"entities",
 
 		# Sub-options for various options
@@ -46,6 +48,7 @@
 		"opt_freePort":"freePort",
 		"opt_aiCoreAdmin":"aiCoreAdmin",
 		"opt_industries":"industries",
+		"opt_memory_keys":"memoryKeys",
 
 		# Sub-options for "opt_specChanges"
 		"opt_atmosphereColor":"atmosphereColor",
@@ -86,10 +89,10 @@
 		"default_station_type":"station_side06",
 		"path_graphics_planet":"graphics/planets/",
 		"path_graphics_background":"graphics/backgrounds/",
-		"type_random_star_giant":"random_star_giant",
 		"path_merged_json_customStarSystems":"data/config/customStarSystems.json",
+		"type_random_star_giant":"random_star_giant",
 
-		# Names used in Solar Array generation
+		# Names used for entities
 		"name_mirror1":"Stellar Mirror Alpha",
 		"name_mirror2":"Stellar Mirror Beta",
 		"name_mirror3":"Stellar Mirror Gamma",
@@ -98,6 +101,7 @@
 		"name_shade1":"Stellar Shade Omega",
 		"name_shade2":"Stellar Shade Psi",
 		"name_shade3":"Stellar Shade Chi",
+		"name_damaged_station":" (Damaged)",
 
 		# Other, used in code
 		"source_gen":"gen",
@@ -123,9 +127,6 @@
 		# LunaSnippets
 		"snippets_spawnSystemName":"Generate custom star systems",
 		"snippets_spawnSystemDesc":"Generates the toggled custom star systems. Backup your save before executing this snippet!",
-		"snippets_spawnSystemNoSelected":"No custom star system selected!",
-
-		# Settings in settings.json
-		"settings_enableCustomStarSystems":"enableCustomStarSystems",
-	},
+		"snippets_spawnSystemNoSelected":"No custom star system selected!"
+	}
 }

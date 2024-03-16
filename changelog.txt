@@ -1,3 +1,18 @@
+Version 2.1.0
+
+* Added "teleportUponGeneration" option for custom star systems
+  - Generating a custom star system with this option enabled will also teleport the player to the newly-created star system
+* Added "systemTags" option for custom star systems
+  - Option allows additional tags - used to influence how the game treats a given system - to be applied to custom star systems
+* Added "memoryKeys" option for all entity types in the "entities" list
+  - Meant for advanced users, this allows custom memory keys to be added to an entity's memory
+  - Only supports Boolean values for now
+* Reduced the orbit radius for the Domain-era Cyrosleeper added through the "addDomainCryosleeper" option
+  - Now 1000 units away from the orbit of the furthest jump-point/planet/star, from 4000 units
+* Major code refactors
+
+
+
 Version 2.0.0 (Update for Starsector 0.97)
 
 * Updated to Starsector 0.97
@@ -7,13 +22,13 @@ Version 2.0.0 (Update for Starsector 0.97)
 Version 1.0.4
 
 * Fixed the LunaLib soft dependency
-    - This means this mod no longer requires either LunaLib or Java 8 to run
+  - This means this mod no longer requires either LunaLib or Java 8 to run
 * Added "orbitClockwise" option for most entities
   - If set to false, the entity will orbit counter-clockwise instead
 * Added more info for error messages
 * "isCoreWorldSystem" option now forcibly applies the THEME_CORE tags, instead of relying on those tags being automatically applied by the game
 * All custom colonies now always have the "population" (Population & Infrastructure) industry, even if it's not explicitly specified in an "industries" list
-    - This avoids situations where removing or not having this industry causes colonies to not work properly
+  - This avoids situations where removing or not having this industry causes colonies to not work properly
 * Minor code refactors
 
 

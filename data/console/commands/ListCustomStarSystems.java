@@ -1,12 +1,14 @@
 package data.console.commands;
 
-import com.fs.starfarer.api.Global;
 import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.CommonStrings;
 import org.lazywizard.console.Console;
+import org.tranquility.customizablestarsystems.CSSUtil;
 
 import java.util.Iterator;
+
+import static org.tranquility.customizablestarsystems.CSSStrings.COMMANDS_ERROR_BAD_JSON;
 
 public class ListCustomStarSystems implements BaseCommand {
     @Override
@@ -18,9 +20,9 @@ public class ListCustomStarSystems implements BaseCommand {
 
         JSONObject systems;
         try {
-            systems = Global.getSettings().getMergedJSONForMod(Global.getSettings().getString("customizablestarsystems", "path_merged_json_customStarSystems"), "customizablestarsystems");
+            systems = CSSUtil.getMergedSystemJSON();
         } catch (Exception e) {
-            Console.showMessage(Global.getSettings().getString("customizablestarsystems", "commands_error_badJSON") + e);
+            Console.showMessage(COMMANDS_ERROR_BAD_JSON + e);
             return CommandResult.ERROR;
         }
 
