@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 import static org.tranquility.customizablestarsystems.CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS;
-import static org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil.LUNA_ENABLED;
+import static org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil.LUNALIB_ENABLED;
 
 @SuppressWarnings({"unused", "unchecked"})
 public class CSSModPlugin extends BaseModPlugin {
@@ -23,7 +23,7 @@ public class CSSModPlugin extends BaseModPlugin {
 
     @Override
     public void onApplicationLoad() {
-        if (LUNA_ENABLED) CSSLunaUtil.addSnippet();
+        if (LUNALIB_ENABLED) CSSLunaUtil.addSnippet();
     }
 
     // If a teleport system exists, teleport the player there on new game (doing this before game load crashes the game)
@@ -38,12 +38,7 @@ public class CSSModPlugin extends BaseModPlugin {
     // Generates mod systems after proc-gen so that planet markets can properly generate
     @Override
     public void onNewGameAfterProcGen() {
-        boolean doCustomStarSystems;
-        String enableSystemId = SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS;
-        if (LUNA_ENABLED)
-            doCustomStarSystems = Boolean.TRUE.equals(CSSLunaUtil.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, enableSystemId));
-        else doCustomStarSystems = Global.getSettings().getBoolean(enableSystemId);
-
+        boolean doCustomStarSystems = LUNALIB_ENABLED ? Boolean.TRUE.equals(CSSLunaUtil.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS)) : Global.getSettings().getBoolean(SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS);
         if (doCustomStarSystems) try {
             generateCustomStarSystems();
         } catch (Exception e) {

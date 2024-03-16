@@ -25,6 +25,7 @@ public final class CSSStrings {
     public static final String OPT_SYSTEM_MUSIC = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemMusic");
     public static final String OPT_SYSTEM_LIGHT_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemLightColor");
     public static final String OPT_TELEPORT_UPON_GENERATION = Global.getSettings().getString(STRINGS_CATEGORY, "opt_teleportUponGeneration");
+    public static final String OPT_SYSTEM_TAGS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_system_tags");
     public static final String OPT_ENTITIES = Global.getSettings().getString(STRINGS_CATEGORY, "opt_entities");
 
     // Sub-options
@@ -48,6 +49,7 @@ public final class CSSStrings {
     public static final String OPT_FREE_PORT = Global.getSettings().getString(STRINGS_CATEGORY, "opt_freePort");
     public static final String OPT_AI_CORE_ADMIN = Global.getSettings().getString(STRINGS_CATEGORY, "opt_aiCoreAdmin");
     public static final String OPT_INDUSTRIES = Global.getSettings().getString(STRINGS_CATEGORY, "opt_industries");
+    public static final String OPT_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_memory_keys");
 
     // Sub-options for "specChanges"
     public static final String OPT_ATMOSPHERE_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_atmosphereColor");
@@ -100,6 +102,7 @@ public final class CSSStrings {
     public static final String NAME_SHADE1 = Global.getSettings().getString(STRINGS_CATEGORY, "name_shade1");
     public static final String NAME_SHADE2 = Global.getSettings().getString(STRINGS_CATEGORY, "name_shade2");
     public static final String NAME_SHADE3 = Global.getSettings().getString(STRINGS_CATEGORY, "name_shade3");
+    public static final String NAME_DAMAGED_STATION = Global.getSettings().getString(STRINGS_CATEGORY, "name_damaged_station");
 
     // Other, used in code
     public static final String SOURCE_GEN = Global.getSettings().getString(STRINGS_CATEGORY, "source_gen");

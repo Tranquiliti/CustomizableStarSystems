@@ -65,6 +65,40 @@
 		# Defaults to proc-gen settings if this entry is omitted
 		"systemLightColor":[255,255,255,255],
 
+		# A list of (additional) tags to apply to this system
+		# Defaults to applying no additional tags if this entry is omitted
+		"systemTags":[
+			# A non-exhaustive list of vanilla system tags
+			"system_cut_off_from_hyper",
+			"system_abyssal",
+			"theme_hidden",
+			"theme_core_unpopulated",
+			"theme_core_populated",
+			"theme_core",
+			"theme_interesting",
+			"theme_interesting_minor",
+			"theme_misc",
+			"theme_misc_skip",
+			"theme_ruins",
+			"theme_ruins_main",
+			"theme_ruins_secondary",
+			"theme_special",
+			"theme_derelict",
+			"theme_derelict_mothership",
+			"theme_derelict_cryosleeper",
+			"theme_derelict_survey_ship",
+			"theme_derelict_probes",
+			"has_coronal_tap",
+			"theme_unsafe",
+			"theme_remnant",
+			"theme_remnant_main",
+			"theme_remnant_secondary",
+			"theme_remnant_no_fleets",
+			"theme_remnant_destroyed",
+			"theme_remnant_suppressed",
+			"theme_remnant_resurgent",
+		],
+
 		# If true, the player will be teleported to this system whenever it generates
 		# If multiple custom star systems have this option enabled, the player will be teleported to the last system generated
 		# Defaults to false if this entry is omitted
@@ -99,9 +133,19 @@
 				# How long it takes for the center stars to complete their orbits
 				# Defaults to proc-gen settings if this entry is omitted or is set to 0 or less
 				"orbitDays":0,
+
+				# For ADVANCED users only!
+				# A map of memory keys and values added to this entity's memory
+				# Only boolean values are currently supported for each memory key
+				# Defaults to not applying any additional memory keys if this entry is ommitted
+				"memoryKeys":{
+					"$example_mem_key":true,
+					"$example_mem_key_2":false,
+				}
 			},
 			{ # A star, made as part of the system center
 				"entity":"star",
+				"memoryKeys":{},
 
 				# Type of star to make
 				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
@@ -144,6 +188,7 @@
 				"flareChance":1.0,
 				"specChanges":{"texture":"castiron.jpg"},
 				"customDescriptionId":"star_blue_giant",
+				"memoryKeys":{},
 
 				# Indicates the entity this entity will orbit
 				# Number is based on index of the "entities" list, which starts at 0
@@ -162,7 +207,7 @@
 				"focus":1,
 
 				# How far away this entity orbits the focus.
-				# *REQUIRED* if "focus" option either is omitted or is a number (i.e. is not using the [f,l] parameter)
+				# *REQUIRED* if "focus" entry either is omitted or is a number (i.e. is not using the [f,l] parameter)
 				"orbitRadius":1111,
 
 				# The initial angle to place this entity
@@ -186,6 +231,7 @@
 				"orbitClockwise":true,
 				"name":"Placeholder Planet",
 				"customDescriptionId":"planet_jangala",
+				"memoryKeys":{},
 
 				# Type of planet to make
 				# Planet IDs are found in starsector-core/data/campaign/procgen/planet_gen_data.csv
@@ -392,6 +438,7 @@
 				"orbitClockwise":true,
 				"name":"Test Name Gate",
 				"customDescriptionId":"inactive_gate",
+				"memoryKeys":{},
 			},
 			{ # A normal empty location
 				# Known issue: orbits are broken for this entity; it will remain in a still position, completely ignoring "orbitDays"
@@ -401,6 +448,7 @@
 				"orbitAngle":0,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"memoryKeys":{},
 			},
 			{ # A station (in this case, a populated station)
 				"entity":"station",
@@ -411,6 +459,7 @@
 				"orbitClockwise":true,
 				"name":"Placeholder Station",
 				"customDescriptionId":"station_chupi_orco",
+				"memoryKeys":{},
 
 				# Type of station graphic to use
 				# Station graphics are found in starsector-core/graphics/stations
@@ -440,6 +489,7 @@
 				"orbitAngle":-1,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"memoryKeys":{},
 
 				# Does this Remnant station start out damaged?
 				# Defaults to false if this entry is omitted
@@ -453,6 +503,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"name":"Test Name Field",
+				"memoryKeys":{},
 
 				# Size of the asteroid field
 				# Defaults to 400 if this entry is omitted
@@ -462,11 +513,13 @@
 				"entity":"accretion_disk",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":0, # Optional
+				"memoryKeys":{},
 			},
 			{ # Magnetic field
 				"entity":"magnetic_field",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
+				"memoryKeys":{},
 
 				# Size, or band width, of the magnetic field
 				# Defaults to 300 if this entry is omitted
@@ -507,6 +560,7 @@
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 				"orbitDays":0,
+				"memoryKeys":{},
 
 				# Name of the ring band
 				# Uses default name if this entry is omitted
@@ -531,6 +585,7 @@
 				"orbitRadius":100,
 				"orbitDays":0,
 				"name":"Test Name Belt",
+				"memoryKeys":{},
 
 				# Index of the ring texture to use for the asteroid belt's inner ring
 				# Valid options are 0, 1, 2, or 3
@@ -574,6 +629,7 @@
 				"name":"Test Name Gate",
 				"factionId":"neutral",
 				"customDescriptionId":"inactive_gate",
+				"memoryKeys":{},
 			},
 
 			# -- You can add as much entities as desired in the "entities" list -- #

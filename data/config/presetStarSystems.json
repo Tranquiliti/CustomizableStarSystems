@@ -11,8 +11,8 @@
 	#--------------------------------------#
 
 
-	# A set of systems, optimized for Hostile Activity/Hyperspace Topology events
-	# (Less overall HA impact, larger area for Slipstream detection)
+	# A set of systems, optimized for Colony Crises/Hyperspace Topology events
+	# (Less overall impact from Colony Crises attacks, larger area for Slipstream detection)
 
 	# Gas Giant -> Plasma Dynamo Volatiles
 	"css_optimal_set1":{

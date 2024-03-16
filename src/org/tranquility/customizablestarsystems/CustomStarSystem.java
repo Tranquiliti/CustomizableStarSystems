@@ -35,6 +35,7 @@ import static org.tranquility.customizablestarsystems.CSSStrings.*;
 /**
  * A custom star system
  */
+@SuppressWarnings("unchecked")
 public class CustomStarSystem {
     // Default values
     public static final int DEFAULT_NUMBER_OF_SYSTEMS = 1;
@@ -61,7 +62,6 @@ public class CustomStarSystem {
     public final String ID_REMNANT_STATION_DAMAGED = "remnant_station2_Damaged";
     public final String ID_REMNANT_STATION_STANDARD = "remnant_station2_Standard";
     public final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
-    public final String NAME_DAMAGED_STATION = " (Damaged)";
 
     // Other
     private ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
@@ -73,6 +73,7 @@ public class CustomStarSystem {
     private StarSystemAPI system;
     private List<SectorEntityToken> systemEntities;
     private final String systemId;
+    private final JSONObject systemOptions;
     private float systemRadius = 0f;
     private boolean hasFactionPresence = false;
     private boolean hasJumpPoint = false;
@@ -86,49 +87,24 @@ public class CustomStarSystem {
      */
     public CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
         this.systemId = systemId;
+        this.systemOptions = systemOptions;
 
-        createStarSystem(systemOptions);
+        createStarSystem();
+        generateEntities();
 
-        generateEntities(systemOptions.getJSONArray(OPT_ENTITIES));
+        generateDomainCryosleeperIfApplicable();
+        generateCoronalHypershuntIfApplicable();
+        addCoreSystemTags();
+        addMusicIfApplicable();
 
-        if (systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) generateHypershunt(!hasFactionPresence);
+        setLocation();
 
-        if (systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false))
-            generateCryosleeper(systemRadius + 1000f, !hasFactionPresence);
-
-        if (hasFactionPresence) Misc.setAllPlanetsSurveyed(system, true);
-
-        // TODO: rework the Tag system so any Tags can be placed into a custom star system
-        if (!systemOptions.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
-            system.removeTag(Tags.THEME_CORE);
-            system.addTag(Tags.THEME_MISC);
-            system.addTag(Tags.THEME_INTERESTING_MINOR);
-        } else {
-            system.addTag(Tags.THEME_CORE);
-            system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
-        }
-
-        if (!systemOptions.isNull(OPT_SYSTEM_MUSIC))
-            system.getMemoryWithoutUpdate().set(MusicPlayerPluginImpl.MUSIC_SET_MEM_KEY, systemOptions.getString(OPT_SYSTEM_MUSIC));
-
-        JSONArray locationOverride = systemOptions.optJSONArray(OPT_SET_LOCATION);
-        if (locationOverride == null)
-            setConstellationLocation(systemRadius / 10f + 100f, systemOptions.optInt(OPT_SET_LOCATION, 0));
-        else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
-
-        if (systemOptions.optBoolean(OPT_HAS_SYSTEMWIDE_NEBULA, false))
-            StarSystemGenerator.addSystemwideNebula(system, system.getAge());
-
-        if (!systemOptions.isNull(OPT_SYSTEM_BACKGROUND))
-            system.setBackgroundTextureFilename(PATH_GRAPHICS_BACKGROUND + systemOptions.getString(OPT_SYSTEM_BACKGROUND));
-        else {
-            String nebulaType = system.hasSystemwideNebula() ? StarSystemGenerator.nebulaTypes.get(system.getAge()) : StarSystemGenerator.NEBULA_NONE;
-            system.setBackgroundTextureFilename(StarSystemGenerator.backgroundsByNebulaType.get(nebulaType).pick());
-        }
-
-        setLightColor(systemOptions);
+        addNebulaIfApplicable();
+        setBackground();
+        addSystemTagsIfApplicable();
+        setLightColor();
         generateHyperspace();
-        addRemnantWarningBeacons();
+        addRemnantWarningBeaconsIfApplicable();
     }
 
     /**
@@ -149,7 +125,7 @@ public class CustomStarSystem {
         return system;
     }
 
-    private void createStarSystem(JSONObject systemOptions) throws JSONException {
+    private void createStarSystem() throws JSONException {
         JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
 
         // Create a star system based on the 1st star's name
@@ -161,7 +137,8 @@ public class CustomStarSystem {
         }
     }
 
-    private void generateEntities(JSONArray entities) throws JSONException {
+    private void generateEntities() throws JSONException {
+        JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
         if (entities.length() == 0) throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
 
         systemEntities = new ArrayList<>(entities.length());
@@ -231,26 +208,15 @@ public class CustomStarSystem {
                     setEntityLocation(newEntity, entityOptions, i);
             }
 
-            // TODO: add MemKey support for all entities (clarify that this is for advanced users only!)
             addMemoryKeys(newEntity, entityOptions);
 
             systemEntities.add(newEntity);
         }
 
+        if (hasFactionPresence) Misc.setAllPlanetsSurveyed(system, true);
+
         // Fallback option for systems with no orbiting bodies or jump-points
         if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
-    }
-
-    // TODO: test this
-    private void addMemoryKeys(SectorEntityToken entity, JSONObject entityOptions) {
-        JSONObject memoryKeys = entityOptions.optJSONObject("memoryKeys");
-        if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); )
-            try {
-                String memKey = it.next();
-                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Illegal memory key or value!");
-            }
     }
 
     private void updateSystemRadius(SectorEntityToken entity) {
@@ -686,42 +652,12 @@ public class CustomStarSystem {
         return entity;
     }
 
-    // See com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
-    private void generateCryosleeper(float orbitRadius, boolean discoverable) {
-        SectorEntityToken cryosleeper = system.addCustomEntity(null, DEFAULT_CRYOSLEEPER_NAME, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
-        cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
-        cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
-
-        if (discoverable) makeDiscoverable(cryosleeper, 3500f);
-
-        system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
-        system.addTag(Tags.THEME_INTERESTING);
-    }
-
-    // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
-    private void generateHypershunt(boolean discoverable) {
-        SectorEntityToken systemCenter = system.getCenter();
-        SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
-        if (systemCenter.isStar()) { // Orbit the sole star
-            float orbitRadius = systemCenter.getRadius() + hypershunt.getRadius() + 100f;
-            hypershunt.setCircularOrbitPointingDown(systemCenter, randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / 20f);
-        } else { // Stay in the center, facing towards the primary star
-            PlanetAPI primaryStar = system.getStar();
-            hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
+    private void addMemoryKeys(SectorEntityToken entity, JSONObject entityOptions) {
+        JSONObject memoryKeys = entityOptions.optJSONObject(OPT_MEMORY_KEYS);
+        if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
+            String memKey = it.next();
+            entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.optBoolean(memKey, false));
         }
-
-        if (discoverable) makeDiscoverable(hypershunt, 3500f);
-
-        system.addScript(new CoronalTapParticleScript(hypershunt));
-
-        system.addTag(Tags.HAS_CORONAL_TAP);
-        system.addTag(Tags.THEME_INTERESTING);
-    }
-
-    private void makeDiscoverable(SectorEntityToken entity, float detectedRange) {
-        entity.setSensorProfile(1f);
-        entity.setDiscoverable(true);
-        entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, detectedRange);
     }
 
     private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
@@ -729,88 +665,6 @@ public class CustomStarSystem {
         if (focus >= systemEntities.size())
             throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, systemId, index));
         return systemEntities.get(focus);
-    }
-
-    private void addCustomDescription(SectorEntityToken entity, JSONObject entityOptions) {
-        String id = entityOptions.optString(OPT_CUSTOM_DESCRIPTION_ID, null);
-        if (id != null) entity.setCustomDescriptionId(id);
-    }
-
-    // Note: Textures must already be preloaded via settings.json for texture-replacing fields to work
-    // Partially adapted from Tartiflette's Unknown Skies source code
-    private void addSpecChanges(PlanetAPI body, JSONObject specOptions) throws JSONException {
-        if (specOptions == null) return;
-        PlanetSpecAPI bodySpec = body.getSpec();
-
-        JSONArray atmosphereColor = specOptions.optJSONArray(OPT_ATMOSPHERE_COLOR);
-        if (atmosphereColor != null) bodySpec.setAtmosphereColor(getColor(atmosphereColor));
-
-        float atmosphereThickness = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS);
-        if (!Float.isNaN(atmosphereThickness)) bodySpec.setAtmosphereThickness(atmosphereThickness);
-
-        float atmosphereThicknessMin = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS_MIN);
-        if (!Float.isNaN(atmosphereThicknessMin)) bodySpec.setAtmosphereThicknessMin(atmosphereThicknessMin);
-
-        JSONArray cloudColor = specOptions.optJSONArray(OPT_CLOUD_COLOR);
-        if (cloudColor != null) bodySpec.setCloudColor(getColor(cloudColor));
-
-        float cloudRotation = (float) specOptions.optDouble(OPT_CLOUD_ROTATION);
-        if (!Float.isNaN(cloudRotation)) bodySpec.setCloudRotation(cloudRotation);
-
-        String cloudTexture = specOptions.optString(OPT_CLOUD_TEXTURE, null);
-        if (cloudTexture != null) bodySpec.setCloudTexture(PATH_GRAPHICS_PLANET + cloudTexture);
-
-        JSONArray glowColor = specOptions.optJSONArray(OPT_GLOW_COLOR);
-        if (glowColor != null) bodySpec.setGlowColor(getColor(glowColor));
-
-        String glowTexture = specOptions.optString(OPT_GLOW_TEXTURE, null);
-        if (glowTexture != null) bodySpec.setGlowTexture(PATH_GRAPHICS_PLANET + glowTexture);
-
-        JSONArray iconColor = specOptions.optJSONArray(OPT_ICON_COLOR);
-        if (iconColor != null) bodySpec.setIconColor(getColor(iconColor));
-
-        float pitch = (float) specOptions.optDouble(OPT_PITCH);
-        if (!Float.isNaN(pitch)) bodySpec.setPitch(pitch);
-
-        JSONArray planetColor = specOptions.optJSONArray(OPT_PLANET_COLOR);
-        if (planetColor != null) bodySpec.setPlanetColor(getColor(planetColor));
-
-        float rotation = (float) specOptions.optDouble(OPT_ROTATION);
-        if (!Float.isNaN(rotation)) bodySpec.setRotation(rotation);
-
-        String texture = specOptions.optString(OPT_TEXTURE, null);
-        if (texture != null) bodySpec.setTexture(PATH_GRAPHICS_PLANET + texture);
-
-        float tilt = (float) specOptions.optDouble(OPT_TILT);
-        if (!Float.isNaN(tilt)) bodySpec.setTilt(tilt);
-
-        boolean revLightGlow = specOptions.optBoolean(OPT_USE_REVERSE_LIGHT_FOR_GLOW);
-        if (revLightGlow != bodySpec.isUseReverseLightForGlow()) bodySpec.setUseReverseLightForGlow(revLightGlow);
-
-        JSONArray typeOverride = specOptions.optJSONArray(OPT_TYPE_OVERRIDE);
-        if (typeOverride != null) {
-            String newType = typeOverride.getString(0);
-            ((PlanetSpec) bodySpec).planetType = newType;
-            ((PlanetSpec) bodySpec).name = typeOverride.getString(1);
-            ((PlanetSpec) bodySpec).descriptionId = newType;
-            body.setTypeId(newType);
-        }
-
-        body.applySpecChanges();
-    }
-
-    private Color getColor(JSONArray rgba) throws JSONException {
-        if (rgba == null) return null;
-        return new Color(rgba.getInt(0), rgba.getInt(1), rgba.getInt(2), rgba.getInt(3));
-    }
-
-    private Color[] getColors(JSONArray colorList) throws JSONException {
-        if (colorList == null) return null;
-
-        Color[] colors = new Color[colorList.length()];
-        for (int i = 0; i < colorList.length(); i++) colors[i] = getColor(colorList.getJSONArray(i));
-
-        return colors;
     }
 
     private void setPlanetConditions(PlanetAPI planet, JSONObject planetOptions) throws JSONException {
@@ -978,7 +832,154 @@ public class CustomStarSystem {
         return name;
     }
 
-    private void setLightColor(JSONObject systemOptions) throws JSONException {
+    private void addCustomDescription(SectorEntityToken entity, JSONObject entityOptions) {
+        String id = entityOptions.optString(OPT_CUSTOM_DESCRIPTION_ID, null);
+        if (id != null) entity.setCustomDescriptionId(id);
+    }
+
+    // Note: Textures must already be preloaded via settings.json for texture-replacing fields to work
+    // Partially adapted from Tartiflette's Unknown Skies source code
+    private void addSpecChanges(PlanetAPI body, JSONObject specOptions) throws JSONException {
+        if (specOptions == null) return;
+        PlanetSpecAPI bodySpec = body.getSpec();
+
+        JSONArray atmosphereColor = specOptions.optJSONArray(OPT_ATMOSPHERE_COLOR);
+        if (atmosphereColor != null) bodySpec.setAtmosphereColor(getColor(atmosphereColor));
+
+        float atmosphereThickness = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS);
+        if (!Float.isNaN(atmosphereThickness)) bodySpec.setAtmosphereThickness(atmosphereThickness);
+
+        float atmosphereThicknessMin = (float) specOptions.optDouble(OPT_ATMOSPHERE_THICKNESS_MIN);
+        if (!Float.isNaN(atmosphereThicknessMin)) bodySpec.setAtmosphereThicknessMin(atmosphereThicknessMin);
+
+        JSONArray cloudColor = specOptions.optJSONArray(OPT_CLOUD_COLOR);
+        if (cloudColor != null) bodySpec.setCloudColor(getColor(cloudColor));
+
+        float cloudRotation = (float) specOptions.optDouble(OPT_CLOUD_ROTATION);
+        if (!Float.isNaN(cloudRotation)) bodySpec.setCloudRotation(cloudRotation);
+
+        String cloudTexture = specOptions.optString(OPT_CLOUD_TEXTURE, null);
+        if (cloudTexture != null) bodySpec.setCloudTexture(PATH_GRAPHICS_PLANET + cloudTexture);
+
+        JSONArray glowColor = specOptions.optJSONArray(OPT_GLOW_COLOR);
+        if (glowColor != null) bodySpec.setGlowColor(getColor(glowColor));
+
+        String glowTexture = specOptions.optString(OPT_GLOW_TEXTURE, null);
+        if (glowTexture != null) bodySpec.setGlowTexture(PATH_GRAPHICS_PLANET + glowTexture);
+
+        JSONArray iconColor = specOptions.optJSONArray(OPT_ICON_COLOR);
+        if (iconColor != null) bodySpec.setIconColor(getColor(iconColor));
+
+        float pitch = (float) specOptions.optDouble(OPT_PITCH);
+        if (!Float.isNaN(pitch)) bodySpec.setPitch(pitch);
+
+        JSONArray planetColor = specOptions.optJSONArray(OPT_PLANET_COLOR);
+        if (planetColor != null) bodySpec.setPlanetColor(getColor(planetColor));
+
+        float rotation = (float) specOptions.optDouble(OPT_ROTATION);
+        if (!Float.isNaN(rotation)) bodySpec.setRotation(rotation);
+
+        String texture = specOptions.optString(OPT_TEXTURE, null);
+        if (texture != null) bodySpec.setTexture(PATH_GRAPHICS_PLANET + texture);
+
+        float tilt = (float) specOptions.optDouble(OPT_TILT);
+        if (!Float.isNaN(tilt)) bodySpec.setTilt(tilt);
+
+        boolean revLightGlow = specOptions.optBoolean(OPT_USE_REVERSE_LIGHT_FOR_GLOW);
+        if (revLightGlow != bodySpec.isUseReverseLightForGlow()) bodySpec.setUseReverseLightForGlow(revLightGlow);
+
+        JSONArray typeOverride = specOptions.optJSONArray(OPT_TYPE_OVERRIDE);
+        if (typeOverride != null) {
+            String newType = typeOverride.getString(0);
+            ((PlanetSpec) bodySpec).planetType = newType;
+            ((PlanetSpec) bodySpec).name = typeOverride.getString(1);
+            ((PlanetSpec) bodySpec).descriptionId = newType;
+            body.setTypeId(newType);
+        }
+
+        body.applySpecChanges();
+    }
+
+    // See com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
+    private void generateDomainCryosleeperIfApplicable() {
+        if (!systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false)) return;
+
+        float orbitRadius = systemRadius + 1000f;
+        SectorEntityToken cryosleeper = system.addCustomEntity(null, DEFAULT_CRYOSLEEPER_NAME, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
+        cryosleeper.setCircularOrbitWithSpin(system.getCenter(), randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / (15f + randomSeed.nextFloat() * 5f), 1f, 11);
+        cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
+
+        if (!hasFactionPresence) makeDiscoverable(cryosleeper, 3500f);
+
+        system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
+        system.addTag(Tags.THEME_INTERESTING);
+    }
+
+    // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
+    private void generateCoronalHypershuntIfApplicable() {
+        if (!systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) return;
+
+        SectorEntityToken systemCenter = system.getCenter();
+        SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
+        if (systemCenter.isStar()) { // Orbit the sole star
+            float orbitRadius = systemCenter.getRadius() + hypershunt.getRadius() + 100f;
+            hypershunt.setCircularOrbitPointingDown(systemCenter, randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / 20f);
+        } else { // Stay in the center, facing towards the primary star
+            PlanetAPI primaryStar = system.getStar();
+            hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
+        }
+
+        if (!hasFactionPresence) makeDiscoverable(hypershunt, 3500f);
+
+        system.addScript(new CoronalTapParticleScript(hypershunt));
+
+        system.addTag(Tags.HAS_CORONAL_TAP);
+        system.addTag(Tags.THEME_INTERESTING);
+    }
+
+    private void makeDiscoverable(SectorEntityToken entity, float detectedRange) {
+        entity.setSensorProfile(1f);
+        entity.setDiscoverable(true);
+        entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, detectedRange);
+    }
+
+    private void addCoreSystemTags() {
+        if (systemOptions.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
+            system.addTag(Tags.THEME_CORE);
+            system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
+        } else {
+            system.removeTag(Tags.THEME_CORE);
+            system.addTag(Tags.THEME_MISC);
+        }
+    }
+
+    private void addMusicIfApplicable() {
+        String musicId = systemOptions.optString(OPT_SYSTEM_MUSIC, null);
+        if (musicId != null) system.getMemoryWithoutUpdate().set(MusicPlayerPluginImpl.MUSIC_SET_MEM_KEY, musicId);
+    }
+
+    private void addNebulaIfApplicable() {
+        if (systemOptions.optBoolean(OPT_HAS_SYSTEMWIDE_NEBULA, false))
+            StarSystemGenerator.addSystemwideNebula(system, system.getAge());
+    }
+
+    private void setBackground() {
+        String bgFileName = systemOptions.optString(OPT_SYSTEM_BACKGROUND, null);
+        if (bgFileName != null) system.setBackgroundTextureFilename(PATH_GRAPHICS_BACKGROUND + bgFileName);
+        else {
+            String nebulaType = system.hasSystemwideNebula() ? StarSystemGenerator.nebulaTypes.get(system.getAge()) : StarSystemGenerator.NEBULA_NONE;
+            system.setBackgroundTextureFilename(StarSystemGenerator.backgroundsByNebulaType.get(nebulaType).pick());
+        }
+    }
+
+    private void addSystemTagsIfApplicable() throws JSONException {
+        JSONArray systemTags = systemOptions.optJSONArray(OPT_SYSTEM_TAGS);
+        if (systemTags != null) for (int i = 0; i < systemTags.length(); i++) {
+            system.addTag(systemTags.getString(i));
+        }
+    }
+
+    private void setLightColor() throws JSONException {
         Color result = getColor(systemOptions.optJSONArray(OPT_SYSTEM_LIGHT_COLOR));
         if (result == null) {
             result = Color.WHITE;
@@ -1007,13 +1008,34 @@ public class CustomStarSystem {
         editor.clearArc(system.getLocation().x, system.getLocation().y, 0f, totalRadius, 0f, 360f, 0.25f);
     }
 
-    private void addRemnantWarningBeacons() {
+    private void addRemnantWarningBeaconsIfApplicable() {
         if (system.hasTag(Tags.THEME_REMNANT_RESURGENT))
             RemnantThemeGenerator.addBeacon(system, RemnantThemeGenerator.RemnantSystemType.RESURGENT);
         else if (system.hasTag(Tags.THEME_REMNANT_SUPPRESSED))
             RemnantThemeGenerator.addBeacon(system, RemnantThemeGenerator.RemnantSystemType.SUPPRESSED);
         else if (system.hasTag(Tags.THEME_REMNANT_DESTROYED))
             RemnantThemeGenerator.addBeacon(system, RemnantThemeGenerator.RemnantSystemType.DESTROYED);
+    }
+
+    private Color getColor(JSONArray rgba) throws JSONException {
+        if (rgba == null) return null;
+        return new Color(rgba.getInt(0), rgba.getInt(1), rgba.getInt(2), rgba.getInt(3));
+    }
+
+    private Color[] getColors(JSONArray colorList) throws JSONException {
+        if (colorList == null) return null;
+
+        Color[] colors = new Color[colorList.length()];
+        for (int i = 0; i < colorList.length(); i++) colors[i] = getColor(colorList.getJSONArray(i));
+
+        return colors;
+    }
+
+    private void setLocation() throws JSONException {
+        JSONArray locationOverride = systemOptions.optJSONArray(OPT_SET_LOCATION);
+        if (locationOverride == null)
+            setConstellationLocation(systemRadius / 10f + 100f, systemOptions.optInt(OPT_SET_LOCATION, 0));
+        else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
     }
 
     private void setLocation(float x, float y) {

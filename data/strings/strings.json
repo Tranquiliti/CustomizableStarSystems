@@ -24,6 +24,7 @@
 		"opt_systemMusic":"systemMusic",
 		"opt_systemLightColor":"systemLightColor",
 		"opt_teleportUponGeneration":"teleportUponGeneration",
+		"opt_system_tags":"systemTags",
 		"opt_entities":"entities",
 
 		# Sub-options for various options
@@ -47,6 +48,7 @@
 		"opt_freePort":"freePort",
 		"opt_aiCoreAdmin":"aiCoreAdmin",
 		"opt_industries":"industries",
+		"opt_memory_keys":"memoryKeys",
 
 		# Sub-options for "opt_specChanges"
 		"opt_atmosphereColor":"atmosphereColor",
@@ -90,7 +92,7 @@
 		"path_merged_json_customStarSystems":"data/config/customStarSystems.json",
 		"type_random_star_giant":"random_star_giant",
 
-		# Names used in Solar Array generation
+		# Names used for entities
 		"name_mirror1":"Stellar Mirror Alpha",
 		"name_mirror2":"Stellar Mirror Beta",
 		"name_mirror3":"Stellar Mirror Gamma",
@@ -99,6 +101,7 @@
 		"name_shade1":"Stellar Shade Omega",
 		"name_shade2":"Stellar Shade Psi",
 		"name_shade3":"Stellar Shade Chi",
+		"name_damaged_station":" (Damaged)",
 
 		# Other, used in code
 		"source_gen":"gen",
