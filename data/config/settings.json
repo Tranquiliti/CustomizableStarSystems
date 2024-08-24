@@ -7,5 +7,14 @@
 {
 	# Generates custom star systems upon starting a new game
 	# Custom star systems can be configured in customStarSystems.json
-	"enableCustomStarSystems":true,
+	"customizablestarsystems_enableCustomStarSystems":true,
+
+	# The hyperspace coordinates used to determine the closest constellations for the "setLocation" option
+	# Default values (-4531,-5865) provide the centroid point of all vanilla THEME_CORE systems
+	# Only applies to systems not using the [x,y] "setLocation" option
+	"customizablestarsystems_hyperspaceCenter":[-4531,-5865],
+
+	# Additional distance a custom star system generates away from other star systems when using "setLocation"
+    # Only applies to systems not using the [x,y] "setLocation" option
+	"customizablestarsystems_systemSpacing":150
 }

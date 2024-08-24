@@ -6,12 +6,14 @@ import com.fs.starfarer.api.Global;
  * A class containing the strings.json entries for this mod
  */
 public final class CSSStrings {
-    public static final String STRINGS_CATEGORY = "customizablestarsystems";
+    private static final String STRINGS_CATEGORY = "customizablestarsystems";
 
     public static final String MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "mod_id_customizablestarsystems");
 
     // Settings in settings.json
     public static final String SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "settings_enableCustomStarSystems");
+    public static final String SETTINGS_HYPERSPACE_CENTER = Global.getSettings().getString(STRINGS_CATEGORY, "settings_hyperspaceCenter");
+    public static final String SETTINGS_SYSTEM_SPACING = Global.getSettings().getString(STRINGS_CATEGORY, "settings_systemSpacing");
 
     // Main system options in customStarSystems.json
     public static final String OPT_IS_ENABLED = Global.getSettings().getString(STRINGS_CATEGORY, "opt_isEnabled");
@@ -49,7 +51,8 @@ public final class CSSStrings {
     public static final String OPT_FREE_PORT = Global.getSettings().getString(STRINGS_CATEGORY, "opt_freePort");
     public static final String OPT_AI_CORE_ADMIN = Global.getSettings().getString(STRINGS_CATEGORY, "opt_aiCoreAdmin");
     public static final String OPT_INDUSTRIES = Global.getSettings().getString(STRINGS_CATEGORY, "opt_industries");
-    public static final String OPT_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_memory_keys");
+    public static final String OPT_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_memoryKeys");
+    public static final String OPT_MARKET_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_marketMemoryKeys");
 
     // Sub-options for "specChanges"
     public static final String OPT_ATMOSPHERE_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_atmosphereColor");
@@ -72,6 +75,7 @@ public final class CSSStrings {
     // Sub-options for certain entities
     public static final String OPT_IS_DAMAGED = Global.getSettings().getString(STRINGS_CATEGORY, "opt_isDamaged");
     public static final String OPT_SIZE = Global.getSettings().getString(STRINGS_CATEGORY, "opt_size");
+    public static final String OPT_NUM_ASTEROIDS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_numAsteroids");
     public static final String OPT_INNER_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_innerBandIndex");
     public static final String OPT_OUTER_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_outerBandIndex");
     public static final String OPT_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_bandIndex");

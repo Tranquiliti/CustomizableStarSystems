@@ -135,12 +135,12 @@
 				"orbitDays":0,
 
 				# For ADVANCED users only!
-				# A map of memory keys and values added to this entity's memory
-				# Only Boolean values are currently supported for each memory key
+				# A map of memory keys and values to add or replace in the memory of this entity
+				# Only Boolean and String values are currently supported for each memory key
 				# Defaults to not applying any additional memory keys if this entry is ommitted
 				"memoryKeys":{
 					"$example_mem_key":true,
-					"$example_mem_key_2":false,
+					"$example_mem_key_2":"example_value",
 				}
 			},
 			{ # A star, made as part of the system center
@@ -365,6 +365,16 @@
 				# Defaults to 0, or uninhabited, if this entry is omitted
 				"marketSize":0,
 
+				# For ADVANCED users only!
+				# A map of memory keys and values to add or replace in the memory of this planet's market
+				# (Note that uninhabited planets and abandoned stations also generate with a market)
+				# Only Boolean and String values are currently supported for each memory key
+				# Defaults to not applying any additional memory keys if this entry is ommitted
+				"marketMemoryKeys":{
+					"$example_mem_key":true,
+					"$example_mem_key_2":"example_value",
+				},
+
 				#------------------------------------------------------------#
 				# Planet entries below require "marketSize" to be at least 1 #
 				#------------------------------------------------------------#
@@ -459,7 +469,9 @@
 				"orbitClockwise":true,
 				"name":"Placeholder Station",
 				"customDescriptionId":"station_chupi_orco",
+				"conditions":[],
 				"memoryKeys":{},
+				"marketMemoryKeys":{},
 
 				# Type of station graphic to use
 				# Station graphics are found in starsector-core/graphics/stations
@@ -479,7 +491,6 @@
 				#-------------------------------------------------------------#
 				"freePort":false,
 				"aiCoreAdmin":false,
-				"conditions":[],
 				"industries":["population","spaceport"],
 			},
 			{ # Remnant battlestation
@@ -508,6 +519,10 @@
 				# Size of the asteroid field
 				# Defaults to 400 if this entry is omitted
 				"size":400,
+
+				# Number of interactable asteroids within the asteroid field
+				# Defaults to proc-gen settings if this entry is omitted or is set to a negative number
+				"numAsteroids":100
 			},
 			{ # Accretion disk
 				"entity":"accretion_disk",
@@ -599,7 +614,11 @@
 
 				# Size of the asteroid belt
 				# Defaults to 256 if this entry is omitted
-				"size":256
+				"size":256,
+
+				# Number of interactable asteroids within the asteroid belt
+				# Defaults to proc-gen settings if this entry is omitted or is set to a negative number
+				"numAsteroids":250
 			},
 			{ # Custom entities (also the default option for handling unrecognized or modded entities)
 				# Custom entity IDs can be found in starsector-core/data/config/custom_entities.json
