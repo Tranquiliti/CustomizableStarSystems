@@ -10,7 +10,9 @@
 		"mod_id_customizablestarsystems":"customizablestarsystems",
 
 		# Settings in settings.json
-		"settings_enableCustomStarSystems":"enableCustomStarSystems",
+		"settings_enableCustomStarSystems":"customizablestarsystems_enableCustomStarSystems",
+		"settings_hyperspaceCenter":"customizablestarsystems_hyperspaceCenter",
+		"settings_systemSpacing":"customizablestarsystems_systemSpacing",
 
 		# Main system options in customStarSystems.json
 		"opt_isEnabled":"isEnabled",
@@ -48,7 +50,8 @@
 		"opt_freePort":"freePort",
 		"opt_aiCoreAdmin":"aiCoreAdmin",
 		"opt_industries":"industries",
-		"opt_memory_keys":"memoryKeys",
+		"opt_memoryKeys":"memoryKeys",
+		"opt_marketMemoryKeys":"marketMemoryKeys",
 
 		# Sub-options for "opt_specChanges"
 		"opt_atmosphereColor":"atmosphereColor",
@@ -71,6 +74,7 @@
 		# Sub-options for certain entities
 		"opt_isDamaged":"isDamaged",
 		"opt_size":"size",
+		"opt_numAsteroids":"numAsteroids",
 		"opt_innerBandIndex":"innerBandIndex",
 		"opt_outerBandIndex":"outerBandIndex",
 		"opt_bandIndex":"bandIndex",

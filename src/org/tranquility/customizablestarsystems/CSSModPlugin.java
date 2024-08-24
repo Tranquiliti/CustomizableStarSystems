@@ -37,7 +37,7 @@ public class CSSModPlugin extends BaseModPlugin {
     // Generates mod systems after proc-gen so that planet markets can properly generate
     @Override
     public void onNewGameAfterProcGen() {
-        boolean doCustomStarSystems = LUNALIB_ENABLED ? Boolean.TRUE.equals(CSSLunaUtil.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS)) : Global.getSettings().getBoolean(SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS);
+        boolean doCustomStarSystems = LUNALIB_ENABLED ? Boolean.TRUE.equals(CSSLunaUtil.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS.replace(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS + '_', ""))) : Global.getSettings().getBoolean(SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS);
         if (doCustomStarSystems) try {
             generateCustomStarSystems();
         } catch (Exception e) {

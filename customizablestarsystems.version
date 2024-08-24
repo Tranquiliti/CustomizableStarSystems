@@ -6,9 +6,9 @@
 	{
 		"major":2,
 		"minor":1,
-		"patch":0
+		"patch":1
 	},
 	"starsectorVersion":"0.97a-RC11",
-	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v2.1.0/CustomizableStarSystems-v2.1.0.zip",
+	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v2.1.1/CustomizableStarSystems-v2.1.1.zip",
 	"changelogURL":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/changelog.txt"
 }

@@ -4,6 +4,7 @@ import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.campaign.rules.HasMemory;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
@@ -55,7 +56,7 @@ public class CustomStarSystem {
     public final String ID_STAR = ":star_";
     public final String ID_PLANET = ":planet_";
     public final String ID_STATION = ":station_";
-    public final String ID_MARKET = "_market";
+    public final String ID_MARKET = "market_";
     public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
 
     // addRemnantStation() strings
@@ -66,14 +67,14 @@ public class CustomStarSystem {
     // Other
     private ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
     private final String[] RANDOM_STAR_GIANT_TYPES = {StarTypes.ORANGE_GIANT, StarTypes.RED_GIANT, StarTypes.RED_SUPERGIANT, StarTypes.BLUE_GIANT, StarTypes.BLUE_SUPERGIANT};
-    private final Vector2f CORE_WORLD_CENTER = new Vector2f(-4531, -5865); // The centroid point of all vanilla THEME_CORE systems
     private final Random randomSeed = StarSystemGenerator.random; // Sector seed
     private final HashMap<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>(); // Updated in CustomStarSystem.addMarket()
 
+    private final String SYSTEM_ID;
+    private final JSONObject SYSTEM_OPTIONS;
+    private final Vector2f HYPERSPACE_CENTER;
     private StarSystemAPI system;
     private List<SectorEntityToken> systemEntities;
-    private final String systemId;
-    private final JSONObject systemOptions;
     private float systemRadius = 0f;
     private boolean hasFactionPresence = false;
     private boolean hasJumpPoint = false;
@@ -86,8 +87,9 @@ public class CustomStarSystem {
      * @throws JSONException If systemOptions is invalid
      */
     public CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
-        this.systemId = systemId;
-        this.systemOptions = systemOptions;
+        SYSTEM_ID = systemId;
+        SYSTEM_OPTIONS = systemOptions;
+        HYPERSPACE_CENTER = getHyperspaceCenter();
 
         createStarSystem();
         generateEntities();
@@ -119,14 +121,19 @@ public class CustomStarSystem {
     /**
      * Gets the actual star system
      *
-     * @return The star system represented by this CustomStarSystem
+     * @return The StarSystemAPI represented by this CustomStarSystem
      */
     public StarSystemAPI getSystem() {
         return system;
     }
 
+    private Vector2f getHyperspaceCenter() throws JSONException {
+        JSONArray coordinates = Global.getSettings().getJSONArray(SETTINGS_HYPERSPACE_CENTER);
+        return new Vector2f(coordinates.getInt(0), coordinates.getInt(1));
+    }
+
     private void createStarSystem() throws JSONException {
-        JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
+        JSONArray entities = SYSTEM_OPTIONS.getJSONArray(OPT_ENTITIES);
 
         // Create a star system based on the 1st star's name
         // Looping through "entities" list since 1st entity may be an "empty_location" and not a star
@@ -138,8 +145,8 @@ public class CustomStarSystem {
     }
 
     private void generateEntities() throws JSONException {
-        JSONArray entities = systemOptions.getJSONArray(OPT_ENTITIES);
-        if (entities.length() == 0) throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
+        JSONArray entities = SYSTEM_OPTIONS.getJSONArray(OPT_ENTITIES);
+        if (entities.length() == 0) throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
 
         systemEntities = new ArrayList<>(entities.length());
 
@@ -148,7 +155,7 @@ public class CustomStarSystem {
             String entityType = entityOptions.getString(OPT_ENTITY);
 
             if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
+                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
 
             SectorEntityToken newEntity;
             switch (entityType) {
@@ -208,7 +215,7 @@ public class CustomStarSystem {
                     setEntityLocation(newEntity, entityOptions, i);
             }
 
-            addMemoryKeys(newEntity, entityOptions);
+            addMemoryKeys(newEntity, entityOptions, OPT_MEMORY_KEYS);
 
             systemEntities.add(newEntity);
         }
@@ -330,7 +337,7 @@ public class CustomStarSystem {
         for (int i = 1; i <= numOfCenterStars; i++) {
             JSONObject starOptions = entities.getJSONObject(i);
             if (!starOptions.getString(OPT_ENTITY).equals(Tags.STAR))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, systemId));
+                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
             systemEntities.add(addStar(starOptions, i, true));
             systemEntities.get(i).setCircularOrbit(system.getCenter(), angle, orbitRadius + i - 1, orbitDays);
             angle = (angle + angleDifference) % 360f;
@@ -346,7 +353,7 @@ public class CustomStarSystem {
 
         StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
         if (starData == null)
-            throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, systemId, index));
+            throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, SYSTEM_ID, index));
 
         float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
         if (radius <= 0)
@@ -412,7 +419,7 @@ public class CustomStarSystem {
         String planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
         PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
         if (planetData == null)
-            throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, systemId, index));
+            throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, SYSTEM_ID, index));
 
         String name = options.optString(OPT_NAME, null);
         if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
@@ -423,15 +430,17 @@ public class CustomStarSystem {
 
         // Need to set a default orbit, else new game creation will fail when attempting to save
         PlanetAPI newPlanet = system.addPlanet(system.getCenter().getId() + ID_PLANET + index, system.getCenter(), name, planetType, 0f, radius, 10000f, 1000f);
-        newPlanet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
 
         addSpecChanges(newPlanet, options.optJSONObject(OPT_SPEC_CHANGES));
 
         addCustomDescription(newPlanet, options);
 
         int marketSize = options.optInt(OPT_MARKET_SIZE, DEFAULT_MARKET_SIZE);
-        if (marketSize <= 0) setPlanetConditions(newPlanet, options);
-        else addMarket(newPlanet, options, marketSize);
+        if (marketSize <= 0) setPlanetConditions(newPlanet, options); // initConditionMarket() sets salvage seed already
+        else {
+            newPlanet.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
+            addMarket(newPlanet, options, marketSize);
+        }
 
         return newPlanet;
     }
@@ -451,7 +460,7 @@ public class CustomStarSystem {
         addCustomDescription(station, options);
 
         int marketSize = options.optInt(OPT_MARKET_SIZE, DEFAULT_MARKET_SIZE);
-        if (marketSize <= 0) Misc.setAbandonedStationMarket(station.getId(), station);
+        if (marketSize <= 0) setStationConditions(station, options);
         else addMarket(station, options, marketSize);
 
         return station;
@@ -514,9 +523,14 @@ public class CustomStarSystem {
     private SectorEntityToken addAsteroidField(JSONObject options) {
         String name = options.optString(OPT_NAME, null);
         float radius = options.optInt(OPT_SIZE, 400);
-        int count = (int) (radius * radius * 3.14f / 80000f);
-        if (count < 10) count = 10;
-        if (count > 100) count = 100;
+
+        int count = options.optInt(OPT_NUM_ASTEROIDS, DEFAULT_SET_TO_PROC_GEN);
+        if (count < 0) {
+            count = (int) (radius * radius * 3.14f / 80000f);
+            if (count < 10) count = 10;
+            if (count > 100) count = 100;
+        }
+
         return system.addTerrain(Terrain.ASTEROID_FIELD, new AsteroidFieldTerrainPlugin.AsteroidFieldParams(radius, radius + 100f, count, count, 4f, 16f, name));
     }
 
@@ -593,9 +607,12 @@ public class CustomStarSystem {
         float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
         if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * randomSeed.nextFloat());
 
-        int count = (int) (orbitDays * (0.25f + 0.5f * randomSeed.nextFloat()));
-        if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
-        if (count > 250) count = 250;
+        int count = options.optInt(OPT_NUM_ASTEROIDS, DEFAULT_SET_TO_PROC_GEN);
+        if (count < 0) {
+            count = (int) (orbitDays * (0.25f + 0.5f * randomSeed.nextFloat()));
+            if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
+            if (count > 250) count = 250;
+        }
 
         int innerBandIndex = options.optInt(OPT_INNER_BAND_INDEX, 0);
         int outerBandIndex = options.optInt(OPT_OUTER_BAND_INDEX, 0);
@@ -617,7 +634,7 @@ public class CustomStarSystem {
         try {
             entity = system.addCustomEntity(null, name, type, factionId);
         } catch (Exception e) {
-            throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, systemId)));
+            throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, SYSTEM_ID)));
         }
 
         switch (type) {
@@ -652,30 +669,51 @@ public class CustomStarSystem {
         return entity;
     }
 
-    private void addMemoryKeys(SectorEntityToken entity, JSONObject entityOptions) {
-        JSONObject memoryKeys = entityOptions.optJSONObject(OPT_MEMORY_KEYS);
+    private void addMemoryKeys(HasMemory entity, JSONObject entityOptions, String optionKey) {
+        JSONObject memoryKeys = entityOptions.optJSONObject(optionKey);
         if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
             String memKey = it.next();
-            entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.optBoolean(memKey, false));
+
+            try { // Try-catch because it's otherwise impossible to distinguish the source of optBoolean()'s false value
+                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
+            } catch (JSONException e) {
+                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.optString(memKey, null));
+            }
         }
     }
 
     private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
         int focus = entityOptions.optInt(OPT_FOCUS);
         if (focus >= systemEntities.size())
-            throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, systemId, index));
+            throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, SYSTEM_ID, index));
         return systemEntities.get(focus);
     }
 
     private void setPlanetConditions(PlanetAPI planet, JSONObject planetOptions) throws JSONException {
         Misc.initConditionMarket(planet);
         MarketAPI planetMarket = planet.getMarket();
+        addMemoryKeys(planetMarket, planetOptions, OPT_MARKET_MEMORY_KEYS);
+
         JSONArray conditions = planetOptions.optJSONArray(OPT_CONDITIONS);
         if (conditions != null) for (int i = 0; i < conditions.length(); i++)
             try {
                 planetMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), systemId));
+                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), SYSTEM_ID));
+            }
+    }
+
+    private void setStationConditions(SectorEntityToken station, JSONObject stationOptions) throws JSONException {
+        Misc.setAbandonedStationMarket(station.getId(), station);
+        MarketAPI stationMarket = station.getMarket();
+        addMemoryKeys(stationMarket, stationOptions, OPT_MARKET_MEMORY_KEYS);
+
+        JSONArray conditions = stationOptions.optJSONArray(OPT_CONDITIONS);
+        if (conditions != null) for (int i = 0; i < conditions.length(); i++)
+            try {
+                stationMarket.addCondition(conditions.getString(i));
+            } catch (Exception e) { // Error message still assume planets, but whatever
+                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), station.getCustomEntityType(), SYSTEM_ID));
             }
     }
 
@@ -684,19 +722,23 @@ public class CustomStarSystem {
         if (size > 10 && Global.getSettings().getMarketConditionSpec(CONDITION_POPULATION + size) == null) size = 10;
 
         String factionId = marketOptions.getString(OPT_FACTION_ID);
-        MarketAPI planetMarket = Global.getFactory().createMarket(entity.getId() + ID_MARKET, entity.getName(), size);
-        planetMarket.setFactionId(factionId);
-        planetMarket.setPrimaryEntity(entity);
-        planetMarket.getTariff().setBaseValue(0.3f); // Default tariff value
-        planetMarket.setFreePort(marketOptions.optBoolean(OPT_FREE_PORT, false));
 
-        planetMarket.addCondition(CONDITION_POPULATION + size);
+        // Similar to initEconomyMarket() in Misc.java
+        MarketAPI entityMarket = Global.getFactory().createMarket(ID_MARKET + entity.getId(), entity.getName(), size);
+        addMemoryKeys(entityMarket, marketOptions, OPT_MARKET_MEMORY_KEYS);
+
+        entityMarket.setPrimaryEntity(entity);
+        entityMarket.setFactionId(factionId);
+        entityMarket.getTariff().setBaseValue(0.3f); // Default tariff value
+        entityMarket.setFreePort(marketOptions.optBoolean(OPT_FREE_PORT, false));
+
+        entityMarket.addCondition(CONDITION_POPULATION + size);
         JSONArray conditions = marketOptions.optJSONArray(OPT_CONDITIONS);
         if (conditions != null) for (int i = 0; i < conditions.length(); i++)
             try {
-                planetMarket.addCondition(conditions.getString(i));
+                entityMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, systemId));
+                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, SYSTEM_ID));
             }
 
         JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
@@ -708,13 +750,13 @@ public class CustomStarSystem {
                 else industryId = industries.optString(i, null);
 
                 try {
-                    planetMarket.addIndustry(industryId);
+                    entityMarket.addIndustry(industryId);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, systemId));
+                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, SYSTEM_ID));
                 }
 
                 if (specials != null && specials.length() > 1) {
-                    Industry newIndustry = planetMarket.getIndustry(industryId);
+                    Industry newIndustry = entityMarket.getIndustry(industryId);
 
                     String aiCoreId = specials.optString(1, null);
                     if (aiCoreId != null) newIndustry.setAICoreId(aiCoreId);
@@ -727,31 +769,31 @@ public class CustomStarSystem {
             }
 
             // "Population & Infrastructure" industry must exist for colonies to work properly
-            if (!planetMarket.hasIndustry(Industries.POPULATION)) planetMarket.addIndustry(Industries.POPULATION);
+            if (!entityMarket.hasIndustry(Industries.POPULATION)) entityMarket.addIndustry(Industries.POPULATION);
         } else { // Just give market the bare minimum colony
-            planetMarket.addIndustry(Industries.POPULATION);
-            planetMarket.addIndustry(Industries.SPACEPORT);
+            entityMarket.addIndustry(Industries.POPULATION);
+            entityMarket.addIndustry(Industries.SPACEPORT);
         }
 
-        planetMarket.addSubmarket(Submarkets.SUBMARKET_STORAGE);
+        entityMarket.addSubmarket(Submarkets.SUBMARKET_STORAGE);
         if (factionId.equals(Factions.PLAYER)) {
-            planetMarket.setPlayerOwned(true);
-            planetMarket.addSubmarket(Submarkets.LOCAL_RESOURCES);
-            ((StoragePlugin) planetMarket.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
-            marketsToOverrideAdmin.put(planetMarket, Factions.PLAYER);
+            entityMarket.setPlayerOwned(true);
+            entityMarket.addSubmarket(Submarkets.LOCAL_RESOURCES);
+            ((StoragePlugin) entityMarket.getSubmarket(Submarkets.SUBMARKET_STORAGE).getPlugin()).setPlayerPaidToUnlock(true);
+            marketsToOverrideAdmin.put(entityMarket, Factions.PLAYER);
         } else {
-            planetMarket.addSubmarket(Submarkets.SUBMARKET_OPEN);
-            if (planetMarket.hasIndustry(Industries.MILITARYBASE) || planetMarket.hasIndustry(Industries.HIGHCOMMAND))
-                planetMarket.addSubmarket(Submarkets.GENERIC_MILITARY);
-            planetMarket.addSubmarket(Submarkets.SUBMARKET_BLACK);
+            entityMarket.addSubmarket(Submarkets.SUBMARKET_OPEN);
+            if (entityMarket.hasIndustry(Industries.MILITARYBASE) || entityMarket.hasIndustry(Industries.HIGHCOMMAND))
+                entityMarket.addSubmarket(Submarkets.GENERIC_MILITARY);
+            entityMarket.addSubmarket(Submarkets.SUBMARKET_BLACK);
         }
 
         if (marketOptions.optBoolean(OPT_AI_CORE_ADMIN, false))
-            marketsToOverrideAdmin.put(planetMarket, Commodities.ALPHA_CORE);
+            marketsToOverrideAdmin.put(entityMarket, Commodities.ALPHA_CORE);
 
-        Global.getSector().getEconomy().addMarket(planetMarket, true);
-        entity.setMarket(planetMarket);
         entity.setFaction(factionId);
+        entity.setMarket(entityMarket);
+        Global.getSector().getEconomy().addMarket(entityMarket, true);
 
         hasFactionPresence = true;
     }
@@ -902,7 +944,7 @@ public class CustomStarSystem {
 
     // See com.fs.starfarer.api.impl.campaign.procgen.themes.DerelictThemeGenerator's addCryosleeper() for vanilla implementation
     private void generateDomainCryosleeperIfApplicable() {
-        if (!systemOptions.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false)) return;
+        if (!SYSTEM_OPTIONS.optBoolean(OPT_ADD_DOMAIN_CRYOSLEEPER, false)) return;
 
         float orbitRadius = systemRadius + 1000f;
         SectorEntityToken cryosleeper = system.addCustomEntity(null, DEFAULT_CRYOSLEEPER_NAME, Entities.DERELICT_CRYOSLEEPER, Factions.DERELICT);
@@ -917,7 +959,7 @@ public class CustomStarSystem {
 
     // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
     private void generateCoronalHypershuntIfApplicable() {
-        if (!systemOptions.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) return;
+        if (!SYSTEM_OPTIONS.optBoolean(OPT_ADD_CORONAL_HYPERSHUNT, false)) return;
 
         SectorEntityToken systemCenter = system.getCenter();
         SectorEntityToken hypershunt = system.addCustomEntity(null, null, Entities.CORONAL_TAP, null);
@@ -944,7 +986,7 @@ public class CustomStarSystem {
     }
 
     private void addCoreSystemTags() {
-        if (systemOptions.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
+        if (SYSTEM_OPTIONS.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
             system.addTag(Tags.THEME_CORE);
             system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
         } else {
@@ -954,17 +996,17 @@ public class CustomStarSystem {
     }
 
     private void addMusicIfApplicable() {
-        String musicId = systemOptions.optString(OPT_SYSTEM_MUSIC, null);
+        String musicId = SYSTEM_OPTIONS.optString(OPT_SYSTEM_MUSIC, null);
         if (musicId != null) system.getMemoryWithoutUpdate().set(MusicPlayerPluginImpl.MUSIC_SET_MEM_KEY, musicId);
     }
 
     private void addNebulaIfApplicable() {
-        if (systemOptions.optBoolean(OPT_HAS_SYSTEMWIDE_NEBULA, false))
+        if (SYSTEM_OPTIONS.optBoolean(OPT_HAS_SYSTEMWIDE_NEBULA, false))
             StarSystemGenerator.addSystemwideNebula(system, system.getAge());
     }
 
     private void setBackground() {
-        String bgFileName = systemOptions.optString(OPT_SYSTEM_BACKGROUND, null);
+        String bgFileName = SYSTEM_OPTIONS.optString(OPT_SYSTEM_BACKGROUND, null);
         if (bgFileName != null) system.setBackgroundTextureFilename(PATH_GRAPHICS_BACKGROUND + bgFileName);
         else {
             String nebulaType = system.hasSystemwideNebula() ? StarSystemGenerator.nebulaTypes.get(system.getAge()) : StarSystemGenerator.NEBULA_NONE;
@@ -973,14 +1015,14 @@ public class CustomStarSystem {
     }
 
     private void addSystemTagsIfApplicable() throws JSONException {
-        JSONArray systemTags = systemOptions.optJSONArray(OPT_SYSTEM_TAGS);
+        JSONArray systemTags = SYSTEM_OPTIONS.optJSONArray(OPT_SYSTEM_TAGS);
         if (systemTags != null) for (int i = 0; i < systemTags.length(); i++) {
             system.addTag(systemTags.getString(i));
         }
     }
 
     private void setLightColor() throws JSONException {
-        Color result = getColor(systemOptions.optJSONArray(OPT_SYSTEM_LIGHT_COLOR));
+        Color result = getColor(SYSTEM_OPTIONS.optJSONArray(OPT_SYSTEM_LIGHT_COLOR));
         if (result == null) {
             result = Color.WHITE;
             List<PlanetAPI> planetList = system.getPlanets();
@@ -1032,9 +1074,9 @@ public class CustomStarSystem {
     }
 
     private void setLocation() throws JSONException {
-        JSONArray locationOverride = systemOptions.optJSONArray(OPT_SET_LOCATION);
+        JSONArray locationOverride = SYSTEM_OPTIONS.optJSONArray(OPT_SET_LOCATION);
         if (locationOverride == null)
-            setConstellationLocation(systemRadius / 10f + 100f, systemOptions.optInt(OPT_SET_LOCATION, 0));
+            setConstellationLocation(systemRadius / 10f + Global.getSettings().getInt(SETTINGS_SYSTEM_SPACING), SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
         else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
     }
 
@@ -1052,7 +1094,7 @@ public class CustomStarSystem {
             TreeSet<Constellation> sortedSet = new TreeSet<>(new Comparator<Constellation>() {
                 public int compare(Constellation c1, Constellation c2) {
                     if (c1 == c2) return 0;
-                    return Float.compare(Misc.getDistance(CORE_WORLD_CENTER, c1.getLocation()), Misc.getDistance(CORE_WORLD_CENTER, c2.getLocation()));
+                    return Float.compare(Misc.getDistance(HYPERSPACE_CENTER, c1.getLocation()), Misc.getDistance(HYPERSPACE_CENTER, c2.getLocation()));
                 }
             });
 
@@ -1062,10 +1104,9 @@ public class CustomStarSystem {
             procGenConstellations = new ArrayList<>(sortedSet);
         }
 
-        // If no constellations exist (for whatever reason), just set location to middle of Core Worlds
-        // (you could consider them a special constellation?)
+        // If no constellations exist (for whatever reason), fallback to the hyperspace center
         if (procGenConstellations.isEmpty()) {
-            setLocation(CORE_WORLD_CENTER.getX(), CORE_WORLD_CENTER.getY());
+            setLocation(HYPERSPACE_CENTER.getX(), HYPERSPACE_CENTER.getY());
             return;
         }
 

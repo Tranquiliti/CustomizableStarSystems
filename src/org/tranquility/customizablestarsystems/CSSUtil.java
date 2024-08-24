@@ -14,8 +14,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.tranquility.customizablestarsystems.CSSStrings.MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS;
-import static org.tranquility.customizablestarsystems.CSSStrings.PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS;
+import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
 /**
  * A utility class for the Customizable Star Systems mod
@@ -31,7 +30,7 @@ public final class CSSUtil {
     }
 
     /**
-     * Sets admins accordingly on given markets; the Map is cleared afterwards
+     * Sets admins accordingly on given markets; the Map is cleared afterward
      *
      * @param marketMap A map of market IDs to the admins to place
      */
@@ -47,7 +46,7 @@ public final class CSSUtil {
                         market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
                         break;
                 }
-            marketMap.clear(); // No need for the HashMap afterwards, so clear it just in case
+            marketMap.clear(); // No need for the HashMap afterward, so clear it just in case
         }
     }
 
