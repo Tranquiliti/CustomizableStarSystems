@@ -3,7 +3,7 @@
   "name":"Customizable Star Systems",
   "author":"Tranquility",
   "utility":"true",
-  "version":{"major":2,"minor":1,"patch":1},
+  "version":{"major":2,"minor":1,"patch":2},
   "description":"Adds customizable star systems, editable through a JSON config file.",
   "gameVersion":"0.97a-RC11",
   "jars":["jars/CustomizableStarSystems.jar"],

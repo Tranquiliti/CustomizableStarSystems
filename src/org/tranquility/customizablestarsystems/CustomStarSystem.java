@@ -36,37 +36,38 @@ import static org.tranquility.customizablestarsystems.CSSStrings.*;
 /**
  * A custom star system
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 public class CustomStarSystem {
     // Default values
     public static final int DEFAULT_NUMBER_OF_SYSTEMS = 1;
     private final int DEFAULT_SET_TO_PROC_GEN = -1; // For user's sake, referenceStarSystem.json uses 0 to specify proc-gen
     private final int DEFAULT_MARKET_SIZE = 0;
 
+    // These variables are not static since this code usually runs once and then never again during gameplay
+    // They are also not local to make tracking down Strings easier for externalization purposes
     // Entities, usually used in switch cases
-    public final String ENTITY_EMPTY_LOCATION = "empty_location";
-    public final String ENTITY_REMNANT_STATION = "remnant_station";
-    public final String ENTITY_RINGS_ICE = "rings_ice0";
-    public final String ENTITY_RINGS_DUST = "rings_dust0";
-    public final String ENTITY_RINGS_SPECIAL = "rings_special0";
-    public final String ENTITY_RINGS_ASTEROIDS = "rings_asteroids0";
+    private final String ENTITY_EMPTY_LOCATION = "empty_location";
+    private final String ENTITY_REMNANT_STATION = "remnant_station";
+    private final String ENTITY_RINGS_ICE = "rings_ice0";
+    private final String ENTITY_RINGS_DUST = "rings_dust0";
+    private final String ENTITY_RINGS_SPECIAL = "rings_special0";
+    private final String ENTITY_RINGS_ASTEROIDS = "rings_asteroids0";
 
     // Dev/internal ids
-    public final String ID_SYSTEM = "system_"; // Most system entity ids should start with this
-    public final String ID_STAR = ":star_";
-    public final String ID_PLANET = ":planet_";
-    public final String ID_STATION = ":station_";
-    public final String ID_MARKET = "market_";
-    public final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
+    private final String ID_SYSTEM = "system_"; // Most system entity ids should start with this
+    private final String ID_STAR = ":star_";
+    private final String ID_PLANET = ":planet_";
+    private final String ID_STATION = ":station_";
+    private final String ID_MARKET = "market_";
+    private final String CONDITION_POPULATION = "population_"; // addMarket() appends a number to this
 
     // addRemnantStation() strings
-    public final String ID_REMNANT_STATION_DAMAGED = "remnant_station2_Damaged";
-    public final String ID_REMNANT_STATION_STANDARD = "remnant_station2_Standard";
-    public final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
+    private final String ID_REMNANT_STATION_DAMAGED = "remnant_station2_Damaged";
+    private final String ID_REMNANT_STATION_STANDARD = "remnant_station2_Standard";
+    private final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
 
     // Other
     private ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
-    private final String[] RANDOM_STAR_GIANT_TYPES = {StarTypes.ORANGE_GIANT, StarTypes.RED_GIANT, StarTypes.RED_SUPERGIANT, StarTypes.BLUE_GIANT, StarTypes.BLUE_SUPERGIANT};
     private final Random randomSeed = StarSystemGenerator.random; // Sector seed
     private final HashMap<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>(); // Updated in CustomStarSystem.addMarket()
 
@@ -347,9 +348,10 @@ public class CustomStarSystem {
     }
 
     private PlanetAPI addStar(JSONObject options, int index, boolean isClose) throws JSONException {
-        String starType = options.optString(OPT_TYPE, DEFAULT_STAR_TYPE);
-        if (starType.equals(TYPE_RANDOM_STAR_GIANT))
-            starType = RANDOM_STAR_GIANT_TYPES[randomSeed.nextInt(RANDOM_STAR_GIANT_TYPES.length)];
+        JSONArray typeList = options.optJSONArray(OPT_TYPE);
+        String starType;
+        if (typeList != null) starType = typeList.getString(randomSeed.nextInt(typeList.length()));
+        else starType = options.optString(OPT_TYPE, DEFAULT_STAR_TYPE);
 
         StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
         if (starData == null)
@@ -416,7 +418,11 @@ public class CustomStarSystem {
     }
 
     private PlanetAPI addPlanet(JSONObject options, int index) throws JSONException {
-        String planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
+        JSONArray typeList = options.optJSONArray(OPT_TYPE);
+        String planetType;
+        if (typeList != null) planetType = typeList.getString(randomSeed.nextInt(typeList.length()));
+        else planetType = options.optString(OPT_TYPE, DEFAULT_PLANET_TYPE);
+
         PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
         if (planetData == null)
             throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, SYSTEM_ID, index));
@@ -648,6 +654,7 @@ public class CustomStarSystem {
                     entity.getMemoryWithoutUpdate().set(MemFlags.OBJECTIVE_NON_FUNCTIONAL, true);
                 break;
             case Entities.CORONAL_TAP:
+                system.addScript(new CoronalTapParticleScript(entity));
                 system.addTag(Tags.HAS_CORONAL_TAP);
                 system.addTag(Tags.THEME_INTERESTING);
                 break;
@@ -967,14 +974,13 @@ public class CustomStarSystem {
             float orbitRadius = systemCenter.getRadius() + hypershunt.getRadius() + 100f;
             hypershunt.setCircularOrbitPointingDown(systemCenter, randomSeed.nextFloat() * 360f, orbitRadius, orbitRadius / 20f);
         } else { // Stay in the center, facing towards the primary star
-            PlanetAPI primaryStar = system.getStar();
-            hypershunt.setCircularOrbitPointingDown(primaryStar, (primaryStar.getCircularOrbitAngle() - 180f) % 360f, primaryStar.getCircularOrbitRadius(), primaryStar.getCircularOrbitPeriod());
+            hypershunt.setLocation(0, 0); // May not be necessary, but better safe than sorry
+            system.addScript(new MiscellaneousThemeGenerator.MakeCoronalTapFaceNearestStar(hypershunt));
         }
 
         if (!hasFactionPresence) makeDiscoverable(hypershunt, 3500f);
 
         system.addScript(new CoronalTapParticleScript(hypershunt));
-
         system.addTag(Tags.HAS_CORONAL_TAP);
         system.addTag(Tags.THEME_INTERESTING);
     }

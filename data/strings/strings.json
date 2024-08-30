@@ -94,7 +94,6 @@
 		"path_graphics_planet":"graphics/planets/",
 		"path_graphics_background":"graphics/backgrounds/",
 		"path_merged_json_customStarSystems":"data/config/customStarSystems.json",
-		"type_random_star_giant":"random_star_giant",
 
 		# Names used for entities
 		"name_mirror1":"Stellar Mirror Alpha",

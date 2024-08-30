@@ -95,7 +95,6 @@ public final class CSSStrings {
     public static final String PATH_GRAPHICS_PLANET = Global.getSettings().getString(STRINGS_CATEGORY, "path_graphics_planet");
     public static final String PATH_GRAPHICS_BACKGROUND = Global.getSettings().getString(STRINGS_CATEGORY, "path_graphics_background");
     public static final String PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "path_merged_json_customStarSystems");
-    public static final String TYPE_RANDOM_STAR_GIANT = Global.getSettings().getString(STRINGS_CATEGORY, "type_random_star_giant");
 
     // Names used in Solar Array generation
     public static final String NAME_MIRROR1 = Global.getSettings().getString(STRINGS_CATEGORY, "name_mirror1");

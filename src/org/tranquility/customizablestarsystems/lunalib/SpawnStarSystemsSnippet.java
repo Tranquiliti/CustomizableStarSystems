@@ -47,7 +47,8 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
         JSONObject systems;
         try {
             systems = CSSUtil.getMergedSystemJSON();
-        } catch (Exception e) {
+        } catch (Exception e) { // This signifies a JSON error, so it does not matter if the "button" looks ugly
+            builder.addBooleanParameter(COMMANDS_ERROR_BAD_JSON, COMMANDS_ERROR_BAD_JSON, true);
             return;
         }
 

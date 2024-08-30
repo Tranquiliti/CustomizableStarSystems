@@ -1,3 +1,17 @@
+Version 2.1.2
+
+* "type" option for "star" and "planet" entities can now accept a list of star/planet types
+  - A random star/planet type from the list will be selected when generating the entity
+  - Default custom star system now uses this "type" option for both its star and the Barren planet
+  - Removed "random_star_giant" as a type since it is no longer needed
+* Default custom star system no longer contains a research station
+* "Generate custom star systems" LunaSnippet now creates a debug button if customStarSystems.json is malformed
+  - The exact JSON error will be shown when executing the LunaSnippet again with the button selected
+* Added missing particle effects for "coronal_tap" entities created outside the "addCoronalHypershunt" option
+* Minor code refactors
+
+
+
 Version 2.1.1
 
 * Added "numAsteroids" option for "asteroid_field" and "asteroid_belt" entities

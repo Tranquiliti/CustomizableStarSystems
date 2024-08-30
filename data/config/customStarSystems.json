@@ -21,7 +21,7 @@
 		"entities":[
 			{
 				"entity":"star",
-				"type":"random_star_giant"
+				"type":["star_blue_giant","star_blue_supergiant","star_orange_giant","star_red_supergiant","star_red_giant"]
 			},
 			{
 				"entity":"planet",
@@ -46,7 +46,7 @@
 			},
 			{
 				"entity":"planet",
-				"type":"barren",
+				"type":["barren","barren2","barren3"],
 				"orbitRadius":6420,
 				"radius":120,
 				"conditions":["no_atmosphere","ore_sparse","rare_ore_sparse"]
@@ -55,7 +55,6 @@
 			{"entity":"inactive_gate","orbitRadius":5250},
 			{"entity":"jump_point","orbitRadius":6840,"name":"Fringe Jump-point"},
 			{"entity":"magnetic_field","orbitRadius":325,"focus":1,"size":200},
-			{"entity":"station_research","orbitRadius":425,"focus":1},
 			{"entity":"stable_location","focus":[1,4]},
 			{"entity":"stable_location","focus":[1,5]},
 			{"entity":"comm_relay","focus":[2,4]}
