@@ -149,10 +149,13 @@
 
 				# Type of star to make
 				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
-				# "random_star_giant" chooses a random vanilla star giant
+				#
+				# Can also be an array of star IDs (e.g. ["star_id_1","star_id_2",...]),
+				# where a random star type will be chosen when generating the star.
+				#
 				# WARNING: Nebulas are not supported
 				# Defaults to "star_red_dwarf" if this entry is omitted
-				"type":"random_star_giant",
+				"type":"star_red_dwarf",
 
 				# Name of this entity
 				# If this entity is the first star in the "entities" list, it will also change this system's name
@@ -181,7 +184,7 @@
 			},
 			{ # A star NOT in the system center
 				"entity":"star",
-				"type":"random_star_giant",
+				"type":["star_orange_giant","star_red_giant","star_blue_giant"],
 				"name":"Placeholder Star",
 				"radius":0,
 				"coronaRadius":0,
@@ -235,6 +238,10 @@
 
 				# Type of planet to make
 				# Planet IDs are found in starsector-core/data/campaign/procgen/planet_gen_data.csv
+				#
+				# Can also be an array of planet IDs (e.g. ["planet_id_1","planet_id_2",...]),
+				# where a random planet type will be chosen when generating the planet.
+				#
 				# Defaults to "barren" if this entry is omitted
 				"type":"barren",
 
