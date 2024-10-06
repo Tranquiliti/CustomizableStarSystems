@@ -38,6 +38,9 @@ import static org.tranquility.customizablestarsystems.CSSStrings.*;
  */
 @SuppressWarnings({"unchecked", "FieldCanBeLocal"})
 public class CustomStarSystem {
+    // Note: Starsector mainly uses floats, but JSON method only supports doubles when extracting floating-point numbers
+    // Hence, most options only take in integers - mainly so fewer casts are needed
+
     // Default values
     public static final int DEFAULT_NUMBER_OF_SYSTEMS = 1;
     private final int DEFAULT_SET_TO_PROC_GEN = -1; // For user's sake, referenceStarSystem.json uses 0 to specify proc-gen
@@ -67,13 +70,12 @@ public class CustomStarSystem {
     private final String MEMFLAGS_DAMAGED_STATION = "$damagedStation";
 
     // Other
-    private ArrayList<Constellation> procGenConstellations; // Filled in during 1st setLocation() call
     private final Random randomSeed = StarSystemGenerator.random; // Sector seed
-    private final HashMap<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>(); // Updated in CustomStarSystem.addMarket()
+    private final List<Constellation> constellations; // Used in setConstellationLocation()
+    private final Map<MarketAPI, String> marketsToOverrideAdmin; // Updated in addMarket()
 
     private final String SYSTEM_ID;
     private final JSONObject SYSTEM_OPTIONS;
-    private final Vector2f HYPERSPACE_CENTER;
     private StarSystemAPI system;
     private List<SectorEntityToken> systemEntities;
     private float systemRadius = 0f;
@@ -83,14 +85,17 @@ public class CustomStarSystem {
     /**
      * Creates a custom star system from JSON
      *
-     * @param systemOptions System options
-     * @param systemId      ID of the custom star system options
+     * @param systemOptions          System options
+     * @param systemId               ID of the custom star system options
+     * @param constellations         List of constellations in which to place the system
+     * @param marketsToOverrideAdmin Map of markets that need admin replacements
      * @throws JSONException If systemOptions is invalid
      */
-    public CustomStarSystem(JSONObject systemOptions, String systemId) throws JSONException {
+    public CustomStarSystem(JSONObject systemOptions, String systemId, List<Constellation> constellations, Map<MarketAPI, String> marketsToOverrideAdmin) throws JSONException {
         SYSTEM_ID = systemId;
         SYSTEM_OPTIONS = systemOptions;
-        HYPERSPACE_CENTER = getHyperspaceCenter();
+        this.marketsToOverrideAdmin = marketsToOverrideAdmin;
+        this.constellations = constellations;
 
         createStarSystem();
         generateEntities();
@@ -111,26 +116,12 @@ public class CustomStarSystem {
     }
 
     /**
-     * Gets this custom star system's markets that are tagged for admin replacement
-     *
-     * @return A Map containing the markets and type of admin replacement
-     */
-    public Map<MarketAPI, String> getMarketsToOverrideAdmin() {
-        return marketsToOverrideAdmin;
-    }
-
-    /**
      * Gets the actual star system
      *
      * @return The StarSystemAPI represented by this CustomStarSystem
      */
     public StarSystemAPI getSystem() {
         return system;
-    }
-
-    private Vector2f getHyperspaceCenter() throws JSONException {
-        JSONArray coordinates = Global.getSettings().getJSONArray(SETTINGS_HYPERSPACE_CENTER);
-        return new Vector2f(coordinates.getInt(0), coordinates.getInt(1));
     }
 
     private void createStarSystem() throws JSONException {
@@ -197,6 +188,10 @@ public class CustomStarSystem {
                     break;
                 case Terrain.ASTEROID_FIELD:
                     newEntity = addAsteroidField(entityOptions);
+                    setEntityLocation(newEntity, entityOptions, i);
+                    break;
+                case Terrain.DEBRIS_FIELD:
+                    newEntity = addDebrisField(entityOptions);
                     setEntityLocation(newEntity, entityOptions, i);
                     break;
                 case Tags.ACCRETION_DISK:
@@ -540,6 +535,15 @@ public class CustomStarSystem {
         return system.addTerrain(Terrain.ASTEROID_FIELD, new AsteroidFieldTerrainPlugin.AsteroidFieldParams(radius, radius + 100f, count, count, 4f, 16f, name));
     }
 
+    // See com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemGenerator's addDebrisField() for vanilla implementation
+    private SectorEntityToken addDebrisField(JSONObject options) {
+        float radius = options.optInt(OPT_SIZE, 500);
+
+        DebrisFieldTerrainPlugin.DebrisFieldParams params = new DebrisFieldTerrainPlugin.DebrisFieldParams(radius, -1f, 10000000f, 0f);
+
+        return Misc.addDebrisField(system, params, randomSeed);
+    }
+
     // See com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
     private SectorEntityToken addAccretionDisk(JSONObject options, int index) {
         SectorEntityToken focusEntity = getFocusEntity(options, index);
@@ -569,9 +573,9 @@ public class CustomStarSystem {
         SectorEntityToken focusEntity = getFocusEntity(options, index);
         float orbitRadius = options.getInt(OPT_ORBIT_RADIUS); // Inner radius, or visual band start
 
-        float width = options.optInt(OPT_SIZE, 300);
-        float middleRadius = options.optInt(OPT_MIDDLE_RADIUS, (int) (orbitRadius + width / 2f));
-        float outerRadius = options.optInt(OPT_OUTER_RADIUS, (int) (orbitRadius + width));
+        float bandWidth = options.optInt(OPT_SIZE, 400);
+        float middleRadius = options.optInt(OPT_MIDDLE_RADIUS, (int) (orbitRadius + bandWidth / 2f));
+        float outerRadius = options.optInt(OPT_OUTER_RADIUS, (int) (orbitRadius + bandWidth));
 
         Color baseColor = getColor(options.optJSONArray(OPT_BASE_COLOR));
         if (baseColor == null) baseColor = new Color(50, 20, 100, 40);
@@ -583,7 +587,7 @@ public class CustomStarSystem {
         if (auroraColors == null)
             auroraColors = new Color[]{new Color(140, 100, 235), new Color(180, 110, 210), new Color(150, 140, 190), new Color(140, 190, 210), new Color(90, 200, 170), new Color(65, 230, 160), new Color(20, 220, 70)};
 
-        SectorEntityToken field = system.addTerrain(Terrain.MAGNETIC_FIELD, new MagneticFieldTerrainPlugin.MagneticFieldParams(width, middleRadius, focusEntity, orbitRadius, outerRadius, baseColor, auroraFrequency, auroraColors));
+        SectorEntityToken field = system.addTerrain(Terrain.MAGNETIC_FIELD, new MagneticFieldTerrainPlugin.MagneticFieldParams(bandWidth, middleRadius, focusEntity, orbitRadius, outerRadius, baseColor, auroraFrequency, auroraColors));
         field.setCircularOrbit(focusEntity, 0, 0, 100f);
         return field;
     }
@@ -1094,33 +1098,14 @@ public class CustomStarSystem {
     // Set a star system's location to near the middle of a specified constellation
     // Modified from the constellation proc-gen code originally made by Audax.
     private void setConstellationLocation(float hyperspaceRadius, int index) {
-        // Subsequent setLocation() calls should already have the full constellation list
-        if (procGenConstellations == null) {
-            // TreeSet orders the constellations by distance to Core Worlds, while also avoiding duplicates
-            TreeSet<Constellation> sortedSet = new TreeSet<>(new Comparator<Constellation>() {
-                public int compare(Constellation c1, Constellation c2) {
-                    if (c1 == c2) return 0;
-                    return Float.compare(Misc.getDistance(HYPERSPACE_CENTER, c1.getLocation()), Misc.getDistance(HYPERSPACE_CENTER, c2.getLocation()));
-                }
-            });
-
-            for (StarSystemAPI sys : Global.getSector().getStarSystems())
-                if (sys.isProcgen() && sys.isInConstellation()) sortedSet.add(sys.getConstellation());
-
-            procGenConstellations = new ArrayList<>(sortedSet);
-        }
-
         // If no constellations exist (for whatever reason), fallback to the hyperspace center
-        if (procGenConstellations.isEmpty()) {
-            setLocation(HYPERSPACE_CENTER.getX(), HYPERSPACE_CENTER.getY());
+        if (constellations.isEmpty()) {
+            Vector2f hyperspaceCenter = CSSUtil.getHyperspaceCenter();
+            setLocation(hyperspaceCenter.getX(), hyperspaceCenter.getY());
             return;
         }
 
-        Constellation selectedConstellation;
-        if (index <= 0) // Set location to a random constellation
-            selectedConstellation = procGenConstellations.get(randomSeed.nextInt(procGenConstellations.size()));
-        else // Set location to a specified constellation
-            selectedConstellation = procGenConstellations.get(Math.min(index, procGenConstellations.size()) - 1);
+        Constellation selectedConstellation = (index <= 0) ? constellations.get(randomSeed.nextInt(constellations.size())) : constellations.get(Math.min(index, constellations.size()) - 1);
 
         float centroidX = 0;
         float centroidY = 0;

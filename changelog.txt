@@ -1,3 +1,12 @@
+Version 2.1.3
+
+* Added "debris_field" entity, which creates a debris field
+* Optimized custom star system generation code
+* Changed default "size" for "magnetic_field" entities to 400 (from 300)
+* Adjusted the magnetic field for the default custom star system
+
+
+
 Version 2.1.2
 
 * "type" option for "star" and "planet" entities can now accept a list of star/planet types
@@ -47,77 +56,3 @@ Version 2.1.0
 Version 2.0.0 (Update for Starsector 0.97)
 
 * Updated to Starsector 0.97
-
-
-
-Version 1.0.4
-
-* Fixed the LunaLib soft dependency
-  - This means this mod no longer requires either LunaLib or Java 8 to run
-* Added "orbitClockwise" option for most entities
-  - If set to false, the entity will orbit counter-clockwise instead
-* Added more info for error messages
-* "isCoreWorldSystem" option now forcibly applies the THEME_CORE tags, instead of relying on those tags being automatically applied by the game
-* All custom colonies now always have the "population" (Population & Infrastructure) industry, even if it's not explicitly specified in an "industries" list
-  - This avoids situations where removing or not having this industry causes colonies to not work properly
-* Minor code refactors
-
-
-
-Version 1.0.3
-
-* Fixed a bug where custom star systems with comm relays or similar entities were erroneously marked as though they contained a Coronal Hypershunt
-  - This also fixes "isCoreWorldSystem" tags being overridden due to this same bug
-* Fixed logging for generating custom star systems during new game creation
-* "SpawnCustomStarSystems" command and the related LunaSnippet now print the exception messages for generation and syntax errors, respectively
-* Minor code refactors
-
-
-
-Version 1.0.2
-
-* "marketSize" option now supports numbers greater than 10 if bigger population conditions exists due to other mods
-  - If no such conditions exist (or their IDs do not match the "population_##" string), "marketSize" will continue to cap population size at 10, as before.
-* Added "systemLightColor" option for custom star systems
-* Added "orbitRadius" support for "accretion_disk" entities
-  - Also scaled the default, randomly-generated orbit radius to fix it being smaller than typical proc-gen accretion disks
-* Custom star systems with a center black hole no longer auto-generate an accretion disk entity
-* Added "orbitDays" support for "ring" and "asteroid_belt" entities
-* Fixed an outdated error message
-* "ListCustomStarSystems" and "SpawnCustomStarSystems" commands now print the exception message when syntax errors in customStarSystems.json are found
-
-
-
-Version 1.0.1
-
-* Changed "setLocation" Core World centroid point to the actual centroid point of all vanilla Core systems.
-  - Affects custom star systems with a "setLocation" by changing which constellations are considered closest to Core.
-* Added a check to ensure that the "entities" list has at least 1 entry in it.
-* Version Checker now points to the right forum thread
-
-
-
-Version 1.0.0
-
-* Split off from Adversary mod
-  - Now considered a utility mod that can be safely removed from existing saves (although already-generated systems will still remain)
-  - Changes from the previous, un-split version are mentioned below
-* Revamped the customStarSystem.json format
-  - Each custom star system must now have a unique ID.
-  - Merged "starsInSystemCenter","orbitingBodies", and "systemFeatures" into a combined "entities" list!
-  - Each entry in the "entities" list must have an "entity" option, which determines what entity to make
-  - Added "empty_location" entity, which, when placed 1st in "entities" list, also provides similar functionality to the previous "starsInSystemCenter"
-  - Removed "setLocationOverride" option; "setLocation" now also supports this functionality
-  - Removed "fringeJumpPoint" option; system radius is now determined by the furthest star/planet/jump-point in the system.
-  - Star systems with no "jump_point" entities now auto-generate a Fringe Jump-point.
-  - Removed "entitiesAtStablePoints" option; "focus" option now also supports this functionality
-  - Too many other changes to other entries and options to list all of them here; see the updated referenceStarSystem.json for help with the new format
-* Updated referenceStarSystem.json and presetStarSystems.json with the updated format
-* Added "SpawnCustomStarSystems" and "ListCustomStarSystems" commands
-  - Requires the Console Commands mod to run these commands
-  - Intended to allow for spawning custom star systems in an ongoing save; backing up your save beforehand is recommended
-  - Also ideal for testing custom star systems, as instant game crashes are less likely when ran in an ongoing save
-* Added a LunaSnippet for spawning in custom star systems
-  - Requires the LunaLib library mod to use
-  - Basically a UI version of the above CC commands
-* Updated source code and package names

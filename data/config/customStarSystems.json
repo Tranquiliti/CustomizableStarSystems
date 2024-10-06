@@ -54,7 +54,7 @@
 			{"entity":"jump_point","orbitRadius":3200,"name":"Inner System Jump-point"},
 			{"entity":"inactive_gate","orbitRadius":5250},
 			{"entity":"jump_point","orbitRadius":6840,"name":"Fringe Jump-point"},
-			{"entity":"magnetic_field","orbitRadius":325,"focus":1,"size":200},
+			{"entity":"magnetic_field","orbitRadius":325,"size":525,"middleRadius":263,"outerRadius":575,"focus":1},
 			{"entity":"stable_location","focus":[1,4]},
 			{"entity":"stable_location","focus":[1,5]},
 			{"entity":"comm_relay","focus":[2,4]}

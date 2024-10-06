@@ -305,6 +305,7 @@
 					"ruins_vast",
 					"decivilized",
 					"decivilized_subpop",
+					"solar_array",
 				],
 
 				# Changes to this planet's appearance
@@ -531,6 +532,19 @@
 				# Defaults to proc-gen settings if this entry is omitted or is set to a negative number
 				"numAsteroids":100
 			},
+			{ # Debris field
+				"entity":"debris_field",
+				"focus":0,
+				"orbitRadius":100,
+				"orbitAngle":-1,
+				"orbitDays":0,
+				"orbitClockwise":true,
+				"memoryKeys":{},
+
+				# Size of the debris field
+				# Defaults to 500 if this entry is omitted
+				"size":500,
+			},
 			{ # Accretion disk
 				"entity":"accretion_disk",
 				"focus":0, # Does not support [f,l]
@@ -544,8 +558,8 @@
 				"memoryKeys":{},
 
 				# Size, or band width, of the magnetic field
-				# Defaults to 300 if this entry is omitted
-				"size":300,
+				# Defaults to 400 if this entry is omitted
+				"size":400,
 
 				# The terrain effect middle radius
 				# Defaults to orbitRadius + size / 2 if this entry is omitted
