@@ -4,12 +4,15 @@ import com.fs.starfarer.api.BaseModPlugin;
 import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.tranquility.customizablestarsystems.lunalib.CSSLunaUtil;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
@@ -54,17 +57,16 @@ public class CSSModPlugin extends BaseModPlugin {
 
     private void generateCustomStarSystems() throws JSONException, IOException {
         JSONObject systems = CSSUtil.getMergedSystemJSON();
+        List<Constellation> constellations = CSSUtil.getProcgenConstellations();
+        marketsToOverrideAdmin = new HashMap<>();
         for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
             String systemId = it.next();
             JSONObject systemOptions = systems.getJSONObject(systemId);
             if (systemOptions.optBoolean(OPT_IS_ENABLED, true))
                 for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
-                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId);
+                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId, constellations, marketsToOverrideAdmin);
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
-
-                    if (marketsToOverrideAdmin == null) marketsToOverrideAdmin = newSystem.getMarketsToOverrideAdmin();
-                    else marketsToOverrideAdmin.putAll(newSystem.getMarketsToOverrideAdmin());
 
                     Global.getLogger(CSSModPlugin.class).info(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
                 }

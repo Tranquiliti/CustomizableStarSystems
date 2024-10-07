@@ -2,6 +2,7 @@ package org.tranquility.customizablestarsystems.lunalib;
 
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
+import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import lunalib.lunaDebug.LunaSnippet;
@@ -10,10 +11,7 @@ import org.json.JSONObject;
 import org.tranquility.customizablestarsystems.CSSUtil;
 import org.tranquility.customizablestarsystems.CustomStarSystem;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
@@ -91,17 +89,15 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
 
         StringBuilder print = new StringBuilder();
         StarSystemAPI teleportSystem = null;
-        Map<MarketAPI, String> marketsToOverrideAdmin = null;
+        List<Constellation> constellations = CSSUtil.getProcgenConstellations();
+        Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>();
         for (String systemId : enabledParams)
             try { // Generate all selected custom star systems
                 JSONObject systemOptions = systems.getJSONObject(systemId);
                 for (int numOfSystems = systemOptions.optInt(OPT_NUMBER_OF_SYSTEMS, CustomStarSystem.DEFAULT_NUMBER_OF_SYSTEMS); numOfSystems > 0; numOfSystems--) {
-                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId);
+                    CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId, constellations, marketsToOverrideAdmin);
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
-
-                    if (marketsToOverrideAdmin == null) marketsToOverrideAdmin = newSystem.getMarketsToOverrideAdmin();
-                    else marketsToOverrideAdmin.putAll(newSystem.getMarketsToOverrideAdmin());
 
                     print.append(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
                 }
