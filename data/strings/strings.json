@@ -2,8 +2,6 @@
 # A few Strings remain hard-coded, especially in CSSUtil.java,
 # due to switch statements requiring constant String objects or
 # the Strings only mattering in Dev Mode or debugging (hopefully).
-#
-# That said, let me know if there's anything that I can do to make your life a little easier.
 
 {
 	"customizablestarsystems":{
@@ -17,11 +15,11 @@
 		# Main system options in customStarSystems.json
 		"opt_isEnabled":"isEnabled",
 		"opt_numberOfSystems":"numberOfSystems",
-		"opt_isCoreWorldSystem":"isCoreWorldSystem",
 		"opt_hasSystemwideNebula":"hasSystemwideNebula",
 		"opt_addCoronalHypershunt":"addCoronalHypershunt",
 		"opt_addDomainCryosleeper":"addDomainCryosleeper",
 		"opt_setLocation":"setLocation",
+		"opt_systemAge":"systemAge",
 		"opt_systemBackground":"systemBackground",
 		"opt_systemMusic":"systemMusic",
 		"opt_systemLightColor":"systemLightColor",
@@ -75,6 +73,7 @@
 		"opt_isDamaged":"isDamaged",
 		"opt_size":"size",
 		"opt_numAsteroids":"numAsteroids",
+		"opt_variantId":"variantId",
 		"opt_innerBandIndex":"innerBandIndex",
 		"opt_outerBandIndex":"outerBandIndex",
 		"opt_bandIndex":"bandIndex",

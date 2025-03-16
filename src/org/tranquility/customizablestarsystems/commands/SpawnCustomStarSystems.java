@@ -1,4 +1,4 @@
-package data.console.commands;
+package org.tranquility.customizablestarsystems.commands;
 
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -20,6 +20,7 @@ import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
 public class SpawnCustomStarSystems implements BaseCommand {
     @Override
+    @SuppressWarnings("unchecked")
     public CommandResult runCommand(String args, CommandContext context) {
         if (!context.isInCampaign()) {
             Console.showMessage(CommonStrings.ERROR_CAMPAIGN_ONLY);
@@ -41,11 +42,11 @@ public class SpawnCustomStarSystems implements BaseCommand {
         StringBuilder print = new StringBuilder();
         StarSystemAPI teleportSystem = null;
         List<Constellation> constellations = CSSUtil.getProcgenConstellations();
-        Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<MarketAPI, String>();
+        Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>();
         if (params[0].equals("all")) {
             // Generate all enabled custom star systems
             for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
-                String systemId = (String) it.next();
+                String systemId = it.next();
                 try {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     if (systemOptions.optBoolean(OPT_IS_ENABLED, true))

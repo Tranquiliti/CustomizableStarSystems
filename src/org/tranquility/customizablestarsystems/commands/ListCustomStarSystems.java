@@ -1,4 +1,4 @@
-package data.console.commands;
+package org.tranquility.customizablestarsystems.commands;
 
 import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
@@ -12,6 +12,7 @@ import static org.tranquility.customizablestarsystems.CSSStrings.COMMANDS_ERROR_
 
 public class ListCustomStarSystems implements BaseCommand {
     @Override
+    @SuppressWarnings("unchecked")
     public CommandResult runCommand(String args, CommandContext context) {
         if (!context.isInCampaign()) {
             Console.showMessage(CommonStrings.ERROR_CAMPAIGN_ONLY);
@@ -28,7 +29,7 @@ public class ListCustomStarSystems implements BaseCommand {
 
         StringBuilder print = new StringBuilder();
         for (Iterator<String> it = systems.keys(); it.hasNext(); )
-            print.append((String) it.next()).append("\n");
+            print.append(it.next()).append("\n");
         Console.showMessage(print);
 
         return CommandResult.SUCCESS;

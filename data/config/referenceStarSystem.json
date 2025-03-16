@@ -26,11 +26,6 @@
 		# Defaults to 1 if this entry is omitted
 		"numberOfSystems":1,
 
-		# If true, tags this system as a Core World system, which tells the game to
-		# not spawn certain mission entities (like probes or bounty targets) in this system
-		# Defaults to false if this entry is omitted
-		"isCoreWorldSystem":false,
-
 		# If true, adds nebula clouds in this system, based on the system's constellation age
 		# Defaults to false if this entry is omitted
 		"hasSystemwideNebula":false,
@@ -50,6 +45,11 @@
 		# Defaults to 0 if this entry is omitted
 		"setLocation":0,
 
+		# The age of this system, which affects the color of the nebula clouds generated with "hasSystemwideNebula"
+		# Can be "old", "average", or "young"
+		# Defaults to using the age automatically set by "setLocation" if this entry is omitted or invalid
+		"systemAge":"average",
+
 		# The background to use in this system
 		# System backgrounds are found in the starsector-core/graphics/backgrounds folder
 		# Uses a default system background, dependent on "hasSystemwideNebula", if this entry is omitted
@@ -65,17 +65,18 @@
 		# Defaults to proc-gen settings if this entry is omitted
 		"systemLightColor":[255,255,255,255],
 
-		# A list of (additional) tags to apply to this system
-		# Defaults to applying no additional tags if this entry is omitted
+		# A list of tags to apply to this system
+		# Tags can dictate how a system is treated by the game (for spawning missions, system interactions, etc.)
+		# Defaults to only applying the "theme_misc" tag if this entry is omitted or empty
 		"systemTags":[
 			# A non-exhaustive list of vanilla system tags
 			"system_cut_off_from_hyper",
 			"system_abyssal",
-			"theme_hidden",
-			"theme_core_unpopulated",
-			"theme_core_populated",
-			"theme_core",
-			"theme_interesting",
+			"theme_hidden", # Most missions will not spawn targets in systems with this or similar themes
+			"theme_core_unpopulated", # For unpopulated Core Worlds systems (e.g., Penelope's Star)
+			"theme_core_populated", # For populated Core Worlds systems (e.g., Corvus)
+			"theme_core", # Needed to avoid exploration missions pointing to this system
+			"theme_interesting", # Some missions prioritize spawning in interesting systems over others
 			"theme_interesting_minor",
 			"theme_misc",
 			"theme_misc_skip",
@@ -85,15 +86,16 @@
 			"theme_special",
 			"theme_derelict",
 			"theme_derelict_mothership",
-			"theme_derelict_cryosleeper",
+			"theme_derelict_cryosleeper", # Recommended if this system has a Derelict Cryosleeper
 			"theme_derelict_survey_ship",
 			"theme_derelict_probes",
-			"has_coronal_tap",
+			"has_coronal_tap", # Recommended if this system has a Coronal Hypershunt
 			"theme_unsafe",
-			"theme_remnant",
+			"theme_remnant", # Recommended if this system has a Remnant station
 			"theme_remnant_main",
 			"theme_remnant_secondary",
 			"theme_remnant_no_fleets",
+			# If any of these tags are present, this system spawns the respective hyperspace beacons (Low, Medium, High)
 			"theme_remnant_destroyed",
 			"theme_remnant_suppressed",
 			"theme_remnant_resurgent",
@@ -105,6 +107,7 @@
 		"teleportUponGeneration":false,
 
 		# A list of entities to generate within this system
+		# This list is 0th-indexed (i.e., the first entry is index 0, the second entry is index 1, and so on)!
 		# The list *MUST START* with a center entity, which can either be a:
 		#  - a "star" entity, or
 		#  - an "empty_location" entity, followed by a specified number of "star" entities
@@ -459,7 +462,6 @@
 				"memoryKeys":{},
 			},
 			{ # A normal empty location
-				# Known issue: orbits are broken for this entity; it will remain in a still position, completely ignoring "orbitDays"
 				"entity":"empty_location",
 				"focus":0,
 				"orbitRadius":2000,
@@ -545,6 +547,24 @@
 				# Defaults to 500 if this entry is omitted
 				"size":500,
 			},
+			{ # Wreck, or derelict ship
+				"entity":"wreck",
+				"focus":0,
+				"orbitRadius":100,
+				"orbitAngle":-1,
+				"orbitDays":0,
+				"orbitClockwise":true,
+				"memoryKeys":{},
+
+				# Which faction to use when selecting a random ship as a wreck
+				# Defaults to "independent" if this entry is omitted
+				"factionId":"independent",
+
+				# The ship variant of the wreck
+				# Overrides "factionId" by always spawning the ship as the specified ship variant
+				# Defaults to using "factionId" if this entry is omitted
+				"variantId":"nebula_Standard",
+			},
 			{ # Accretion disk
 				"entity":"accretion_disk",
 				"focus":0, # Does not support [f,l]
@@ -596,6 +616,7 @@
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"memoryKeys":{},
 
 				# Name of the ring band
@@ -620,6 +641,7 @@
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 				"orbitDays":0,
+				"orbitClockwise":true,
 				"name":"Test Name Belt",
 				"memoryKeys":{},
 

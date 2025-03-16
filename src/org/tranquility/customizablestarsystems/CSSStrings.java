@@ -18,11 +18,11 @@ public final class CSSStrings {
     // Main system options in customStarSystems.json
     public static final String OPT_IS_ENABLED = Global.getSettings().getString(STRINGS_CATEGORY, "opt_isEnabled");
     public static final String OPT_NUMBER_OF_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_numberOfSystems");
-    public static final String OPT_IS_CORE_WORLD_SYSTEM = Global.getSettings().getString(STRINGS_CATEGORY, "opt_isCoreWorldSystem");
     public static final String OPT_HAS_SYSTEMWIDE_NEBULA = Global.getSettings().getString(STRINGS_CATEGORY, "opt_hasSystemwideNebula");
     public static final String OPT_ADD_CORONAL_HYPERSHUNT = Global.getSettings().getString(STRINGS_CATEGORY, "opt_addCoronalHypershunt");
     public static final String OPT_ADD_DOMAIN_CRYOSLEEPER = Global.getSettings().getString(STRINGS_CATEGORY, "opt_addDomainCryosleeper");
     public static final String OPT_SET_LOCATION = Global.getSettings().getString(STRINGS_CATEGORY, "opt_setLocation");
+    public static final String OPT_SYSTEM_AGE = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemAge");
     public static final String OPT_SYSTEM_BACKGROUND = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemBackground");
     public static final String OPT_SYSTEM_MUSIC = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemMusic");
     public static final String OPT_SYSTEM_LIGHT_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemLightColor");
@@ -76,6 +76,7 @@ public final class CSSStrings {
     public static final String OPT_IS_DAMAGED = Global.getSettings().getString(STRINGS_CATEGORY, "opt_isDamaged");
     public static final String OPT_SIZE = Global.getSettings().getString(STRINGS_CATEGORY, "opt_size");
     public static final String OPT_NUM_ASTEROIDS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_numAsteroids");
+    public static final String OPT_VARIANT_ID = Global.getSettings().getString(STRINGS_CATEGORY, "opt_variantId");
     public static final String OPT_INNER_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_innerBandIndex");
     public static final String OPT_OUTER_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_outerBandIndex");
     public static final String OPT_BAND_INDEX = Global.getSettings().getString(STRINGS_CATEGORY, "opt_bandIndex");

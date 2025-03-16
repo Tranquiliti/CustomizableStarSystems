@@ -16,10 +16,7 @@ import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
@@ -77,22 +74,24 @@ public final class CSSUtil {
      *
      * @return A list of proc-gen constellations
      */
-    public static ArrayList<Constellation> getProcgenConstellations() {
-        ArrayList<Constellation> constellations = new ArrayList<>();
+    public static List<Constellation> getProcgenConstellations() {
+        HashSet<Constellation> constellations = new HashSet<>();
 
+        // Multiple star systems can have same constellation, which is why a Set is used here
         for (StarSystemAPI sys : Global.getSector().getStarSystems())
             if (sys.isProcgen() && sys.isInConstellation()) constellations.add(sys.getConstellation());
 
-        Collections.sort(constellations, new Comparator<Constellation>() {
-            final Vector2f centroidPoint = getHyperspaceCenter();
-
+        ArrayList<Constellation> sortedConstellations = new ArrayList<>(constellations);
+        final Vector2f centroidPoint = getHyperspaceCenter();
+        Collections.sort(sortedConstellations, new Comparator<Constellation>() {
+            @Override
             public int compare(Constellation c1, Constellation c2) {
                 if (c1 == c2) return 0;
                 return Float.compare(Misc.getDistance(centroidPoint, c1.getLocation()), Misc.getDistance(centroidPoint, c2.getLocation()));
             }
         });
 
-        return constellations;
+        return sortedConstellations;
     }
 
     /**

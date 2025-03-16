@@ -23,6 +23,8 @@ public class CSSModPlugin extends BaseModPlugin {
     private transient StarSystemAPI teleportSystem;
     private transient Map<MarketAPI, String> marketsToOverrideAdmin;
 
+    // TODO: Update .version and mod_info.json to 0.98a version
+    // TODO: If applicable, make us of new Java features, like lambda functions, since 0.98a will use Java 17
     @Override
     public void onApplicationLoad() {
         if (LUNALIB_ENABLED) CSSLunaUtil.addSnippet();
