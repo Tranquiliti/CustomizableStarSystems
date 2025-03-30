@@ -10,6 +10,7 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
 import com.fs.starfarer.api.impl.MusicPlayerPluginImpl;
 import com.fs.starfarer.api.impl.campaign.CoronalTapParticleScript;
+import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin;
 import com.fs.starfarer.api.impl.campaign.fleets.FleetFactoryV3;
 import com.fs.starfarer.api.impl.campaign.ids.*;
 import com.fs.starfarer.api.impl.campaign.procgen.*;
@@ -20,7 +21,6 @@ import com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.impl.campaign.terrain.*;
 import com.fs.starfarer.api.util.Misc;
-import com.fs.starfarer.campaign.BaseLocation;
 import com.fs.starfarer.loading.specs.PlanetSpec;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,6 +31,8 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+import static com.fs.starfarer.api.impl.campaign.CoreLifecyclePluginImpl.createInitialPeople;
+import static com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator.addSalvageEntity;
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
 /**
@@ -73,6 +75,7 @@ public class CustomStarSystem {
     private final Random randomSeed = StarSystemGenerator.random; // Sector seed
     private final List<Constellation> constellations; // Used in setConstellationLocation()
     private final Map<MarketAPI, String> marketsToOverrideAdmin; // Updated in addMarket()
+    private final boolean initPeople;
 
     private final String SYSTEM_ID;
     private final JSONObject SYSTEM_OPTIONS;
@@ -91,18 +94,18 @@ public class CustomStarSystem {
      * @param marketsToOverrideAdmin Map of markets that need admin replacements
      * @throws JSONException If systemOptions is invalid
      */
-    public CustomStarSystem(JSONObject systemOptions, String systemId, List<Constellation> constellations, Map<MarketAPI, String> marketsToOverrideAdmin) throws JSONException {
+    public CustomStarSystem(JSONObject systemOptions, String systemId, List<Constellation> constellations, Map<MarketAPI, String> marketsToOverrideAdmin, boolean initPeople) throws JSONException {
         SYSTEM_ID = systemId;
         SYSTEM_OPTIONS = systemOptions;
-        this.marketsToOverrideAdmin = marketsToOverrideAdmin;
         this.constellations = constellations;
+        this.marketsToOverrideAdmin = marketsToOverrideAdmin;
+        this.initPeople = initPeople;
 
         createStarSystem();
         generateEntities();
 
         generateDomainCryosleeperIfApplicable();
         generateCoronalHypershuntIfApplicable();
-        addCoreSystemTags();
         addMusicIfApplicable();
 
         setLocation();
@@ -155,8 +158,9 @@ public class CustomStarSystem {
                     if (i == 0) { // Make a non-star center
                         i += addCenterStars(entities);
                         continue;
-                    } else { // Note: orbits are broken for this entity, making it stay in its orbit position
-                        newEntity = new BaseLocation.LocationToken(system, 0f, 0f);
+                    } else {
+                        newEntity = system.createToken(0f, 0f);
+                        system.addEntity(newEntity);
                         setEntityLocation(newEntity, entityOptions, i);
                     }
                     break;
@@ -206,9 +210,13 @@ public class CustomStarSystem {
                 case Terrain.ASTEROID_BELT:
                     newEntity = addAsteroidBelt(entityOptions, i);
                     break;
+                case Entities.WRECK:
+                    newEntity = addDerelictShip(entityOptions, i);
+                    break;
                 default:
                     newEntity = addCustomEntity(entityOptions);
                     setEntityLocation(newEntity, entityOptions, i);
+                    break;
             }
 
             addMemoryKeys(newEntity, entityOptions, OPT_MEMORY_KEYS);
@@ -216,7 +224,10 @@ public class CustomStarSystem {
             systemEntities.add(newEntity);
         }
 
-        if (hasFactionPresence) Misc.setAllPlanetsSurveyed(system, true);
+        if (hasFactionPresence) {
+            system.setEnteredByPlayer(true);
+            Misc.setAllPlanetsSurveyed(system, true);
+        }
 
         // Fallback option for systems with no orbiting bodies or jump-points
         if (systemRadius == 0f) systemRadius = system.getStar().getRadius() + 1000f;
@@ -243,17 +254,11 @@ public class CustomStarSystem {
 
         float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
         if (orbitDays <= 0) {
-            float divisor;
-            switch (type) {
-                case Entities.INACTIVE_GATE:
-                    divisor = 10f;
-                    break;
-                case Tags.JUMP_POINT:
-                    divisor = 15f;
-                    break;
-                default:
-                    divisor = 20f;
-            }
+            float divisor = switch (type) {
+                case Entities.INACTIVE_GATE -> 10f;
+                case Tags.JUMP_POINT -> 15f;
+                default -> 20f;
+            };
             orbitDays = orbitRadius / (divisor + randomSeed.nextFloat() * 5f);
         }
 
@@ -497,22 +502,16 @@ public class CustomStarSystem {
         station.setCommander(commander);
         station.getFlagship().setCaptain(commander);
 
-        system.addTag(Tags.THEME_INTERESTING);
-        system.addTag(Tags.THEME_REMNANT);
-        system.addTag(Tags.THEME_REMNANT_SECONDARY);
-        system.addTag(Tags.THEME_UNSAFE);
         if (isDamaged) {
             station.getMemoryWithoutUpdate().set(MEMFLAGS_DAMAGED_STATION, true);
             station.setName(station.getName() + NAME_DAMAGED_STATION);
 
             system.addScript(new RemnantStationFleetManager(station, 1f, 0, 2 + randomSeed.nextInt(3), 25f, 6, 12));
-            system.addTag(Tags.THEME_REMNANT_SUPPRESSED);
         } else {
             RemnantOfficerGeneratorPlugin.integrateAndAdaptCoreForAIFleet(station.getFlagship());
             RemnantOfficerGeneratorPlugin.addCommanderSkills(commander, station, null, 3, randomSeed);
 
             system.addScript(new RemnantStationFleetManager(station, 1f, 0, 8 + randomSeed.nextInt(5), 15f, 8, 24));
-            system.addTag(Tags.THEME_REMNANT_RESURGENT);
         }
 
         member.getRepairTracker().setCR(member.getRepairTracker().getMaxCR());
@@ -542,6 +541,20 @@ public class CustomStarSystem {
         DebrisFieldTerrainPlugin.DebrisFieldParams params = new DebrisFieldTerrainPlugin.DebrisFieldParams(radius, -1f, 10000000f, 0f);
 
         return Misc.addDebrisField(system, params, randomSeed);
+    }
+
+    // See com.fs.starfarer.api.impl.campaign.proc.themes.BaseThemeGenerator's addDerelictShip() for vanilla implementation
+    private SectorEntityToken addDerelictShip(JSONObject options, int index) throws JSONException {
+        String factionId = options.optString(OPT_FACTION_ID, Factions.INDEPENDENT);
+        String variantId = options.optString(OPT_VARIANT_ID, null);
+        SectorEntityToken entity;
+        if (variantId == null)
+            entity = addSalvageEntity(randomSeed, system, Entities.WRECK, Factions.NEUTRAL, DerelictShipEntityPlugin.createRandom(factionId, null, randomSeed, DerelictShipEntityPlugin.getDefaultSModProb()));
+        else
+            entity = addSalvageEntity(randomSeed, system, Entities.WRECK, Factions.NEUTRAL, DerelictShipEntityPlugin.createVariant(variantId, randomSeed, DerelictShipEntityPlugin.getDefaultSModProb()));
+        entity.setDiscoverable(true);
+        setEntityLocation(entity, options, index);
+        return entity;
     }
 
     // See com.fs.starfarer.api.impl.campaign.procgen.AccretionDiskGenPlugin's generate() for vanilla implementation
@@ -600,6 +613,8 @@ public class CustomStarSystem {
         float orbitDays = options.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
         if (orbitDays <= 0) orbitDays = orbitRadius / (15f + 5f * randomSeed.nextFloat());
 
+        if (!options.optBoolean(OPT_ORBIT_CLOCKWISE, true)) orbitDays *= -1f;
+
         String name = options.optString(OPT_NAME, null);
         String type = options.optString(OPT_TYPE, ENTITY_RINGS_DUST);
 
@@ -623,6 +638,8 @@ public class CustomStarSystem {
             if (count > 100) count = (int) (100f + (count - 100f) * 0.25f);
             if (count > 250) count = 250;
         }
+
+        if (!options.optBoolean(OPT_ORBIT_CLOCKWISE, true)) orbitDays *= -1f;
 
         int innerBandIndex = options.optInt(OPT_INNER_BAND_INDEX, 0);
         int outerBandIndex = options.optInt(OPT_OUTER_BAND_INDEX, 0);
@@ -659,13 +676,9 @@ public class CustomStarSystem {
                 break;
             case Entities.CORONAL_TAP:
                 system.addScript(new CoronalTapParticleScript(entity));
-                system.addTag(Tags.HAS_CORONAL_TAP);
-                system.addTag(Tags.THEME_INTERESTING);
                 break;
             case Entities.DERELICT_CRYOSLEEPER:
                 entity.setFaction(Factions.DERELICT);
-                system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
-                system.addTag(Tags.THEME_INTERESTING);
                 break;
         }
 
@@ -799,10 +812,12 @@ public class CustomStarSystem {
             entityMarket.addSubmarket(Submarkets.SUBMARKET_BLACK);
         }
 
+        if (initPeople) createInitialPeople(entityMarket, randomSeed);
+
         if (marketOptions.optBoolean(OPT_AI_CORE_ADMIN, false))
             marketsToOverrideAdmin.put(entityMarket, Commodities.ALPHA_CORE);
 
-        entity.setFaction(factionId);
+        entity.setFaction(factionId); // Needed to allow interacting with faction market
         entity.setMarket(entityMarket);
         Global.getSector().getEconomy().addMarket(entityMarket, true);
 
@@ -963,9 +978,6 @@ public class CustomStarSystem {
         cryosleeper.getMemoryWithoutUpdate().set(MemFlags.SALVAGE_SEED, randomSeed.nextLong());
 
         if (!hasFactionPresence) makeDiscoverable(cryosleeper, 3500f);
-
-        system.addTag(Tags.THEME_DERELICT_CRYOSLEEPER);
-        system.addTag(Tags.THEME_INTERESTING);
     }
 
     // See com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator's addCoronalTaps() for vanilla implementation
@@ -985,24 +997,12 @@ public class CustomStarSystem {
         if (!hasFactionPresence) makeDiscoverable(hypershunt, 3500f);
 
         system.addScript(new CoronalTapParticleScript(hypershunt));
-        system.addTag(Tags.HAS_CORONAL_TAP);
-        system.addTag(Tags.THEME_INTERESTING);
     }
 
     private void makeDiscoverable(SectorEntityToken entity, float detectedRange) {
         entity.setSensorProfile(1f);
         entity.setDiscoverable(true);
         entity.getDetectedRangeMod().modifyFlat(SOURCE_GEN, detectedRange);
-    }
-
-    private void addCoreSystemTags() {
-        if (SYSTEM_OPTIONS.optBoolean(OPT_IS_CORE_WORLD_SYSTEM, false)) {
-            system.addTag(Tags.THEME_CORE);
-            system.addTag(hasFactionPresence ? Tags.THEME_CORE_POPULATED : Tags.THEME_CORE_UNPOPULATED);
-        } else {
-            system.removeTag(Tags.THEME_CORE);
-            system.addTag(Tags.THEME_MISC);
-        }
     }
 
     private void addMusicIfApplicable() {
@@ -1026,9 +1026,11 @@ public class CustomStarSystem {
 
     private void addSystemTagsIfApplicable() throws JSONException {
         JSONArray systemTags = SYSTEM_OPTIONS.optJSONArray(OPT_SYSTEM_TAGS);
-        if (systemTags != null) for (int i = 0; i < systemTags.length(); i++) {
+        if (systemTags != null) for (int i = 0; i < systemTags.length(); i++)
             system.addTag(systemTags.getString(i));
-        }
+
+        // So it does not always get tagged as a Core World system when created at new game
+        if (system.getTags().isEmpty()) system.addTag(Tags.THEME_MISC);
     }
 
     private void setLightColor() throws JSONException {
@@ -1088,6 +1090,19 @@ public class CustomStarSystem {
         if (locationOverride == null)
             setConstellationLocation(systemRadius / 10f + Global.getSettings().getInt(SETTINGS_SYSTEM_SPACING), SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
         else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
+
+        // Set system age
+        switch (SYSTEM_OPTIONS.optString(OPT_SYSTEM_AGE, "")) {
+            case "old":
+                system.setAge(StarAge.OLD);
+                break;
+            case "average":
+                system.setAge(StarAge.AVERAGE);
+                break;
+            case "young":
+                system.setAge(StarAge.YOUNG);
+                break;
+        }
     }
 
     private void setLocation(float x, float y) {
@@ -1118,9 +1133,9 @@ public class CustomStarSystem {
         centroidX /= nearestSystems.size();
         centroidY /= nearestSystems.size();
 
-        // Nudge the centroid point to a nearby random location at most 2000 units away
-        centroidX += randomSeed.nextFloat() * 4000f - 2000f;
-        centroidY += randomSeed.nextFloat() * 4000f - 2000f;
+        // Nudge the centroid point to a nearby random location within an 8000 unit square box
+        centroidX += randomSeed.nextFloat() * 8000f - 4000f;
+        centroidY += randomSeed.nextFloat() * 8000f - 4000f;
 
         // Find an empty spot in the constellation, starting at the centroid point and
         // then searching for locations around it in a square pattern

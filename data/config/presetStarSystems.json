@@ -649,6 +649,14 @@
 		"setLocation":0,
 		"systemBackground":"background4.jpg",
 		"systemMusic":"music_campaign_alpha_site",
+		"systemTags":[
+			"theme_remnant",
+			"theme_remnant_secondary",
+			"theme_remnant_resurgent",
+			"theme_unsafe",
+			"theme_interesting",
+			"has_coronal_tap"
+		],
 		"entities":[
 			{"entity":"empty_location","numOfCenterStars":3,"orbitRadius":2000},
 			{"entity":"star","type":"star_yellow"},
@@ -684,11 +692,11 @@
 	# A Battle-Royale system in Core World center, with vanilla factions vying for system control
 	"css_battle_royale":{
 		"isEnabled":true,
-		"isCoreWorldSystem":true,
 		"addCoronalHypershunt":true,
 		"setLocation":[-6000,-6000],
 		"systemBackground":"background6.jpg",
 		"systemMusic":"music_diktat_encounter_friendly",
+		"systemTags":["theme_core","theme_populated","has_coronal_tap"],
 		"entities":[
 			{
 				"entity":"empty_location",
@@ -860,13 +868,12 @@
 	"css_stress_test":{
 		"isEnabled":true,
 		"numberOfSystems":1,
-		"isCoreWorldSystem":false,
 		"addCoronalHypershunt":true,
 		"addDomainCryosleeper":true,
 		"setLocation":[6000,6000],
 		"systemBackground":"hyperspace1.jpg",
 		"systemMusic":"music_title",
-
+		"systemTags":["has_coronal_tap","theme_derelict_cryosleeper","theme_interesting"]
 		"entities":[
 			{
 				"entity":"empty_location",

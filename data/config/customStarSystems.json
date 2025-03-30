@@ -17,6 +17,7 @@
 		"hasSystemwideNebula":true,
 		"addCoronalHypershunt":false,
 		"addDomainCryosleeper":false,
+		"systemTags":["theme_misc"],
 		"teleportUponGeneration":false,
 		"entities":[
 			{
