@@ -16,7 +16,10 @@ import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
@@ -24,6 +27,8 @@ import static org.tranquility.customizablestarsystems.CSSStrings.*;
  * A utility class for the Customizable Star Systems mod
  */
 public final class CSSUtil {
+    public static final boolean LUNALIB_ENABLED = Global.getSettings().getModManager().isModEnabled("lunalib");
+
     /**
      * Get the merged JSON for the custom star systems file
      *
@@ -83,12 +88,9 @@ public final class CSSUtil {
 
         ArrayList<Constellation> sortedConstellations = new ArrayList<>(constellations);
         final Vector2f centroidPoint = getHyperspaceCenter();
-        Collections.sort(sortedConstellations, new Comparator<Constellation>() {
-            @Override
-            public int compare(Constellation c1, Constellation c2) {
-                if (c1 == c2) return 0;
-                return Float.compare(Misc.getDistance(centroidPoint, c1.getLocation()), Misc.getDistance(centroidPoint, c2.getLocation()));
-            }
+        sortedConstellations.sort((c1, c2) -> {
+            if (c1 == c2) return 0;
+            return Float.compare(Misc.getDistance(centroidPoint, c1.getLocation()), Misc.getDistance(centroidPoint, c2.getLocation()));
         });
 
         return sortedConstellations;

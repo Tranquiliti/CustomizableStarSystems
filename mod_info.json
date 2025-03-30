@@ -5,7 +5,7 @@
   "utility":"true",
   "version":{"major":3,"minor":0,"patch":0},
   "description":"Adds customizable star systems, editable through a JSON config file.",
-  "gameVersion":"0.97a-RC11",
+  "gameVersion":"0.98a-RC5",
   "jars":["jars/CustomizableStarSystems.jar"],
   "modPlugin":"org.tranquility.customizablestarsystems.CSSModPlugin"
 }

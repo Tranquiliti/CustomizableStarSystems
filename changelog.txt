@@ -7,6 +7,7 @@ Version 3.0.0 (Update for Starsector 0.98a)
 * Removed nearly all instances of automatic system tagging
   - This includes the "isCoreWorldSystem" option, which is removed in favor of using the "systemTags" option
   - "systemTags" now defaults to only applying the "theme_misc" tag if it is omitted or empty
+* People are now automatically added to a custom star system's markets if spawned mid-game
 * Fixed bug with "setLocation" option regarding the constellation list having duplicate constellations
 * Moved Console Commands commands to src folder
 

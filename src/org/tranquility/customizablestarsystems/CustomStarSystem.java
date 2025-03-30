@@ -31,6 +31,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+import static com.fs.starfarer.api.impl.campaign.CoreLifecyclePluginImpl.createInitialPeople;
 import static com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator.addSalvageEntity;
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
 
@@ -74,6 +75,7 @@ public class CustomStarSystem {
     private final Random randomSeed = StarSystemGenerator.random; // Sector seed
     private final List<Constellation> constellations; // Used in setConstellationLocation()
     private final Map<MarketAPI, String> marketsToOverrideAdmin; // Updated in addMarket()
+    private final boolean initPeople;
 
     private final String SYSTEM_ID;
     private final JSONObject SYSTEM_OPTIONS;
@@ -92,11 +94,12 @@ public class CustomStarSystem {
      * @param marketsToOverrideAdmin Map of markets that need admin replacements
      * @throws JSONException If systemOptions is invalid
      */
-    public CustomStarSystem(JSONObject systemOptions, String systemId, List<Constellation> constellations, Map<MarketAPI, String> marketsToOverrideAdmin) throws JSONException {
+    public CustomStarSystem(JSONObject systemOptions, String systemId, List<Constellation> constellations, Map<MarketAPI, String> marketsToOverrideAdmin, boolean initPeople) throws JSONException {
         SYSTEM_ID = systemId;
         SYSTEM_OPTIONS = systemOptions;
-        this.marketsToOverrideAdmin = marketsToOverrideAdmin;
         this.constellations = constellations;
+        this.marketsToOverrideAdmin = marketsToOverrideAdmin;
+        this.initPeople = initPeople;
 
         createStarSystem();
         generateEntities();
@@ -251,17 +254,11 @@ public class CustomStarSystem {
 
         float orbitDays = entityOptions.optInt(OPT_ORBIT_DAYS, DEFAULT_SET_TO_PROC_GEN);
         if (orbitDays <= 0) {
-            float divisor;
-            switch (type) {
-                case Entities.INACTIVE_GATE:
-                    divisor = 10f;
-                    break;
-                case Tags.JUMP_POINT:
-                    divisor = 15f;
-                    break;
-                default:
-                    divisor = 20f;
-            }
+            float divisor = switch (type) {
+                case Entities.INACTIVE_GATE -> 10f;
+                case Tags.JUMP_POINT -> 15f;
+                default -> 20f;
+            };
             orbitDays = orbitRadius / (divisor + randomSeed.nextFloat() * 5f);
         }
 
@@ -814,6 +811,8 @@ public class CustomStarSystem {
                 entityMarket.addSubmarket(Submarkets.GENERIC_MILITARY);
             entityMarket.addSubmarket(Submarkets.SUBMARKET_BLACK);
         }
+
+        if (initPeople) createInitialPeople(entityMarket, randomSeed);
 
         if (marketOptions.optBoolean(OPT_AI_CORE_ADMIN, false))
             marketsToOverrideAdmin.put(entityMarket, Commodities.ALPHA_CORE);
