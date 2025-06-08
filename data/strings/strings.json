@@ -50,6 +50,7 @@
 		"opt_industries":"industries",
 		"opt_memoryKeys":"memoryKeys",
 		"opt_marketMemoryKeys":"marketMemoryKeys",
+		"opt_tags":"tags",
 
 		# Sub-options for "opt_specChanges"
 		"opt_atmosphereColor":"atmosphereColor",

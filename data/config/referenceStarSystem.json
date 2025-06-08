@@ -140,15 +140,26 @@
 				# For ADVANCED users only!
 				# A map of memory keys and values to add or replace in the memory of this entity
 				# Only Boolean and String values are currently supported for each memory key
-				# Defaults to not applying any additional memory keys if this entry is ommitted
+				# Defaults to not applying any additional memory keys if this entry is omitted
 				"memoryKeys":{
 					"$example_mem_key":true,
 					"$example_mem_key_2":"example_value",
-				}
+				},
+
+				# For ADVANCED users only!
+				# A list of tags to apply to this entity
+				# Defaults to not applying any additional tags if this entry is omitted
+				"tags":[
+					"neutrino",
+					"neutrino_low",
+					"neutrino_high",
+					#... there are a lot more supported vanilla tags
+				]
 			},
 			{ # A star, made as part of the system center
 				"entity":"star",
 				"memoryKeys":{},
+				"tags":[],
 
 				# Type of star to make
 				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
@@ -195,6 +206,7 @@
 				"specChanges":{"texture":"castiron.jpg"},
 				"customDescriptionId":"star_blue_giant",
 				"memoryKeys":{},
+				"tags":[],
 
 				# Indicates the entity this entity will orbit
 				# Number is based on index of the "entities" list, which starts at 0
@@ -238,6 +250,7 @@
 				"name":"Placeholder Planet",
 				"customDescriptionId":"planet_jangala",
 				"memoryKeys":{},
+				"tags":[],
 
 				# Type of planet to make
 				# Planet IDs are found in starsector-core/data/campaign/procgen/planet_gen_data.csv
@@ -460,6 +473,7 @@
 				"name":"Test Name Gate",
 				"customDescriptionId":"inactive_gate",
 				"memoryKeys":{},
+				"tags":[],
 			},
 			{ # A normal empty location
 				"entity":"empty_location",
@@ -469,6 +483,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"memoryKeys":{},
+				"tags":[],
 			},
 			{ # A station (in this case, a populated station)
 				"entity":"station",
@@ -482,6 +497,7 @@
 				"conditions":[],
 				"memoryKeys":{},
 				"marketMemoryKeys":{},
+				"tags":[],
 
 				# Type of station graphic to use
 				# Station graphics are found in starsector-core/graphics/stations
@@ -511,6 +527,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"memoryKeys":{},
+				"tags":[],
 
 				# Does this Remnant station start out damaged?
 				# Defaults to false if this entry is omitted
@@ -525,6 +542,7 @@
 				"orbitClockwise":true,
 				"name":"Test Name Field",
 				"memoryKeys":{},
+				"tags":[],
 
 				# Size of the asteroid field
 				# Defaults to 400 if this entry is omitted
@@ -542,6 +560,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"memoryKeys":{},
+				"tags":[],
 
 				# Size of the debris field
 				# Defaults to 500 if this entry is omitted
@@ -555,6 +574,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"memoryKeys":{},
+				"tags":[],
 
 				# Which faction to use when selecting a random ship as a wreck
 				# Defaults to "independent" if this entry is omitted
@@ -570,12 +590,14 @@
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":0, # Optional
 				"memoryKeys":{},
+				"tags":[],
 			},
 			{ # Magnetic field
 				"entity":"magnetic_field",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
 				"memoryKeys":{},
+				"tags":[],
 
 				# Size, or band width, of the magnetic field
 				# Defaults to 400 if this entry is omitted
@@ -618,6 +640,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"memoryKeys":{},
+				"tags":[],
 
 				# Name of the ring band
 				# Uses default name if this entry is omitted
@@ -644,6 +667,7 @@
 				"orbitClockwise":true,
 				"name":"Test Name Belt",
 				"memoryKeys":{},
+				"tags":[],
 
 				# Index of the ring texture to use for the asteroid belt's inner ring
 				# Valid options are 0, 1, 2, or 3
@@ -692,6 +716,7 @@
 				"factionId":"neutral",
 				"customDescriptionId":"inactive_gate",
 				"memoryKeys":{},
+				"tags":[],
 			},
 
 			# -- You can add as much entities as desired in the "entities" list -- #

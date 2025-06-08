@@ -45,7 +45,7 @@ public class CSSModPlugin extends BaseModPlugin {
         boolean doCustomStarSystems = LUNALIB_ENABLED ? Boolean.TRUE.equals(LunaSettings.getBoolean(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS, SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS.replace(MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS + '_', ""))) : Global.getSettings().getBoolean(SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS);
         if (doCustomStarSystems) try {
             generateCustomStarSystems();
-        } catch (Exception e) {
+        } catch (JSONException | IOException e) {
             throw new RuntimeException(e);
         }
     }

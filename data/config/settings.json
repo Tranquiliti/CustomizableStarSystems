@@ -15,6 +15,6 @@
 	"customizablestarsystems_hyperspaceCenter":[-4531,-5865],
 
 	# Additional distance a custom star system generates away from other star systems when using "setLocation"
-    # Only applies to systems not using the [x,y] "setLocation" option
+	# Only applies to systems not using the [x,y] "setLocation" option
 	"customizablestarsystems_systemSpacing":150
 }

@@ -1,5 +1,6 @@
 package org.tranquility.customizablestarsystems.commands;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
@@ -92,8 +93,9 @@ public class SpawnCustomStarSystems implements BaseCommand {
     }
 
     private CommandResult showBadSystemError(String systemId, StringBuilder print, Exception e) {
-        print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId));
-        Console.showMessage(print.append(e));
+        print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId)).append(e);
+        Console.showMessage(print);
+        Global.getLogger(SpawnCustomStarSystems.class).error(print, e);
         return CommandResult.ERROR;
     }
 }
