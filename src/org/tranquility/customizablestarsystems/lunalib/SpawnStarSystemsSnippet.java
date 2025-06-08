@@ -1,5 +1,6 @@
 package org.tranquility.customizablestarsystems.lunalib;
 
+import com.fs.starfarer.api.Global;
 import com.fs.starfarer.api.campaign.StarSystemAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
 import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
@@ -102,8 +103,9 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
                     print.append(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
                 }
             } catch (Exception e) {
-                print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId));
-                output.addPara(print.append(e).toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+                print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId)).append(e);
+                output.addPara(print.toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+                Global.getLogger(SpawnStarSystemsSnippet.class).error(print, e);
                 return;
             }
 

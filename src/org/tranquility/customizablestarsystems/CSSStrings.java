@@ -53,6 +53,7 @@ public final class CSSStrings {
     public static final String OPT_INDUSTRIES = Global.getSettings().getString(STRINGS_CATEGORY, "opt_industries");
     public static final String OPT_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_memoryKeys");
     public static final String OPT_MARKET_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_marketMemoryKeys");
+    public static final String OPT_TAGS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_tags");
 
     // Sub-options for "specChanges"
     public static final String OPT_ATMOSPHERE_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_atmosphereColor");

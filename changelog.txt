@@ -1,3 +1,14 @@
+Version 3.0.1
+
+* Added "tags" option to apply tags to any entity
+* Generated player markets no longer have people automatically added to them
+  - Done for parity with vanilla colonization mechanics
+* System objectives (e.g., Comm Relays, Nav Buoys, Sensor Arrays) now point down to their focus entity
+* Updated some error messages to include the cause in the stack trace
+* The "SpawnCustomStarSystems" command and LunaSnippet now print the stack trace to starsector.log if an error occurs
+
+
+
 Version 3.0.0 (Update for Starsector 0.98a)
 
 * Added "systemAge" option to determine the age of the custom star system

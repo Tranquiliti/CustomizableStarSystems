@@ -1,14 +1,13 @@
 {
-	"masterVersionFile":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/customizablestarsystems.version",
-	"modName":"Customizable Star Systems",
-	"modThreadId":27785,
-	"modVersion":
-	{
-		"major":3,
-		"minor":0,
-		"patch":0
+	"masterVersionFile": "https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/customizablestarsystems.version",
+	"modName": "Customizable Star Systems",
+	"modThreadId": 27785,
+	"modVersion": {
+		"major": 3,
+		"minor": 0,
+		"patch": 1
 	},
-	"starsectorVersion":"0.98a-RC5",
-	"directDownloadURL":"https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v3.0.0/CustomizableStarSystems-v3.0.0.zip",
-	"changelogURL":"https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/changelog.txt"
+	"starsectorVersion": "0.98a-RC8",
+	"directDownloadURL": "https://github.com/Tranquiliti/CustomizableStarSystems/releases/download/v3.0.1/CustomizableStarSystems-v3.0.1.zip",
+	"changelogURL": "https://raw.githubusercontent.com/Tranquiliti/CustomizableStarSystems/main/changelog.txt"
 }
