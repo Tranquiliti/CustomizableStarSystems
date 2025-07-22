@@ -38,6 +38,15 @@
 		# Defaults to false if this entry is omitted
 		"addDomainCryosleeper":false,
 
+		# For ADVANCED users only!
+		# A map of memory keys and values to add or replace in the memory of this entity
+		# Only Boolean and String values are currently supported for each memory key
+		# Defaults to not applying any additional memory keys if this entry is omitted
+		"memoryKeys":{
+			"$example_mem_key":true,
+			"$example_mem_key_2":"example_value"
+		},
+
 		# The constellation or location to place this system
 		# 0 -> a random constellation
 		# Any positive whole number n -> n-th closest constellation to Core Worlds, where n is any number greater than 0

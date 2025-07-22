@@ -113,6 +113,7 @@ public class CustomStarSystem {
         addNebulaIfApplicable();
         setBackground();
         addSystemTagsIfApplicable();
+        addSystemMemoryKeysIfApplicable();
         setLightColor();
         generateHyperspace();
         addRemnantWarningBeaconsIfApplicable();
@@ -1031,6 +1032,20 @@ public class CustomStarSystem {
 
         // So it does not always get tagged as a Core World system when created at new game
         if (system.getTags().isEmpty()) system.addTag(Tags.THEME_MISC);
+    }
+
+    // Cannot re-use addMemoryKeys() since LocationAPI does not inherit from HasMemory
+    private void addSystemMemoryKeysIfApplicable() {
+        JSONObject memoryKeys = SYSTEM_OPTIONS.optJSONObject(OPT_MEMORY_KEYS);
+        if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
+            String memKey = it.next();
+
+            try { // Try-catch because it's otherwise impossible to distinguish the source of optBoolean()'s false value
+                system.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
+            } catch (JSONException e) {
+                system.getMemoryWithoutUpdate().set(memKey, memoryKeys.optString(memKey, null));
+            }
+        }
     }
 
     private void setLightColor() throws JSONException {

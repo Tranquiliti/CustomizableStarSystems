@@ -6,7 +6,7 @@
 	"version": {
 		"major": 3,
 		"minor": 0,
-		"patch": 1
+		"patch": 2
 	},
 	"description": "Adds customizable star systems, editable through a JSON config file.",
 	"gameVersion": "0.98a-RC8",

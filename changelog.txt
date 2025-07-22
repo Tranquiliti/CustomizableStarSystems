@@ -1,3 +1,9 @@
+Version 3.0.2
+
+* Added "memoryKey" support for the custom star system itself
+
+
+
 Version 3.0.1
 
 * Added "tags" option to apply tags to any entity
