@@ -1,11 +1,13 @@
 package org.tranquility.customizablestarsystems.commands;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
 import org.lazywizard.console.CommonStrings;
 import org.lazywizard.console.Console;
 import org.tranquility.customizablestarsystems.CSSUtil;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.COMMANDS_ERROR_BAD_JSON;
@@ -22,7 +24,7 @@ public class ListCustomStarSystems implements BaseCommand {
         JSONObject systems;
         try {
             systems = CSSUtil.getMergedSystemJSON();
-        } catch (Exception e) {
+        } catch (JSONException | IOException e) {
             Console.showMessage(COMMANDS_ERROR_BAD_JSON + e);
             return CommandResult.ERROR;
         }

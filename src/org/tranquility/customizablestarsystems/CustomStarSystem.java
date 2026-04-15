@@ -1,6 +1,7 @@
 package org.tranquility.customizablestarsystems;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.InteractionDialogImageVisual;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -21,24 +22,28 @@ import com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.impl.campaign.terrain.*;
 import com.fs.starfarer.api.util.Misc;
+import com.fs.starfarer.campaign.econ.reach.CommodityMarketData;
 import com.fs.starfarer.loading.specs.PlanetSpec;
+import lunalib.lunaSettings.LunaSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static com.fs.starfarer.api.impl.campaign.CoreLifecyclePluginImpl.createInitialPeople;
 import static com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator.addSalvageEntity;
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
+import static org.tranquility.customizablestarsystems.CSSUtil.LUNALIB_ENABLED;
+import static org.tranquility.customizablestarsystems.CSSUtil.getSettingFloat;
 
 /**
  * A custom star system
  */
-@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
+@SuppressWarnings("FieldCanBeLocal")
 public class CustomStarSystem {
     // Note: Starsector mainly uses floats, but JSON method only supports doubles when extracting floating-point numbers
     // Hence, most options only take in integers - mainly so fewer casts are needed
@@ -686,17 +691,20 @@ public class CustomStarSystem {
         return entity;
     }
 
+    // TODO: update the memory key to use [id, value] format (like the one used in SEED Reporter)
+    @SuppressWarnings("unchecked")
     private void addMemoryKeys(HasMemory entity, JSONObject entityOptions, String optionKey) {
         JSONObject memoryKeys = entityOptions.optJSONObject(optionKey);
         if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
-            String memKey = it.next();
-
-            try { // Try-catch because it's otherwise impossible to distinguish the source of optBoolean()'s false value
-                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
-            } catch (JSONException e) {
-                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.optString(memKey, null));
-            }
+            String memKeyId = it.next();
+            entity.getMemoryWithoutUpdate().set(memKeyId, memoryKeys.opt(memKeyId));
         }
+    }
+
+    // TODO: Add entity.addInteractionImage(), entity.setCustomInteractionDialogImageVisual()
+    private void setInteractionDialogImage(SectorEntityToken entity, JSONObject entityOptions) throws JSONException {
+        String image = entityOptions.optString("TEST");
+        entity.setCustomInteractionDialogImageVisual(new InteractionDialogImageVisual(image, 100, 100));
     }
 
     private void addTags(SectorEntityToken entity, JSONObject entityOptions) throws JSONException {
@@ -1032,9 +1040,13 @@ public class CustomStarSystem {
 
         // So it does not always get tagged as a Core World system when created at new game
         if (system.getTags().isEmpty()) system.addTag(Tags.THEME_MISC);
+
+        // TODO: Add system.setDoNotShowIntelFromThisLocationOnMap()
+        // system.setDoNotShowIntelFromThisLocationOnMap(false);
     }
 
     // Cannot re-use addMemoryKeys() since LocationAPI does not inherit from HasMemory
+    @SuppressWarnings("unchecked")
     private void addSystemMemoryKeysIfApplicable() {
         JSONObject memoryKeys = SYSTEM_OPTIONS.optJSONObject(OPT_MEMORY_KEYS);
         if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
@@ -1102,9 +1114,15 @@ public class CustomStarSystem {
 
     private void setLocation() throws JSONException {
         JSONArray locationOverride = SYSTEM_OPTIONS.optJSONArray(OPT_SET_LOCATION);
-        if (locationOverride == null)
-            setConstellationLocation(systemRadius / 10f + Global.getSettings().getInt(SETTINGS_SYSTEM_SPACING), SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
-        else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
+        if (locationOverride == null) {
+            Float systemSpacing;
+            if (LUNALIB_ENABLED) {
+                systemSpacing = LunaSettings.getFloat(MOD_ID, SETTINGS_SYSTEM_SPACING);
+                if (systemSpacing == null) systemSpacing = getSettingFloat(SETTINGS_SYSTEM_SPACING);
+            } else systemSpacing = getSettingFloat(SETTINGS_SYSTEM_SPACING);
+
+            setConstellationLocation(systemRadius / 10f + systemSpacing, SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
+        } else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
 
         // Set system age
         switch (SYSTEM_OPTIONS.optString(OPT_SYSTEM_AGE, "")) {
@@ -1128,9 +1146,10 @@ public class CustomStarSystem {
     // Set a star system's location to near the middle of a specified constellation
     // Modified from the constellation proc-gen code originally made by Audax.
     private void setConstellationLocation(float hyperspaceRadius, int index) {
-        // If no constellations exist (for whatever reason), fallback to the hyperspace center
+        // If no constellations exist (for whatever reason), fallback to the market center of mass
+        // TODO: add support for treating the Core Worlds as a "constellation" of sorts
         if (constellations.isEmpty()) {
-            Vector2f hyperspaceCenter = CSSUtil.getHyperspaceCenter();
+            Vector2f hyperspaceCenter = CommodityMarketData.computeCenterOfMass(null, null);
             setLocation(hyperspaceCenter.getX(), hyperspaceCenter.getY());
             return;
         }

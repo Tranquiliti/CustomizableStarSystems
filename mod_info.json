@@ -4,12 +4,12 @@
 	"author": "Tranquility",
 	"utility": "true",
 	"version": {
-		"major": 3,
+		"major": 4,
 		"minor": 0,
-		"patch": 2
+		"patch": 0
 	},
 	"description": "Adds customizable star systems, editable through a JSON config file.",
-	"gameVersion": "0.98a-RC8",
+	"gameVersion": "0.98.5a",
 	"jars": [
 		"jars/CustomizableStarSystems.jar"
 	],

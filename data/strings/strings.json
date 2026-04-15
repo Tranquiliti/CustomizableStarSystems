@@ -8,9 +8,8 @@
 		"mod_id_customizablestarsystems":"customizablestarsystems",
 
 		# Settings in settings.json
-		"settings_enableCustomStarSystems":"customizablestarsystems_enableCustomStarSystems",
-		"settings_hyperspaceCenter":"customizablestarsystems_hyperspaceCenter",
-		"settings_systemSpacing":"customizablestarsystems_systemSpacing",
+		"settings_enableCustomStarSystems":"enableCustomStarSystems",
+		"settings_systemSpacing":"systemSpacing",
 
 		# Main system options in customStarSystems.json
 		"opt_isEnabled":"isEnabled",

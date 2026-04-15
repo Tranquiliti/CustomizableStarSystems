@@ -8,5 +8,5 @@ Includes LunaLib and Console Commands support!
 <b>Unofficial Starsector Discord</b> - For helpful modding information and tips<br>
 <b>Alex and the Fractal Softworks team</b> - For the amazing game that is Starsector!<br>
 
-# Modding Notes
+# Modding notes
 This mod is licensed under <b>CC BY-SA 4.0</b>. Any derivative work must be released under the same license.

@@ -1,3 +1,4 @@
-fieldID,fieldName,fieldType,defaultValue,fieldDescription,minValue,maxValue
-customStarSystemHeader,Custom Star Systems Header,Header,Custom Star Systems,,,
-enableCustomStarSystems,Enable Custom Star Systems,Boolean,true,"Generates custom star systems during new game creation. Disabling this will disable [all] custom star systems from generating in new games! Edit [customStarSystems.json], located in the CustomizableStarSystems mod folder, if you wish to disable individual custom star systems instead.",,
+fieldID,fieldName,fieldType,defaultValue,fieldDescription,minValue,maxValue,tab
+customStarSystemHeader,Custom Star Systems Header,Header,Custom star systems,,,,
+enableCustomStarSystems,Enable custom star systems,Boolean,true,"Generates custom star systems [during new game creation]. Disabling this will disable [all] custom star systems from generating in new games! Edit [customStarSystems.json], located in the CustomizableStarSystems mod folder, if you wish to disable individual custom star systems instead.",,,
+systemSpacing,Custom star system spacing,Double,150,"Additional distance a custom star system generates away from other star systems when using ""setLocation"". Only applies to [systems not using the (x,y) ""setLocation"" option].",0,3000,

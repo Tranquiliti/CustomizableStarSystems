@@ -8,11 +8,10 @@ import com.fs.starfarer.api.Global;
 public final class CSSStrings {
     private static final String STRINGS_CATEGORY = "customizablestarsystems";
 
-    public static final String MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "mod_id_customizablestarsystems");
+    public static final String MOD_ID = Global.getSettings().getString(STRINGS_CATEGORY, "mod_id_customizablestarsystems");
 
     // Settings in settings.json
     public static final String SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "settings_enableCustomStarSystems");
-    public static final String SETTINGS_HYPERSPACE_CENTER = Global.getSettings().getString(STRINGS_CATEGORY, "settings_hyperspaceCenter");
     public static final String SETTINGS_SYSTEM_SPACING = Global.getSettings().getString(STRINGS_CATEGORY, "settings_systemSpacing");
 
     // Main system options in customStarSystems.json

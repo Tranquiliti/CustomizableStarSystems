@@ -10,32 +10,65 @@ import com.fs.starfarer.api.impl.campaign.ids.Commodities;
 import com.fs.starfarer.api.impl.campaign.ids.Factions;
 import com.fs.starfarer.api.impl.campaign.procgen.Constellation;
 import com.fs.starfarer.api.util.Misc;
-import org.json.JSONArray;
+import com.fs.starfarer.campaign.econ.reach.CommodityMarketData;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static org.tranquility.customizablestarsystems.CSSStrings.*;
+import static org.tranquility.customizablestarsystems.CSSStrings.MOD_ID;
+import static org.tranquility.customizablestarsystems.CSSStrings.PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS;
 
 /**
  * A utility class for the Customizable Star Systems mod
  */
 public final class CSSUtil {
     public static final boolean LUNALIB_ENABLED = Global.getSettings().getModManager().isModEnabled("lunalib");
+    private static List<String> customStarSystemIds;
 
     /**
-     * Get the merged JSON for the custom star systems file
+     * Get the merged JSON for the custom star systems file. Also updates the list of custom star system IDs.
      *
      * @return A JSONObject representing the custom star systems file
      */
+    @SuppressWarnings("unchecked")
     public static JSONObject getMergedSystemJSON() throws JSONException, IOException {
-        return Global.getSettings().getMergedJSONForMod(PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS, MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS);
+        JSONObject mergedJSON = Global.getSettings().getMergedJSONForMod(PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS, MOD_ID);
+        if (customStarSystemIds == null) customStarSystemIds = new ArrayList<>(mergedJSON.length());
+        else customStarSystemIds.clear();
+        for (Iterator<String> iter = mergedJSON.keys(); iter.hasNext(); )
+            customStarSystemIds.add(iter.next());
+
+        return mergedJSON;
+    }
+
+    // TODO: add utility methods to print out the error messages (error message, systemID, exception)
+
+    /**
+     * Gets the currently-loaded list of custom star system IDs
+     *
+     * @return A List of custom star system IDs, or an unmodifiable empty List if the custom star systems file has not been loaded
+     */
+    public static List<String> getCustomStarSystemIds() {
+        return customStarSystemIds != null ? customStarSystemIds : List.of();
+    }
+
+    public static boolean getSettingBoolean(String settingId) {
+        try {
+            return Global.getSettings().getJSONObject(MOD_ID).getBoolean(settingId);
+        } catch (JSONException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public static float getSettingFloat(String settingId) {
+        try {
+            return (float) Global.getSettings().getJSONObject(MOD_ID).getDouble(settingId);
+        } catch (JSONException e) {
+            throw new RuntimeException();
+        }
     }
 
     /**
@@ -55,7 +88,7 @@ public final class CSSUtil {
                         market.setAdmin(aiPlugin.createPerson(Commodities.ALPHA_CORE, market.getFaction().getId(), 0));
                         break;
                 }
-            marketMap.clear(); // No need for the HashMap afterward, so clear it just in case
+            marketMap.clear(); // No need for the Map afterward, so clear it just in case
         }
     }
 
@@ -75,38 +108,23 @@ public final class CSSUtil {
     }
 
     /**
-     * Generates a list of proc-gen constellations, sorted by proximity from hyperspace center
+     * Generates a list of proc-gen constellations, sorted by proximity from the current center of mass
      *
      * @return A list of proc-gen constellations
      */
     public static List<Constellation> getProcgenConstellations() {
-        HashSet<Constellation> constellations = new HashSet<>();
-
         // Multiple star systems can have same constellation, which is why a Set is used here
+        Set<Constellation> constellations = new HashSet<>();
         for (StarSystemAPI sys : Global.getSector().getStarSystems())
             if (sys.isProcgen() && sys.isInConstellation()) constellations.add(sys.getConstellation());
 
-        ArrayList<Constellation> sortedConstellations = new ArrayList<>(constellations);
-        final Vector2f centroidPoint = getHyperspaceCenter();
+        List<Constellation> sortedConstellations = new ArrayList<>(constellations);
+        final Vector2f centroidPoint = CommodityMarketData.computeCenterOfMass(null, null);
         sortedConstellations.sort((c1, c2) -> {
             if (c1 == c2) return 0;
             return Float.compare(Misc.getDistance(centroidPoint, c1.getLocation()), Misc.getDistance(centroidPoint, c2.getLocation()));
         });
 
         return sortedConstellations;
-    }
-
-    /**
-     * Gets the hyperspace center
-     *
-     * @return A 2D vector representing the hyperspace center
-     */
-    public static Vector2f getHyperspaceCenter() {
-        try {
-            JSONArray coordinates = Global.getSettings().getJSONArray(SETTINGS_HYPERSPACE_CENTER);
-            return new Vector2f(coordinates.getInt(0), coordinates.getInt(1));
-        } catch (JSONException e) {
-            return new Vector2f(-4531, -5865); // Default values
-        }
     }
 }
