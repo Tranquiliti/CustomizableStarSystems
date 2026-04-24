@@ -44,8 +44,6 @@ public final class CSSUtil {
         return mergedJSON;
     }
 
-    // TODO: add utility methods to print out the error messages (error message, systemID, exception)
-
     /**
      * Gets the currently-loaded list of custom star system IDs
      *

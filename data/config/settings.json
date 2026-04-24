@@ -1,6 +1,6 @@
 #-- Note for LunaLib users --#
 # LunaLib will override the following settings in this settings.json:
-# "enableCustomStarSystems"
+# "enableCustomStarSystems", "systemSpacing"
 #
 # Instead, use LunaLib's in-game UI configs to modify these.
 

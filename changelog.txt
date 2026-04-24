@@ -1,11 +1,16 @@
 Version 4.0.0 (Update for Starsector 0.98.5a)
 
+* Added "interactionDialogImage" option to set interaction dialog images for any entity
+* Added "doNotShowIntelFromThisLocationOnMap" option for star systems
+* Added "hideSystemOnMap" option to hide star systems from the hyperspace map
 * "setLocation" now uses the market center of mass calculation to determine the hyperspace center
   - As a result, the "customizablestarsystems_hyperspaceCenter" setting has been removed from settings.json
+  - Setting "setLocation" to a negative number now places the system in that market center (previously would be treated as 0, choosing a random constellation)
 * Added LunaSettings support for the "systemSpacing" setting
 * Added command suggestions for the "SpawnCustomStarSystems" command
 * Improved error handling with custom star system generation
   - Most notably, a malformed customStarSystems.json will no longer cause a crash when starting a new game
+* License changed to CC0 1.0 (from CC BY-SA 4.0)
 
 
 

@@ -17,6 +17,8 @@
 		"opt_hasSystemwideNebula":"hasSystemwideNebula",
 		"opt_addCoronalHypershunt":"addCoronalHypershunt",
 		"opt_addDomainCryosleeper":"addDomainCryosleeper",
+		"opt_doNotShowIntelFromThisLocationOnMap":"doNotShowIntelFromThisLocationOnMap",
+		"opt_hideSystemOnMap":"hideSystemOnMap",
 		"opt_setLocation":"setLocation",
 		"opt_systemAge":"systemAge",
 		"opt_systemBackground":"systemBackground",
@@ -50,6 +52,7 @@
 		"opt_memoryKeys":"memoryKeys",
 		"opt_marketMemoryKeys":"marketMemoryKeys",
 		"opt_tags":"tags",
+		"opt_interactionDialogImage":"interactionDialogImage",
 
 		# Sub-options for "opt_specChanges"
 		"opt_atmosphereColor":"atmosphereColor",

@@ -38,6 +38,15 @@
 		# Defaults to false if this entry is omitted
 		"addDomainCryosleeper":false,
 
+		# If true, any intel originating from this system will not appear
+		# (Supposedly; there's no documentation for the corresponding API method)
+		# Defaults to false if this entry is omitted
+		"doNotShowIntelFromThisLocationOnMap":false,
+
+		# If true, the system will be hidden from the hyperspace map
+		# Defaults to false if this entry is omitted
+		"hideSystemOnMap":false,
+
 		# For ADVANCED users only!
 		# A map of memory keys and values to add or replace in the memory of this entity
 		# Only Boolean and String values are currently supported for each memory key
@@ -48,6 +57,7 @@
 		},
 
 		# The constellation or location to place this system
+		# Any negative whole number -> place system in the market center of mass
 		# 0 -> a random constellation
 		# Any positive whole number n -> n-th closest constellation to Core Worlds, where n is any number greater than 0
 		# [x,y] -> place system in specified coordinates, where x and y can be any whole number (WARNING: Location may overlap with existing star systems)
@@ -116,7 +126,7 @@
 		"teleportUponGeneration":false,
 
 		# A list of entities to generate within this system
-		# This list is 0th-indexed (i.e., the first entry is index 0, the second entry is index 1, and so on)!
+		# This list is 0th-indexed - i.e., the first entry is index 0, the second entry is index 1, and so on.
 		# The list *MUST START* with a center entity, which can either be a:
 		#  - a "star" entity, or
 		#  - an "empty_location" entity, followed by a specified number of "star" entities
@@ -163,12 +173,19 @@
 					"neutrino_low",
 					"neutrino_high",
 					#... there are a lot more supported vanilla tags
-				]
+				],
+
+				"interactionDialogImage":"graphics/portraits/godiva.jpg"
 			},
 			{ # A star, made as part of the system center
 				"entity":"star",
 				"memoryKeys":{},
 				"tags":[],
+
+				# The image to display when interacting with an entity through dialogue
+				# This should be a file path to an already-loaded image
+				# Defaults to the entity's default interaction image if this entry is omitted
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 
 				# Type of star to make
 				# Star IDs are found in starsector-core/data/campaign/procgen/star_gen_data.csv
@@ -214,6 +231,7 @@
 				"flareChance":1.0,
 				"specChanges":{"texture":"castiron.jpg"},
 				"customDescriptionId":"star_blue_giant",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -258,6 +276,7 @@
 				"orbitClockwise":true,
 				"name":"Placeholder Planet",
 				"customDescriptionId":"planet_jangala",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -481,6 +500,7 @@
 				"orbitClockwise":true,
 				"name":"Test Name Gate",
 				"customDescriptionId":"inactive_gate",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 			},
@@ -491,6 +511,7 @@
 				"orbitAngle":0,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 			},
@@ -504,6 +525,7 @@
 				"name":"Placeholder Station",
 				"customDescriptionId":"station_chupi_orco",
 				"conditions":[],
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"marketMemoryKeys":{},
 				"tags":[],
@@ -535,6 +557,7 @@
 				"orbitAngle":-1,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -550,6 +573,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"name":"Test Name Field",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -568,6 +592,7 @@
 				"orbitAngle":-1,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -582,6 +607,7 @@
 				"orbitAngle":-1,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -598,6 +624,7 @@
 				"entity":"accretion_disk",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":0, # Optional
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 			},
@@ -605,6 +632,7 @@
 				"entity":"magnetic_field",
 				"focus":0, # Does not support [f,l]
 				"orbitRadius":100,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -648,6 +676,7 @@
 				"orbitRadius":100,
 				"orbitDays":0,
 				"orbitClockwise":true,
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -675,6 +704,7 @@
 				"orbitDays":0,
 				"orbitClockwise":true,
 				"name":"Test Name Belt",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 
@@ -724,6 +754,7 @@
 				"name":"Test Name Gate",
 				"factionId":"neutral",
 				"customDescriptionId":"inactive_gate",
+				"interactionDialogImage":"graphics/illustration/abandoned_station.jpg",
 				"memoryKeys":{},
 				"tags":[],
 			},
