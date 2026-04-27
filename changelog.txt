@@ -7,7 +7,10 @@ Version 4.0.0 (Update for Starsector 0.98.5a)
   - As a result, the "customizablestarsystems_hyperspaceCenter" setting has been removed from settings.json
   - Setting "setLocation" to a negative number now places the system in that market center (previously would be treated as 0, choosing a random constellation)
 * Added LunaSettings support for the "systemSpacing" setting
-* Added command suggestions for the "SpawnCustomStarSystems" command
+* Updated "SpawnCustomStarSystems" command:
+  - Added command suggestion support
+  - "all" option is now case-insensitive
+* "ListCustomStarSystems" command now works outside of the campaign
 * Improved error handling with custom star system generation
   - Most notably, a malformed customStarSystems.json will no longer cause a crash when starting a new game
 * License changed to CC0 1.0 (from CC BY-SA 4.0)

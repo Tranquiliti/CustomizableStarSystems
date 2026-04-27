@@ -42,7 +42,7 @@ public class SpawnCustomStarSystems implements BaseCommandWithSuggestion {
         StarSystemAPI teleportSystem = null;
         List<Constellation> constellations = getProcgenConstellations();
         Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>();
-        if (params[0].equals("all")) {
+        if (params[0].equalsIgnoreCase("ALL")) {
             // Generate all enabled custom star systems
             for (String systemId : getCustomStarSystemIds()) {
                 try {

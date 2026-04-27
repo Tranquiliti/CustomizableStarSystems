@@ -9,4 +9,4 @@ Includes LunaLib and Console Commands support!
 <b>Alex and the Fractal Softworks team</b> - For the amazing game that is Starsector!<br>
 
 # Modding notes
-This mod is licensed under <b>CC0 1.0</b>. Feel free to take or use anything here for your own use (provided this use also follows the Starsector User License).
+This mod is licensed under <b>CC0 1.0</b>. Feel free to take or use anything here for your own use, provided this use also follows the Starsector User License.

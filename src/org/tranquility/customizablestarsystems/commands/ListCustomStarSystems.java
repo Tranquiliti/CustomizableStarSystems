@@ -1,37 +1,28 @@
 package org.tranquility.customizablestarsystems.commands;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.lazywizard.console.BaseCommand;
-import org.lazywizard.console.CommonStrings;
 import org.lazywizard.console.Console;
-import org.tranquility.customizablestarsystems.CSSUtil;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.COMMANDS_ERROR_BAD_JSON;
+import static org.tranquility.customizablestarsystems.CSSUtil.getCustomStarSystemIds;
+import static org.tranquility.customizablestarsystems.CSSUtil.getMergedSystemJSON;
 
 public class ListCustomStarSystems implements BaseCommand {
     @Override
-    @SuppressWarnings("unchecked")
     public CommandResult runCommand(String args, CommandContext context) {
-        if (!context.isInCampaign()) {
-            Console.showMessage(CommonStrings.ERROR_CAMPAIGN_ONLY);
-            return CommandResult.WRONG_CONTEXT;
-        }
-
-        JSONObject systems;
         try {
-            systems = CSSUtil.getMergedSystemJSON();
+            getMergedSystemJSON();
         } catch (JSONException | IOException e) {
             Console.showMessage(COMMANDS_ERROR_BAD_JSON + e);
             return CommandResult.ERROR;
         }
 
         StringBuilder print = new StringBuilder();
-        for (Iterator<String> it = systems.keys(); it.hasNext(); )
-            print.append(it.next()).append("\n");
+        for (String systemId : getCustomStarSystemIds())
+            print.append(systemId).append("\n");
         Console.showMessage(print);
 
         return CommandResult.SUCCESS;

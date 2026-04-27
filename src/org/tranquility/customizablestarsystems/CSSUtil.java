@@ -38,7 +38,7 @@ public final class CSSUtil {
         JSONObject mergedJSON = Global.getSettings().getMergedJSONForMod(PATH_MERGED_JSON_CUSTOM_STAR_SYSTEMS, MOD_ID);
         if (customStarSystemIds == null) customStarSystemIds = new ArrayList<>(mergedJSON.length());
         else customStarSystemIds.clear();
-        for (Iterator<String> iter = mergedJSON.keys(); iter.hasNext(); )
+        for (Iterator<String> iter = mergedJSON.sortedKeys(); iter.hasNext(); )
             customStarSystemIds.add(iter.next());
 
         return mergedJSON;
