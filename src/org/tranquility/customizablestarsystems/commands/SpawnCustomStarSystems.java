@@ -49,7 +49,7 @@ public class SpawnCustomStarSystems implements BaseCommandWithSuggestion {
                     JSONObject systemOptions = systems.getJSONObject(systemId);
                     if (systemOptions.optBoolean(OPT_IS_ENABLED, true))
                         teleportSystem = generateSystem(systemOptions, systemId, print, teleportSystem, constellations, marketsToOverrideAdmin);
-                    else print.append(String.format(COMMANDS_DISABLED_SYSTEM, systemId));
+                    else print.append(COMMANDS_DISABLED_SYSTEM.formatted(systemId));
                 } catch (JSONException e) {
                     return showBadSystemException(systemId, print, e);
                 }
@@ -58,7 +58,7 @@ public class SpawnCustomStarSystems implements BaseCommandWithSuggestion {
             // Verify first that arguments only contain valid ids before creating any star systems
             for (String systemId : params)
                 if (!systems.has(systemId)) {
-                    Console.showMessage(String.format(COMMANDS_ERROR_NO_SYSTEM_ID, systemId));
+                    Console.showMessage(COMMANDS_ERROR_NO_SYSTEM_ID.formatted(systemId));
                     return CommandResult.ERROR;
                 }
 
@@ -89,13 +89,13 @@ public class SpawnCustomStarSystems implements BaseCommandWithSuggestion {
             CustomStarSystem newSystem = new CustomStarSystem(systemOptions, systemId, constellations, marketsToOverrideAdmin, true);
             if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false)) teleportSystem = newSystem.getSystem();
 
-            print.append(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
+            print.append(COMMANDS_GENERATED_SYSTEM.formatted(systemId));
         }
         return teleportSystem;
     }
 
     private CommandResult showBadSystemException(String systemId, StringBuilder print, Exception e) {
-        print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId));
+        print.append(COMMANDS_ERROR_BAD_SYSTEM.formatted(systemId));
         Console.showException(print, e);
         return CommandResult.ERROR;
     }

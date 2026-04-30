@@ -77,11 +77,11 @@ public class CSSModPlugin extends BaseModPlugin {
                         if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                             teleportSystem = newSystem.getSystem();
 
-                        Global.getLogger(CSSModPlugin.class).info(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
+                        Global.getLogger(CSSModPlugin.class).info(COMMANDS_GENERATED_SYSTEM.formatted(systemId));
                     }
-                else Global.getLogger(CSSModPlugin.class).info(String.format(COMMANDS_DISABLED_SYSTEM, systemId));
+                else Global.getLogger(CSSModPlugin.class).info(COMMANDS_DISABLED_SYSTEM.formatted(systemId));
             } catch (JSONException e) {
-                Global.getLogger(CSSModPlugin.class).error(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId), e);
+                Global.getLogger(CSSModPlugin.class).error(COMMANDS_ERROR_BAD_SYSTEM.formatted(systemId), e);
             }
     }
 }

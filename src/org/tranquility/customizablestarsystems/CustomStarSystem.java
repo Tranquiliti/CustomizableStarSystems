@@ -150,7 +150,7 @@ public class CustomStarSystem {
 
     private void generateEntities() throws JSONException {
         JSONArray entities = SYSTEM_OPTIONS.getJSONArray(OPT_ENTITIES);
-        if (entities.length() == 0) throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+        if (entities.length() == 0) throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
 
         systemEntities = new ArrayList<>(entities.length());
 
@@ -159,7 +159,7 @@ public class CustomStarSystem {
             String entityType = entityOptions.getString(OPT_ENTITY);
 
             if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+                throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
 
             SectorEntityToken newEntity;
             switch (entityType) {
@@ -340,7 +340,7 @@ public class CustomStarSystem {
         for (int i = 1; i <= numOfCenterStars; i++) {
             JSONObject starOptions = entities.getJSONObject(i);
             if (!starOptions.getString(OPT_ENTITY).equals(Tags.STAR))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+                throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
             systemEntities.add(addStar(starOptions, i, true));
             systemEntities.get(i).setCircularOrbit(system.getCenter(), angle, orbitRadius + i - 1, orbitDays);
             angle = (angle + angleDifference) % 360f;
@@ -357,7 +357,7 @@ public class CustomStarSystem {
 
         StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
         if (starData == null)
-            throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_STAR_TYPE_NOT_FOUND.formatted(starType, SYSTEM_ID, index));
 
         float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
         if (radius <= 0)
@@ -427,7 +427,7 @@ public class CustomStarSystem {
 
         PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
         if (planetData == null)
-            throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_PLANET_TYPE_NOT_FOUND.formatted(planetType, SYSTEM_ID, index));
 
         String name = options.optString(OPT_NAME, null);
         if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
@@ -663,7 +663,7 @@ public class CustomStarSystem {
         try {
             entity = system.addCustomEntity(null, name, type, factionId);
         } catch (Exception e) {
-            throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, SYSTEM_ID)), e);
+            throw new IllegalArgumentException(ERROR_INVALID_ENTITY_ID.formatted(type, SYSTEM_ID), e);
         }
 
         switch (type) {
@@ -723,7 +723,7 @@ public class CustomStarSystem {
     private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
         int focus = entityOptions.optInt(OPT_FOCUS);
         if (focus >= systemEntities.size())
-            throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_INVALID_FOCUS.formatted(SYSTEM_ID, index));
         return systemEntities.get(focus);
     }
 
@@ -737,7 +737,7 @@ public class CustomStarSystem {
             try {
                 planetMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_UNINHABITED.formatted(conditions.getString(i), planet.getTypeId(), SYSTEM_ID), e);
             }
     }
 
@@ -751,7 +751,7 @@ public class CustomStarSystem {
             try {
                 stationMarket.addCondition(conditions.getString(i));
             } catch (Exception e) { // Error message still assume planets, but whatever
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), station.getCustomEntityType(), SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_UNINHABITED.formatted(conditions.getString(i), station.getCustomEntityType(), SYSTEM_ID), e);
             }
     }
 
@@ -776,7 +776,7 @@ public class CustomStarSystem {
             try {
                 entityMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_INHABITED.formatted(conditions.getString(i), size, factionId, SYSTEM_ID), e);
             }
 
         JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
@@ -790,7 +790,7 @@ public class CustomStarSystem {
                 try {
                     entityMarket.addIndustry(industryId);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, SYSTEM_ID), e);
+                    throw new IllegalArgumentException(ERROR_INVALID_INDUSTRY.formatted(industryId, size, factionId, SYSTEM_ID), e);
                 }
 
                 if (specials != null && specials.length() > 1) {

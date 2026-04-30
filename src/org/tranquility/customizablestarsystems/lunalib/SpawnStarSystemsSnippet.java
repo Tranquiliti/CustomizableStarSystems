@@ -86,7 +86,7 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
         // Validate all enabled system IDs, as the file may have changed a system's ID
         for (String systemId : enabledParams)
             if (!systems.has(systemId)) {
-                output.addPara(String.format(COMMANDS_ERROR_NO_SYSTEM_ID, systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+                output.addPara(COMMANDS_ERROR_NO_SYSTEM_ID.formatted(systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
             }
 
@@ -102,10 +102,10 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
 
-                    print.append(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
+                    print.append(COMMANDS_GENERATED_SYSTEM.formatted(systemId));
                 }
             } catch (JSONException e) {
-                print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId));
+                print.append(COMMANDS_ERROR_BAD_SYSTEM.formatted(systemId));
                 output.addPara(print.toString() + e, 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 Global.getLogger(SpawnStarSystemsSnippet.class).error(print, e);
                 return;
