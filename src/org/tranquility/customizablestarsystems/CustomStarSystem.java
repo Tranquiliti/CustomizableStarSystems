@@ -1043,7 +1043,7 @@ public class CustomStarSystem {
         if (systemTags != null) for (int i = 0; i < systemTags.length(); i++)
             system.addTag(systemTags.getString(i));
 
-        // So it does not always get tagged as a Core World system when created at new game
+        // So it does not always get tagged as a Core World system when created during new game creation
         if (system.getTags().isEmpty()) system.addTag(Tags.THEME_MISC);
     }
 

@@ -39,10 +39,7 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
 
     @Override
     public List<String> getTags() {
-        List<String> tags = new ArrayList<>();
-        tags.add(SnippetTags.Cheat.toString());
-        tags.add(SnippetTags.Entity.toString());
-        return tags;
+        return List.of(SnippetTags.Cheat.toString(), SnippetTags.Entity.toString());
     }
 
     @Override

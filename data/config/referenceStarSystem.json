@@ -1,4 +1,4 @@
-# This is simply a reference guide for making and editing custom star systems in customStarSystems.json.
+# This file is simply a reference guide for making and editing custom star systems in customStarSystems.json.
 # It should not affect the game in any way.
 
 # Most type IDs are found in the .csv files located in the Starsector/starsector-core/data/campaign folder
@@ -39,7 +39,7 @@
 		"addDomainCryosleeper":false,
 
 		# If true, any intel originating from this system will not appear
-		# (Supposedly; there's no documentation for the corresponding API method)
+		# (Supposedly; there's no actual documentation for the corresponding API method)
 		# Defaults to false if this entry is omitted
 		"doNotShowIntelFromThisLocationOnMap":false,
 
@@ -114,7 +114,7 @@
 			"theme_remnant_main",
 			"theme_remnant_secondary",
 			"theme_remnant_no_fleets",
-			# If any of these tags are present, this system spawns the respective hyperspace beacons (Low, Medium, High)
+			# If any of these tags are present, CSS will add the respective hyperspace beacons (Low, Medium, High) to this system
 			"theme_remnant_destroyed",
 			"theme_remnant_suppressed",
 			"theme_remnant_resurgent",
