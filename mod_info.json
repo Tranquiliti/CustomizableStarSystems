@@ -9,7 +9,7 @@
 		"patch": 0
 	},
 	"description": "Adds customizable star systems, editable through a JSON config file.",
-	"gameVersion": "0.98.5a",
+	"gameVersion": "0.98.5a-RC4",
 	"jars": [
 		"jars/CustomizableStarSystems.jar"
 	],
