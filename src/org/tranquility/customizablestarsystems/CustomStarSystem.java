@@ -1,6 +1,7 @@
 package org.tranquility.customizablestarsystems;
 
 import com.fs.starfarer.api.Global;
+import com.fs.starfarer.api.InteractionDialogImageVisual;
 import com.fs.starfarer.api.campaign.*;
 import com.fs.starfarer.api.campaign.econ.Industry;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -8,6 +9,7 @@ import com.fs.starfarer.api.campaign.rules.HasMemory;
 import com.fs.starfarer.api.characters.PersonAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.fleet.FleetMemberType;
+import com.fs.starfarer.api.graphics.SpriteAPI;
 import com.fs.starfarer.api.impl.MusicPlayerPluginImpl;
 import com.fs.starfarer.api.impl.campaign.CoronalTapParticleScript;
 import com.fs.starfarer.api.impl.campaign.DerelictShipEntityPlugin;
@@ -21,24 +23,28 @@ import com.fs.starfarer.api.impl.campaign.procgen.themes.RemnantThemeGenerator;
 import com.fs.starfarer.api.impl.campaign.submarkets.StoragePlugin;
 import com.fs.starfarer.api.impl.campaign.terrain.*;
 import com.fs.starfarer.api.util.Misc;
+import com.fs.starfarer.campaign.econ.reach.CommodityMarketData;
 import com.fs.starfarer.loading.specs.PlanetSpec;
+import lunalib.lunaSettings.LunaSettings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static com.fs.starfarer.api.impl.campaign.CoreLifecyclePluginImpl.createInitialPeople;
 import static com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator.addSalvageEntity;
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
+import static org.tranquility.customizablestarsystems.CSSUtil.LUNALIB_ENABLED;
+import static org.tranquility.customizablestarsystems.CSSUtil.getSettingFloat;
 
 /**
  * A custom star system
  */
-@SuppressWarnings({"unchecked", "FieldCanBeLocal"})
+@SuppressWarnings("FieldCanBeLocal")
 public class CustomStarSystem {
     // Note: Starsector mainly uses floats, but JSON method only supports doubles when extracting floating-point numbers
     // Hence, most options only take in integers - mainly so fewer casts are needed
@@ -114,9 +120,11 @@ public class CustomStarSystem {
         setBackground();
         addSystemTagsIfApplicable();
         addSystemMemoryKeysIfApplicable();
+        setDoNotShowIntelFromThisLocationOnMap();
         setLightColor();
         generateHyperspace();
         addRemnantWarningBeaconsIfApplicable();
+        hideSystemOnMapIfApplicable();
     }
 
     /**
@@ -142,7 +150,7 @@ public class CustomStarSystem {
 
     private void generateEntities() throws JSONException {
         JSONArray entities = SYSTEM_OPTIONS.getJSONArray(OPT_ENTITIES);
-        if (entities.length() == 0) throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+        if (entities.length() == 0) throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
 
         systemEntities = new ArrayList<>(entities.length());
 
@@ -151,7 +159,7 @@ public class CustomStarSystem {
             String entityType = entityOptions.getString(OPT_ENTITY);
 
             if (i == 0 && !entityType.equals(Tags.STAR) && !entityType.equals(ENTITY_EMPTY_LOCATION))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+                throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
 
             SectorEntityToken newEntity;
             switch (entityType) {
@@ -221,6 +229,7 @@ public class CustomStarSystem {
 
             addMemoryKeys(newEntity, entityOptions, OPT_MEMORY_KEYS);
             addTags(newEntity, entityOptions);
+            setInteractionDialogImage(newEntity, entityOptions);
 
             systemEntities.add(newEntity);
         }
@@ -331,7 +340,7 @@ public class CustomStarSystem {
         for (int i = 1; i <= numOfCenterStars; i++) {
             JSONObject starOptions = entities.getJSONObject(i);
             if (!starOptions.getString(OPT_ENTITY).equals(Tags.STAR))
-                throw new IllegalArgumentException(String.format(ERROR_BAD_CENTER_STAR, SYSTEM_ID));
+                throw new IllegalArgumentException(ERROR_BAD_CENTER_STAR.formatted(SYSTEM_ID));
             systemEntities.add(addStar(starOptions, i, true));
             systemEntities.get(i).setCircularOrbit(system.getCenter(), angle, orbitRadius + i - 1, orbitDays);
             angle = (angle + angleDifference) % 360f;
@@ -348,7 +357,7 @@ public class CustomStarSystem {
 
         StarGenDataSpec starData = (StarGenDataSpec) Global.getSettings().getSpec(StarGenDataSpec.class, starType, true);
         if (starData == null)
-            throw new IllegalArgumentException(String.format(ERROR_STAR_TYPE_NOT_FOUND, starType, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_STAR_TYPE_NOT_FOUND.formatted(starType, SYSTEM_ID, index));
 
         float radius = options.optInt(OPT_RADIUS, DEFAULT_SET_TO_PROC_GEN);
         if (radius <= 0)
@@ -418,7 +427,7 @@ public class CustomStarSystem {
 
         PlanetGenDataSpec planetData = (PlanetGenDataSpec) Global.getSettings().getSpec(PlanetGenDataSpec.class, planetType, true);
         if (planetData == null)
-            throw new IllegalArgumentException(String.format(ERROR_PLANET_TYPE_NOT_FOUND, planetType, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_PLANET_TYPE_NOT_FOUND.formatted(planetType, SYSTEM_ID, index));
 
         String name = options.optString(OPT_NAME, null);
         if (name == null) name = getProcGenName(Tags.PLANET, system.getBaseName());
@@ -654,7 +663,7 @@ public class CustomStarSystem {
         try {
             entity = system.addCustomEntity(null, name, type, factionId);
         } catch (Exception e) {
-            throw new IllegalArgumentException(String.format(String.format(ERROR_INVALID_ENTITY_ID, type, SYSTEM_ID)), e);
+            throw new IllegalArgumentException(ERROR_INVALID_ENTITY_ID.formatted(type, SYSTEM_ID), e);
         }
 
         switch (type) {
@@ -686,16 +695,20 @@ public class CustomStarSystem {
         return entity;
     }
 
+    @SuppressWarnings("unchecked")
     private void addMemoryKeys(HasMemory entity, JSONObject entityOptions, String optionKey) {
         JSONObject memoryKeys = entityOptions.optJSONObject(optionKey);
         if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
-            String memKey = it.next();
+            String memKeyId = it.next();
+            entity.getMemoryWithoutUpdate().set(memKeyId, memoryKeys.opt(memKeyId));
+        }
+    }
 
-            try { // Try-catch because it's otherwise impossible to distinguish the source of optBoolean()'s false value
-                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.getBoolean(memKey));
-            } catch (JSONException e) {
-                entity.getMemoryWithoutUpdate().set(memKey, memoryKeys.optString(memKey, null));
-            }
+    private void setInteractionDialogImage(SectorEntityToken entity, JSONObject entityOptions) {
+        String image = entityOptions.optString(OPT_INTERACTION_DIALOG_IMAGE, null);
+        if (image != null) {
+            SpriteAPI sprite = Global.getSettings().getSprite(image);
+            entity.setCustomInteractionDialogImageVisual(new InteractionDialogImageVisual(image, sprite.getWidth(), sprite.getHeight()));
         }
     }
 
@@ -710,7 +723,7 @@ public class CustomStarSystem {
     private SectorEntityToken getFocusEntity(JSONObject entityOptions, int index) {
         int focus = entityOptions.optInt(OPT_FOCUS);
         if (focus >= systemEntities.size())
-            throw new IllegalArgumentException(String.format(ERROR_INVALID_FOCUS, SYSTEM_ID, index));
+            throw new IllegalArgumentException(ERROR_INVALID_FOCUS.formatted(SYSTEM_ID, index));
         return systemEntities.get(focus);
     }
 
@@ -724,7 +737,7 @@ public class CustomStarSystem {
             try {
                 planetMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), planet.getTypeId(), SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_UNINHABITED.formatted(conditions.getString(i), planet.getTypeId(), SYSTEM_ID), e);
             }
     }
 
@@ -738,7 +751,7 @@ public class CustomStarSystem {
             try {
                 stationMarket.addCondition(conditions.getString(i));
             } catch (Exception e) { // Error message still assume planets, but whatever
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_UNINHABITED, conditions.getString(i), station.getCustomEntityType(), SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_UNINHABITED.formatted(conditions.getString(i), station.getCustomEntityType(), SYSTEM_ID), e);
             }
     }
 
@@ -763,7 +776,7 @@ public class CustomStarSystem {
             try {
                 entityMarket.addCondition(conditions.getString(i));
             } catch (Exception e) {
-                throw new IllegalArgumentException(String.format(ERROR_INVALID_CONDITION_INHABITED, conditions.getString(i), size, factionId, SYSTEM_ID), e);
+                throw new IllegalArgumentException(ERROR_INVALID_CONDITION_INHABITED.formatted(conditions.getString(i), size, factionId, SYSTEM_ID), e);
             }
 
         JSONArray industries = marketOptions.optJSONArray(OPT_INDUSTRIES);
@@ -777,7 +790,7 @@ public class CustomStarSystem {
                 try {
                     entityMarket.addIndustry(industryId);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException(String.format(ERROR_INVALID_INDUSTRY, industryId, size, factionId, SYSTEM_ID), e);
+                    throw new IllegalArgumentException(ERROR_INVALID_INDUSTRY.formatted(industryId, size, factionId, SYSTEM_ID), e);
                 }
 
                 if (specials != null && specials.length() > 1) {
@@ -1030,11 +1043,12 @@ public class CustomStarSystem {
         if (systemTags != null) for (int i = 0; i < systemTags.length(); i++)
             system.addTag(systemTags.getString(i));
 
-        // So it does not always get tagged as a Core World system when created at new game
+        // So it does not always get tagged as a Core World system when created during new game creation
         if (system.getTags().isEmpty()) system.addTag(Tags.THEME_MISC);
     }
 
     // Cannot re-use addMemoryKeys() since LocationAPI does not inherit from HasMemory
+    @SuppressWarnings("unchecked")
     private void addSystemMemoryKeysIfApplicable() {
         JSONObject memoryKeys = SYSTEM_OPTIONS.optJSONObject(OPT_MEMORY_KEYS);
         if (memoryKeys != null) for (Iterator<String> it = memoryKeys.keys(); it.hasNext(); ) {
@@ -1046,6 +1060,16 @@ public class CustomStarSystem {
                 system.getMemoryWithoutUpdate().set(memKey, memoryKeys.optString(memKey, null));
             }
         }
+    }
+
+    private void setDoNotShowIntelFromThisLocationOnMap() {
+        system.setDoNotShowIntelFromThisLocationOnMap(SYSTEM_OPTIONS.optBoolean(OPT_DO_NOT_SHOW_INTEL_FROM_THIS_LOCATION_ON_MAP, false));
+    }
+
+    private void hideSystemOnMapIfApplicable() {
+        boolean hideSystem = SYSTEM_OPTIONS.optBoolean(OPT_HIDE_SYSTEM_ON_MAP, false);
+        if (hideSystem) for (JumpPointAPI jumpPoint : system.getAutogeneratedJumpPointsInHyper())
+            jumpPoint.addTag(Tags.STAR_HIDDEN_ON_MAP);
     }
 
     private void setLightColor() throws JSONException {
@@ -1102,9 +1126,15 @@ public class CustomStarSystem {
 
     private void setLocation() throws JSONException {
         JSONArray locationOverride = SYSTEM_OPTIONS.optJSONArray(OPT_SET_LOCATION);
-        if (locationOverride == null)
-            setConstellationLocation(systemRadius / 10f + Global.getSettings().getInt(SETTINGS_SYSTEM_SPACING), SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
-        else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
+        if (locationOverride == null) {
+            Float systemSpacing;
+            if (LUNALIB_ENABLED) {
+                systemSpacing = LunaSettings.getFloat(MOD_ID, SETTINGS_SYSTEM_SPACING);
+                if (systemSpacing == null) systemSpacing = getSettingFloat(SETTINGS_SYSTEM_SPACING);
+            } else systemSpacing = getSettingFloat(SETTINGS_SYSTEM_SPACING);
+
+            setConstellationLocation(systemRadius / 10f + systemSpacing, SYSTEM_OPTIONS.optInt(OPT_SET_LOCATION, 0));
+        } else setLocation(locationOverride.getInt(0), locationOverride.getInt(1));
 
         // Set system age
         switch (SYSTEM_OPTIONS.optString(OPT_SYSTEM_AGE, "")) {
@@ -1128,14 +1158,13 @@ public class CustomStarSystem {
     // Set a star system's location to near the middle of a specified constellation
     // Modified from the constellation proc-gen code originally made by Audax.
     private void setConstellationLocation(float hyperspaceRadius, int index) {
-        // If no constellations exist (for whatever reason), fallback to the hyperspace center
-        if (constellations.isEmpty()) {
-            Vector2f hyperspaceCenter = CSSUtil.getHyperspaceCenter();
+        if (index < 0 || constellations.isEmpty()) {
+            Vector2f hyperspaceCenter = CommodityMarketData.computeCenterOfMass(null, null);
             setLocation(hyperspaceCenter.getX(), hyperspaceCenter.getY());
             return;
         }
 
-        Constellation selectedConstellation = (index <= 0) ? constellations.get(randomSeed.nextInt(constellations.size())) : constellations.get(Math.min(index, constellations.size()) - 1);
+        Constellation selectedConstellation = (index == 0) ? constellations.get(randomSeed.nextInt(constellations.size())) : constellations.get(Math.min(index, constellations.size()) - 1);
 
         float centroidX = 0;
         float centroidY = 0;

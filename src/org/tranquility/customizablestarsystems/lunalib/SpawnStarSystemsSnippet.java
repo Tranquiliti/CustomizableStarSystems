@@ -8,15 +8,19 @@ import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 import lunalib.lunaDebug.LunaSnippet;
 import lunalib.lunaDebug.SnippetBuilder;
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.tranquility.customizablestarsystems.CSSUtil;
 import org.tranquility.customizablestarsystems.CustomStarSystem;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.tranquility.customizablestarsystems.CSSStrings.*;
+import static org.tranquility.customizablestarsystems.CSSUtil.*;
 
-@SuppressWarnings("unchecked")
 public class SpawnStarSystemsSnippet extends LunaSnippet {
     @Override
     public String getName() {
@@ -30,31 +34,26 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
 
     @Override
     public String getModId() {
-        return MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS;
+        return MOD_ID;
     }
 
     @Override
     public List<String> getTags() {
-        List<String> tags = new ArrayList<>();
-        tags.add(SnippetTags.Cheat.toString());
-        tags.add(SnippetTags.Entity.toString());
-        return tags;
+        return List.of(SnippetTags.Cheat.toString(), SnippetTags.Entity.toString());
     }
 
     @Override
     public void addParameters(SnippetBuilder builder) {
-        JSONObject systems;
         try {
-            systems = CSSUtil.getMergedSystemJSON();
-        } catch (Exception e) { // This signifies a JSON error, so it does not matter if the "button" looks ugly
+            getMergedSystemJSON();
+        } catch (JSONException | IOException e) {
+            // Signifies a JSON error, so it does not matter if the "button" looks ugly
             builder.addBooleanParameter(COMMANDS_ERROR_BAD_JSON, COMMANDS_ERROR_BAD_JSON, true);
             return;
         }
 
-        for (Iterator<String> it = systems.keys(); it.hasNext(); ) {
-            String systemId = it.next();
+        for (String systemId : getCustomStarSystemIds())
             builder.addBooleanParameter(systemId, systemId, false);
-        }
     }
 
     @Override
@@ -75,8 +74,8 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
     private void generateSystems(List<String> enabledParams, TooltipMakerAPI output) {
         JSONObject systems;
         try {
-            systems = CSSUtil.getMergedSystemJSON();
-        } catch (Exception e) { // Re-using Console Commands message here; it's economical!
+            systems = getMergedSystemJSON();
+        } catch (JSONException | IOException e) { // Re-using Console Commands message here; it's economical!
             output.addPara(COMMANDS_ERROR_BAD_JSON + e, 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
             return;
         }
@@ -84,13 +83,13 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
         // Validate all enabled system IDs, as the file may have changed a system's ID
         for (String systemId : enabledParams)
             if (!systems.has(systemId)) {
-                output.addPara(String.format(COMMANDS_ERROR_NO_SYSTEM_ID, systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+                output.addPara(COMMANDS_ERROR_NO_SYSTEM_ID.formatted(systemId), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 return;
             }
 
         StringBuilder print = new StringBuilder();
         StarSystemAPI teleportSystem = null;
-        List<Constellation> constellations = CSSUtil.getProcgenConstellations();
+        List<Constellation> constellations = getProcgenConstellations();
         Map<MarketAPI, String> marketsToOverrideAdmin = new HashMap<>();
         for (String systemId : enabledParams)
             try { // Generate all selected custom star systems
@@ -100,17 +99,17 @@ public class SpawnStarSystemsSnippet extends LunaSnippet {
                     if (systemOptions.optBoolean(OPT_TELEPORT_UPON_GENERATION, false))
                         teleportSystem = newSystem.getSystem();
 
-                    print.append(String.format(COMMANDS_GENERATED_SYSTEM, systemId));
+                    print.append(COMMANDS_GENERATED_SYSTEM.formatted(systemId));
                 }
-            } catch (Exception e) {
-                print.append(String.format(COMMANDS_ERROR_BAD_SYSTEM, systemId)).append(e);
-                output.addPara(print.toString(), 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
+            } catch (JSONException e) {
+                print.append(COMMANDS_ERROR_BAD_SYSTEM.formatted(systemId));
+                output.addPara(print.toString() + e, 0f, Misc.getNegativeHighlightColor(), Misc.getHighlightColor());
                 Global.getLogger(SpawnStarSystemsSnippet.class).error(print, e);
                 return;
             }
 
-        if (teleportSystem != null) CSSUtil.teleportPlayerToSystem(teleportSystem);
-        CSSUtil.generateAdminsOnMarkets(marketsToOverrideAdmin);
+        if (teleportSystem != null) teleportPlayerToSystem(teleportSystem);
+        generateAdminsOnMarkets(marketsToOverrideAdmin);
 
         output.addPara(print.toString(), 0f, Misc.getPositiveHighlightColor(), Misc.getHighlightColor());
     }

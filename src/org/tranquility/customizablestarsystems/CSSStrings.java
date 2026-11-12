@@ -8,11 +8,10 @@ import com.fs.starfarer.api.Global;
 public final class CSSStrings {
     private static final String STRINGS_CATEGORY = "customizablestarsystems";
 
-    public static final String MOD_ID_CUSTOMIZABLE_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "mod_id_customizablestarsystems");
+    public static final String MOD_ID = Global.getSettings().getString(STRINGS_CATEGORY, "mod_id_customizablestarsystems");
 
     // Settings in settings.json
     public static final String SETTINGS_ENABLE_CUSTOM_STAR_SYSTEMS = Global.getSettings().getString(STRINGS_CATEGORY, "settings_enableCustomStarSystems");
-    public static final String SETTINGS_HYPERSPACE_CENTER = Global.getSettings().getString(STRINGS_CATEGORY, "settings_hyperspaceCenter");
     public static final String SETTINGS_SYSTEM_SPACING = Global.getSettings().getString(STRINGS_CATEGORY, "settings_systemSpacing");
 
     // Main system options in customStarSystems.json
@@ -21,6 +20,8 @@ public final class CSSStrings {
     public static final String OPT_HAS_SYSTEMWIDE_NEBULA = Global.getSettings().getString(STRINGS_CATEGORY, "opt_hasSystemwideNebula");
     public static final String OPT_ADD_CORONAL_HYPERSHUNT = Global.getSettings().getString(STRINGS_CATEGORY, "opt_addCoronalHypershunt");
     public static final String OPT_ADD_DOMAIN_CRYOSLEEPER = Global.getSettings().getString(STRINGS_CATEGORY, "opt_addDomainCryosleeper");
+    public static final String OPT_DO_NOT_SHOW_INTEL_FROM_THIS_LOCATION_ON_MAP = Global.getSettings().getString(STRINGS_CATEGORY, "opt_doNotShowIntelFromThisLocationOnMap");
+    public static final String OPT_HIDE_SYSTEM_ON_MAP = Global.getSettings().getString(STRINGS_CATEGORY, "opt_hideSystemOnMap");
     public static final String OPT_SET_LOCATION = Global.getSettings().getString(STRINGS_CATEGORY, "opt_setLocation");
     public static final String OPT_SYSTEM_AGE = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemAge");
     public static final String OPT_SYSTEM_BACKGROUND = Global.getSettings().getString(STRINGS_CATEGORY, "opt_systemBackground");
@@ -54,6 +55,7 @@ public final class CSSStrings {
     public static final String OPT_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_memoryKeys");
     public static final String OPT_MARKET_MEMORY_KEYS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_marketMemoryKeys");
     public static final String OPT_TAGS = Global.getSettings().getString(STRINGS_CATEGORY, "opt_tags");
+    public static final String OPT_INTERACTION_DIALOG_IMAGE = Global.getSettings().getString(STRINGS_CATEGORY, "opt_interactionDialogImage");
 
     // Sub-options for "specChanges"
     public static final String OPT_ATMOSPHERE_COLOR = Global.getSettings().getString(STRINGS_CATEGORY, "opt_atmosphereColor");
